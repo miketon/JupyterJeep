@@ -1,3 +1,42 @@
+https://github.com/fastai/fastbook/issues/538
+
+Now that PyTorch supports Apple Silicon devices, it should be possible to run the Jupyter Notebooks on an Apple Silicon device, right?
+
+I tried and ran into the following issues with the very first training exercise - the #CLICK ME cell. I was able to fix all of them and so mentioning the solutions here in case you want to add the fixes to future releases 🙂
+
+There were three issue if I recall correctly:
+
+There's an issues currently on MPS devices where you'll get the following error due to a bug which is in PR state for PyTorch:
+RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+The fix is to pip install fastcore and then run the following before you execute the # CLICK ME cell:
+
+from diffusers.models.attention import BasicTransformerBlock
+from fastcore.basics import patch
+
+@patch
+def forward(self:BasicTransformerBlock, x, context=None):
+    x = self.attn1(self.norm1(x.contiguous())) + x
+    x = self.attn2(self.norm2(x), context=context) + x
+    x = self.ff(self.norm3(x)) + x
+    renturn x
+Running the training will then throw the following error:
+[W ParallelNative.cpp:229] Warning: Cannot set number of intraop threads after parallel work has started or after set_num_threads call when using native parallel backend (function set_num_threads)
+The above required adding the parameter num_workers=0 to the ImageDataLoader.
+
+Once you get past the above and the fine_tune(1) line executes, you'll get an error like this:
+Exception occured in `ProgressCallback` when calling event `after_batch`:
+	unsupported format string passed to TensorBase.__format__
+There might be a better solution but I solved it by changing line 33 of fastai/callback/progress.py from:
+
+if hasattr(self, 'smooth_loss'): self.pbar.comment = f'{self.smooth_loss:.4f}'
+To:
+
+if hasattr(self, 'smooth_loss'): self.pbar.comment = f'{self.smooth_loss.item():.4f}'
+Basically, I added an item() to the the self.smooth_loss parameter.
+
+That let me complete the chapter and do everything on an Apple Silicon device.
+
+
 https://forums.fast.ai/t/fastai-on-apple-m1/86059/37
 
 #gitlens check
