@@ -1,3 +1,11 @@
+https://anaconda.org/fastchan/repo
+# JUST INSTALL EVERYTHING FROM FASTCHAN and SKIP CONDA BULLSHIT LOL and works with Mac silicon!
+# conda install -c fastchan fastai
+
+conda install -c anaconda ipywidgets 
+
+
+
 https://github.com/fastai/fastbook/issues/538
 
 Now that PyTorch supports Apple Silicon devices, it should be possible to run the Jupyter Notebooks on an Apple Silicon device, right?
