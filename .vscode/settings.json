@@ -8,5 +8,9 @@
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "editor.indentSize": "tabSize",
+    "editor.rulers": [
+        {"column":   80, "color": "#5a5a5a40"}, // 25% opaque
+    ],
 }
