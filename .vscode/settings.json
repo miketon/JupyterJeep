@@ -13,4 +13,5 @@
     "editor.rulers": [
         {"column":   80, "color": "#5a5a5a40"}, // 25% opaque
     ],
+    "inline-bookmarks.view.showVisibleFilesOnly": true,
 }
