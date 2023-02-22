@@ -1,0 +1,112 @@
+{
+    "root": {
+        "data": {
+            "id": "cqp8tyan96w0",
+            "created": 1677084480559,
+            "text": "FastAi"
+        },
+        "children": [
+            {
+                "data": {
+                    "id": "cqpaddnoxhk0",
+                    "created": 1677088824029,
+                    "text": "pandas",
+                    "layout_mind_offset": {
+                        "x": 423,
+                        "y": -132
+                    },
+                    "expandState": "expand"
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cqpaezuxk1c0",
+                            "created": 1677088950720,
+                            "text": "DataFrame",
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cqpafvbxiu80",
+                                    "created": 1677089019228,
+                                    "text": " pd.read_csv(path/'train.csv')"
+                                },
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "data": {
+                    "id": "cqpadkxuwxs0",
+                    "created": 1677088839881,
+                    "text": "library",
+                    "expandState": "expand"
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cqpa85ju85s0",
+                            "created": 1677088414561,
+                            "text": "data",
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cqpa8xzav9c0",
+                                    "created": 1677088476446,
+                                    "text": "block.py",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cqpa9bud6f40",
+                                            "created": 1677088506622,
+                                            "text": "DataLoader",
+                                            "expandState": "expand"
+                                        },
+                                        "children": [
+                                            {
+                                                "data": {
+                                                    "id": "cqpa9urxi7k0",
+                                                    "created": 1677088547834,
+                                                    "text": "mini-batch",
+                                                    "expandState": "expand"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cqpaa3pm8o80",
+                                                            "created": 1677088567285,
+                                                            "text": "collated from Dataset"
+                                                        },
+                                                        "children": []
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "data": {
+                                            "id": "cqpad69bev40",
+                                            "created": 1677088807922,
+                                            "text": "Dataset"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "template": "right",
+    "theme": "fresh-blue",
+    "version": "1.4.43"
+}
