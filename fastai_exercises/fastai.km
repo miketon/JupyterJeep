@@ -23,16 +23,29 @@
                             "id": "cqpaezuxk1c0",
                             "created": 1677088950720,
                             "text": "DataFrame",
-                            "expandState": "expand"
+                            "expandState": "expand",
+                            "priority": null
                         },
                         "children": [
                             {
                                 "data": {
-                                    "id": "cqpafvbxiu80",
-                                    "created": 1677089019228,
-                                    "text": " pd.read_csv(path/'train.csv')"
+                                    "id": "cqq23ml45rs0",
+                                    "created": 1677167050900,
+                                    "text": "df",
+                                    "expandState": "expand",
+                                    "priority": 1,
+                                    "progress": 1
                                 },
-                                "children": []
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cqpafvbxiu80",
+                                            "created": 1677089019228,
+                                            "text": " pd.read_csv(path/'train.csv')"
+                                        },
+                                        "children": []
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -64,39 +77,310 @@
                                 "children": [
                                     {
                                         "data": {
-                                            "id": "cqpa9bud6f40",
-                                            "created": 1677088506622,
-                                            "text": "DataLoader",
+                                            "id": "cqq237g07d40",
+                                            "created": 1677167017939,
+                                            "text": "DataBlock",
                                             "expandState": "expand"
                                         },
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cqpa9urxi7k0",
-                                                    "created": 1677088547834,
-                                                    "text": "mini-batch",
+                                                    "id": "cqq2axit2cg0",
+                                                    "created": 1677167623254,
+                                                    "text": "dblock",
+                                                    "expandState": "expand",
+                                                    "progress": 1,
+                                                    "priority": 2
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq2blq7gnc0",
+                                                            "created": 1677167675944,
+                                                            "text": "{blocks}",
+                                                            "expandState": "expand"
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq2bun2lsw0",
+                                                                    "created": 1677167695346,
+                                                                    "text": "[ImageBlock]"
+                                                                },
+                                                                "children": []
+                                                            },
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq2c1r7osw0",
+                                                                    "created": 1677167710834,
+                                                                    "text": "[Multicategory]"
+                                                                },
+                                                                "children": []
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "data": {
+                                                    "id": "cqpad69bev40",
+                                                    "created": 1677088807922,
+                                                    "text": "Dataset",
+                                                    "priority": null,
                                                     "expandState": "expand"
                                                 },
                                                 "children": [
                                                     {
                                                         "data": {
-                                                            "id": "cqpaa3pm8o80",
-                                                            "created": 1677088567285,
-                                                            "text": "collated from Dataset"
+                                                            "id": "cqq22d8vh5k0",
+                                                            "created": 1677166952205,
+                                                            "text": "dsets",
+                                                            "expandState": "expand",
+                                                            "priority": 3,
+                                                            "progress": 1
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq23wufr4w0",
+                                                                    "created": 1677167073232,
+                                                                    "text": "dblock.datasets(df)",
+                                                                    "expandState": "expand",
+                                                                    "priority": 1
+                                                                },
+                                                                "children": [
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqq24xveah40",
+                                                                            "created": 1677167153831,
+                                                                            "text": "{splitter}",
+                                                                            "expandState": "expand"
+                                                                        },
+                                                                        "children": [
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqq24nu0x9c0",
+                                                                                    "created": 1677167131981,
+                                                                                    "text": "train"
+                                                                                },
+                                                                                "children": []
+                                                                            },
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqq24pgtfrk0",
+                                                                                    "created": 1677167135535,
+                                                                                    "text": "validation"
+                                                                                },
+                                                                                "children": []
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "data": {
+                                                    "id": "cqpa9bud6f40",
+                                                    "created": 1677088506622,
+                                                    "text": "DataLoader",
+                                                    "expandState": "expand",
+                                                    "priority": null
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq47cqzum80",
+                                                            "created": 1677172985164,
+                                                            "text": "dls",
+                                                            "progress": 1,
+                                                            "priority": 4,
+                                                            "expandState": "expand",
+                                                            "background": "#d9d9d9"
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq42ojhdjc0",
+                                                                    "created": 1677172619010,
+                                                                    "text": "dblock.dataloaders(df)",
+                                                                    "expandState": "expand",
+                                                                    "priority": 1
+                                                                },
+                                                                "children": [
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqpa9urxi7k0",
+                                                                            "created": 1677088547834,
+                                                                            "text": ">> mini-batch <<",
+                                                                            "expandState": "expand",
+                                                                            "background": "#d9d9d9"
+                                                                        },
+                                                                        "children": [
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqpaa3pm8o80",
+                                                                                    "created": 1677088567285,
+                                                                                    "text": "collated from Dataset"
+                                                                                },
+                                                                                "children": []
+                                                                            },
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqq28edyndc0",
+                                                                                    "created": 1677167424874,
+                                                                                    "text": "{item_tfms}",
+                                                                                    "expandState": "expand"
+                                                                                },
+                                                                                "children": [
+                                                                                    {
+                                                                                        "data": {
+                                                                                            "id": "cqq21x2ih2w0",
+                                                                                            "created": 1677166916991,
+                                                                                            "text": "RandomResizedCrop",
+                                                                                            "expandState": "expand"
+                                                                                        },
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cqq21hvw2480",
+                                                                                                    "created": 1677166883940,
+                                                                                                    "text": "must ensure that every item is the same size",
+                                                                                                    "expandState": "expand",
+                                                                                                    "layout_right_offset": {
+                                                                                                        "x": -31,
+                                                                                                        "y": 0
+                                                                                                    }
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            },
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq28xbab9s0",
+                                                                    "created": 1677167466071,
+                                                                    "text": "show_batch()",
+                                                                    "expandState": "expand"
+                                                                },
+                                                                "children": [
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqq299nka600",
+                                                                            "created": 1677167492935,
+                                                                            "text": "nrows"
+                                                                        },
+                                                                        "children": []
+                                                                    },
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqq29axkhhs0",
+                                                                            "created": 1677167495717,
+                                                                            "text": "ncols"
+                                                                        },
+                                                                        "children": []
+                                                                    }
+                                                                ]
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "data": {
+                            "id": "cqq3yvj35ug0",
+                            "created": 1677172320767,
+                            "text": "vision",
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cqq3yyko3m80",
+                                    "created": 1677172327393,
+                                    "text": "learner.py",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cqq3zaru0co0",
+                                            "created": 1677172353948,
+                                            "text": "Learner",
+                                            "expandState": "expand"
+                                        },
+                                        "children": [
+                                            {
+                                                "data": {
+                                                    "id": "cqq4017ffxc0",
+                                                    "created": 1677172411487,
+                                                    "text": "learn",
+                                                    "expandState": "expand",
+                                                    "progress": 1,
+                                                    "priority": 5
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq40c09iu80",
+                                                            "created": 1677172434999,
+                                                            "text": "model"
+                                                        },
+                                                        "children": []
+                                                    },
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq40m3g6b40",
+                                                            "created": 1677172456959,
+                                                            "text": "DataLoader",
+                                                            "expandState": "expand"
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "data": {
+                                                                    "id": "cqq41dhff680",
+                                                                    "created": 1677172516578,
+                                                                    "text": "dls",
+                                                                    "priority": 4,
+                                                                    "background": "#d9d9d9"
+                                                                },
+                                                                "children": []
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq40rsq9280",
+                                                            "created": 1677172469372,
+                                                            "text": "optimizer"
+                                                        },
+                                                        "children": []
+                                                    },
+                                                    {
+                                                        "data": {
+                                                            "id": "cqq40tob2ew0",
+                                                            "created": 1677172473458,
+                                                            "text": "loss function"
                                                         },
                                                         "children": []
                                                     }
                                                 ]
                                             }
                                         ]
-                                    },
-                                    {
-                                        "data": {
-                                            "id": "cqpad69bev40",
-                                            "created": 1677088807922,
-                                            "text": "Dataset"
-                                        },
-                                        "children": []
                                     }
                                 ]
                             }
