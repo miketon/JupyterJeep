@@ -134,17 +134,39 @@
                                                                 "data": {
                                                                     "id": "cqq2bun2lsw0",
                                                                     "created": 1677167695346,
-                                                                    "text": "[ImageBlock]"
+                                                                    "text": "[ImageBlock]",
+                                                                    "expandState": "expand"
                                                                 },
-                                                                "children": []
+                                                                "children": [
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqud1dt1knk0",
+                                                                            "created": 1677604147096,
+                                                                            "text": "x",
+                                                                            "progress": 1
+                                                                        },
+                                                                        "children": []
+                                                                    }
+                                                                ]
                                                             },
                                                             {
                                                                 "data": {
                                                                     "id": "cqq2c1r7osw0",
                                                                     "created": 1677167710834,
-                                                                    "text": "[Multicategory]"
+                                                                    "text": "[Multicategory]",
+                                                                    "expandState": "expand"
                                                                 },
-                                                                "children": []
+                                                                "children": [
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cqud1esitgw0",
+                                                                            "created": 1677604149241,
+                                                                            "text": "y",
+                                                                            "progress": 1
+                                                                        },
+                                                                        "children": []
+                                                                    }
+                                                                ]
                                                             }
                                                         ]
                                                     }
