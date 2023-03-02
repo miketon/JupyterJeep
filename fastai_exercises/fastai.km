@@ -132,9 +132,10 @@
                                                         "children": [
                                                             {
                                                                 "data": {
-                                                                    "id": "cqq2bun2lsw0",
-                                                                    "created": 1677167695346,
-                                                                    "text": "[ImageBlock]",
+                                                                    "id": "cqud6undpco0",
+                                                                    "created": 1677604575579,
+                                                                    "text": "// independent",
+                                                                    "background": "#d6e3bc",
                                                                     "expandState": "expand"
                                                                 },
                                                                 "children": [
@@ -143,17 +144,29 @@
                                                                             "id": "cqud1dt1knk0",
                                                                             "created": 1677604147096,
                                                                             "text": "x",
-                                                                            "progress": 1
+                                                                            "progress": 1,
+                                                                            "expandState": "expand"
                                                                         },
-                                                                        "children": []
+                                                                        "children": [
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqq2bun2lsw0",
+                                                                                    "created": 1677167695346,
+                                                                                    "text": "[ImageBlock]",
+                                                                                    "expandState": "expand"
+                                                                                },
+                                                                                "children": []
+                                                                            }
+                                                                        ]
                                                                     }
                                                                 ]
                                                             },
                                                             {
                                                                 "data": {
-                                                                    "id": "cqq2c1r7osw0",
-                                                                    "created": 1677167710834,
-                                                                    "text": "[Multicategory]",
+                                                                    "id": "cqud6lv9omo0",
+                                                                    "created": 1677604556465,
+                                                                    "text": "// dependent",
+                                                                    "background": "#d6e3bc",
                                                                     "expandState": "expand"
                                                                 },
                                                                 "children": [
@@ -162,9 +175,79 @@
                                                                             "id": "cqud1esitgw0",
                                                                             "created": 1677604149241,
                                                                             "text": "y",
-                                                                            "progress": 1
+                                                                            "progress": 1,
+                                                                            "expandState": "expand"
                                                                         },
-                                                                        "children": []
+                                                                        "children": [
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cqud37ydfq80",
+                                                                                    "created": 1677604291086,
+                                                                                    "text": "// default loss",
+                                                                                    "expandState": "expand",
+                                                                                    "background": "#d6e3bc"
+                                                                                },
+                                                                                "children": [
+                                                                                    {
+                                                                                        "data": {
+                                                                                            "id": "cqud4rbg8600",
+                                                                                            "created": 1677604411599,
+                                                                                            "text": "[Category]",
+                                                                                            "expandState": "expand"
+                                                                                        },
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cqud5lprdjc0",
+                                                                                                    "created": 1677604477768,
+                                                                                                    "text": "// Cross Entropy",
+                                                                                                    "background": "#d6e3bc"
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
+                                                                                    },
+                                                                                    {
+                                                                                        "data": {
+                                                                                            "id": "cqq2c1r7osw0",
+                                                                                            "created": 1677167710834,
+                                                                                            "text": "[Multicategory]",
+                                                                                            "expandState": "expand"
+                                                                                        },
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cqud4cc8z2o0",
+                                                                                                    "created": 1677604378996,
+                                                                                                    "text": "// BCE - Binary Cross Entropy",
+                                                                                                    "background": "#d6e3bc"
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
+                                                                                    },
+                                                                                    {
+                                                                                        "data": {
+                                                                                            "id": "cqud46xau9c0",
+                                                                                            "created": 1677604367208,
+                                                                                            "text": "[PointBlock]",
+                                                                                            "expandState": "expand"
+                                                                                        },
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cqud5s7dt5s0",
+                                                                                                    "created": 1677604491894,
+                                                                                                    "text": "// MSE",
+                                                                                                    "background": "#d6e3bc"
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
                                                                     }
                                                                 ]
                                                             }
