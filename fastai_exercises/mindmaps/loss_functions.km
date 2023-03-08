@@ -1,0 +1,200 @@
+{
+    "root": {
+        "data": {
+            "id": "cqp8tyan96w0",
+            "created": 1677084480559,
+            "text": "Loss Functions"
+        },
+        "children": [
+            {
+                "data": {
+                    "id": "cr14tht4v6g0",
+                    "created": 1678291879712,
+                    "text": "MNIST",
+                    "layout": null
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cr14svqh67s0",
+                            "created": 1678291831663,
+                            "text": "Usage",
+                            "layout": null,
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cr14u642wrk0",
+                                    "created": 1678291932617,
+                                    "text": "Categories",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14um09f8g0",
+                                            "created": 1678291967215,
+                                            "text": "BINARY"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            },
+                            {
+                                "data": {
+                                    "id": "cr14udfuygg0",
+                                    "created": 1678291948567,
+                                    "text": "Labels",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14ufd9g3k0",
+                                            "created": 1678291952763,
+                                            "text": "DISTANCE"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "data": {
+                    "id": "cqpaddnoxhk0",
+                    "created": 1677088824029,
+                    "text": "Cross Entropy",
+                    "layout_mind_offset": {
+                        "x": 423,
+                        "y": -132
+                    },
+                    "expandState": "expand",
+                    "layout": null
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cr14svqh67s0",
+                            "created": 1678291831663,
+                            "text": "Usage",
+                            "layout": null,
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cr14u642wrk0",
+                                    "created": 1678291932617,
+                                    "text": "Categories",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14um09f8g0",
+                                            "created": 1678291967215,
+                                            "text": "N"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            },
+                            {
+                                "data": {
+                                    "id": "cr14udfuygg0",
+                                    "created": 1678291948567,
+                                    "text": "Labels",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14ufd9g3k0",
+                                            "created": 1678291952763,
+                                            "text": "ONE"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "data": {
+                            "id": "cr14t5byhy80",
+                            "created": 1678291852552,
+                            "text": "Math",
+                            "layout": null
+                        },
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "data": {
+                    "id": "cqpadkxuwxs0",
+                    "created": 1677088839881,
+                    "text": "Binary Cross Entropy",
+                    "expandState": "expand",
+                    "layout": null
+                },
+                "children": [
+                    {
+                        "data": {
+                            "id": "cr14svqh67s0",
+                            "created": 1678291831663,
+                            "text": "Usage",
+                            "layout": null,
+                            "expandState": "expand"
+                        },
+                        "children": [
+                            {
+                                "data": {
+                                    "id": "cr14u642wrk0",
+                                    "created": 1678291932617,
+                                    "text": "Categories",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14um09f8g0",
+                                            "created": 1678291967215,
+                                            "text": "N"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            },
+                            {
+                                "data": {
+                                    "id": "cr14udfuygg0",
+                                    "created": 1678291948567,
+                                    "text": "Labels",
+                                    "expandState": "expand"
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr14ufd9g3k0",
+                                            "created": 1678291952763,
+                                            "text": "N"
+                                        },
+                                        "children": []
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "template": "right",
+    "theme": "fresh-blue",
+    "version": "1.4.43"
+}
