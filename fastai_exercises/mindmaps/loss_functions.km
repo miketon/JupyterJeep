@@ -27,7 +27,7 @@
                                     "id": "cr16xluzusg0",
                                     "created": 1678297844210,
                                     "text": "Sigmoid",
-                                    "expandState": "expand",
+                                    "expandState": "collapse",
                                     "progress": 5,
                                     "priority": 1
                                 },
@@ -85,7 +85,7 @@
                                     "created": 1678298545157,
                                     "text": "Softmax",
                                     "priority": 2,
-                                    "expandState": "expand",
+                                    "expandState": "collapse",
                                     "progress": 5
                                 },
                                 "children": [
@@ -620,66 +620,77 @@
                                                                                 "children": [
                                                                                     {
                                                                                         "data": {
-                                                                                            "id": "cr228vo9g9s0",
-                                                                                            "created": 1678386181982,
-                                                                                            "text": "log(a*b) = log(a) + log(b)",
+                                                                                            "id": "cr2c6thvmow0",
+                                                                                            "created": 1678414231613,
+                                                                                            "text": "torch.log()",
                                                                                             "background": "#b6dde8",
                                                                                             "expandState": "expand"
                                                                                         },
                                                                                         "children": [
                                                                                             {
                                                                                                 "data": {
-                                                                                                    "id": "cr2bvw5hczc0",
-                                                                                                    "created": 1678413375388,
-                                                                                                    "text": "// python log base is : ",
-                                                                                                    "expandState": "expand",
-                                                                                                    "background": "#c2d69b"
+                                                                                                    "id": "cr228vo9g9s0",
+                                                                                                    "created": 1678386181982,
+                                                                                                    "text": "log(a*b) = log(a) + log(b)",
+                                                                                                    "background": "#b6dde8",
+                                                                                                    "expandState": "expand"
                                                                                                 },
                                                                                                 "children": [
                                                                                                     {
                                                                                                         "data": {
-                                                                                                            "id": "cr2bwd95uyg0",
-                                                                                                            "created": 1678413412616,
-                                                                                                            "text": "2.718 ...",
-                                                                                                            "background": "#b6dde8",
-                                                                                                            "expandState": "expand"
+                                                                                                            "id": "cr2bvw5hczc0",
+                                                                                                            "created": 1678413375388,
+                                                                                                            "text": "// python log base is : ",
+                                                                                                            "expandState": "expand",
+                                                                                                            "background": "#c2d69b"
                                                                                                         },
                                                                                                         "children": [
                                                                                                             {
                                                                                                                 "data": {
-                                                                                                                    "id": "cr2bxtpiosw0",
-                                                                                                                    "created": 1678413526798,
-                                                                                                                    "text": "// natural logarithm is the logarithm to the base e",
-                                                                                                                    "background": "#c2d69b"
-                                                                                                                },
-                                                                                                                "children": []
-                                                                                                            },
-                                                                                                            {
-                                                                                                                "data": {
-                                                                                                                    "id": "cr2by97x0ig0",
-                                                                                                                    "created": 1678413560562,
-                                                                                                                    "text": "// inverse function to the natural exponential function",
-                                                                                                                    "background": "#c2d69b"
-                                                                                                                },
-                                                                                                                "children": []
-                                                                                                            },
-                                                                                                            {
-                                                                                                                "data": {
-                                                                                                                    "id": "cr2bz4uawso0",
-                                                                                                                    "created": 1678413629396,
-                                                                                                                    "text": "???",
-                                                                                                                    "background": "#f79646",
+                                                                                                                    "id": "cr2bwd95uyg0",
+                                                                                                                    "created": 1678413412616,
+                                                                                                                    "text": "2.718 ...",
+                                                                                                                    "background": "#b6dde8",
                                                                                                                     "expandState": "expand"
                                                                                                                 },
                                                                                                                 "children": [
                                                                                                                     {
                                                                                                                         "data": {
-                                                                                                                            "id": "cr2byg70ta80",
-                                                                                                                            "created": 1678413575745,
-                                                                                                                            "text": "// meaning that it gives the exponent to which e must be raised to obtain a given number",
+                                                                                                                            "id": "cr2bxtpiosw0",
+                                                                                                                            "created": 1678413526798,
+                                                                                                                            "text": "// natural logarithm is the logarithm to the base e",
                                                                                                                             "background": "#c2d69b"
                                                                                                                         },
                                                                                                                         "children": []
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2by97x0ig0",
+                                                                                                                            "created": 1678413560562,
+                                                                                                                            "text": "// inverse function to the natural exponential function",
+                                                                                                                            "background": "#c2d69b"
+                                                                                                                        },
+                                                                                                                        "children": []
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2bz4uawso0",
+                                                                                                                            "created": 1678413629396,
+                                                                                                                            "text": "???",
+                                                                                                                            "background": "#f79646",
+                                                                                                                            "expandState": "expand"
+                                                                                                                        },
+                                                                                                                        "children": [
+                                                                                                                            {
+                                                                                                                                "data": {
+                                                                                                                                    "id": "cr2byg70ta80",
+                                                                                                                                    "created": 1678413575745,
+                                                                                                                                    "text": "// meaning that it gives the exponent to which e must be raised to obtain a given number",
+                                                                                                                                    "background": "#c2d69b"
+                                                                                                                                },
+                                                                                                                                "children": []
+                                                                                                                            }
+                                                                                                                        ]
                                                                                                                     }
                                                                                                                 ]
                                                                                                             }
@@ -689,113 +700,95 @@
                                                                                             },
                                                                                             {
                                                                                                 "data": {
-                                                                                                    "id": "cr2bzi8k8940",
-                                                                                                    "created": 1678413658556,
-                                                                                                    "text": "???",
-                                                                                                    "background": "#f79646",
-                                                                                                    "expandState": "expand"
+                                                                                                    "id": "cr2c4h5rmy00",
+                                                                                                    "created": 1678414048031,
+                                                                                                    "text": "// converting from 0 and 1 to negative INFINITY and 0",
+                                                                                                    "expandState": "expand",
+                                                                                                    "background": "#c2d69b"
                                                                                                 },
                                                                                                 "children": [
                                                                                                     {
                                                                                                         "data": {
-                                                                                                            "id": "cr2c02wrxnk0",
-                                                                                                            "created": 1678413703556,
-                                                                                                            "text": " // Explain why Taking the LOG of the LOSS improves PERFORMANCE",
-                                                                                                            "background": "#c2d69b",
+                                                                                                            "id": "cr2c4yvbq400",
+                                                                                                            "created": 1678414086582,
+                                                                                                            "text": "THIS FIXES IT SOMEHOW????",
+                                                                                                            "background": "#f79646",
                                                                                                             "expandState": "expand"
                                                                                                         },
                                                                                                         "children": [
                                                                                                             {
                                                                                                                 "data": {
-                                                                                                                    "id": "cr2c0f75o680",
-                                                                                                                    "created": 1678413730305,
-                                                                                                                    "text": "Are we using LOG to unbend the SIGMOID to a LINEAR curve?",
-                                                                                                                    "background": "#f79646"
-                                                                                                                },
-                                                                                                                "children": []
-                                                                                                            },
-                                                                                                            {
-                                                                                                                "data": {
-                                                                                                                    "id": "cr2c2pwkl280",
-                                                                                                                    "created": 1678413910338,
-                                                                                                                    "text": "// Softmax outputs PROBABILITIES",
+                                                                                                                    "id": "cr2c7jjq0pc0",
+                                                                                                                    "created": 1678414288321,
+                                                                                                                    "text": "BUT IS NAN < 0 ????",
                                                                                                                     "expandState": "expand",
-                                                                                                                    "background": "#c2d69b"
+                                                                                                                    "background": "#f79646"
                                                                                                                 },
                                                                                                                 "children": [
                                                                                                                     {
                                                                                                                         "data": {
-                                                                                                                            "id": "cr2c2wtd5r40",
-                                                                                                                            "created": 1678413925382,
-                                                                                                                            "text": "// And the problem is PROBABILITIES are between 0 and 1",
-                                                                                                                            "background": "#c2d69b"
+                                                                                                                            "id": "cr2c7yuhhsw0",
+                                                                                                                            "created": 1678414321624,
+                                                                                                                            "text": "WTF",
+                                                                                                                            "background": "#f79646"
                                                                                                                         },
                                                                                                                         "children": []
-                                                                                                                    },
+                                                                                                                    }
+                                                                                                                ]
+                                                                                                            }
+                                                                                                        ]
+                                                                                                    },
+                                                                                                    {
+                                                                                                        "data": {
+                                                                                                            "id": "cr2c0f75o680",
+                                                                                                            "created": 1678413730305,
+                                                                                                            "text": "Are we using LOG to unbend the SIGMOID to a LINEAR curve?",
+                                                                                                            "background": "#f79646",
+                                                                                                            "expandState": "expand"
+                                                                                                        },
+                                                                                                        "children": [
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2c02wrxnk0",
+                                                                                                                    "created": 1678413703556,
+                                                                                                                    "text": " // Explain why Taking the LOG of the LOSS improves PERFORMANCE",
+                                                                                                                    "background": "#c2d69b",
+                                                                                                                    "expandState": "expand"
+                                                                                                                },
+                                                                                                                "children": [
                                                                                                                     {
                                                                                                                         "data": {
-                                                                                                                            "id": "cr2c3mlx3nc0",
-                                                                                                                            "created": 1678413981528,
-                                                                                                                            "text": "// model doesn't care diff between 0.99 and 0.999",
+                                                                                                                            "id": "cr2c2pwkl280",
+                                                                                                                            "created": 1678413910338,
+                                                                                                                            "text": "// Softmax outputs PROBABILITIES",
                                                                                                                             "expandState": "expand",
                                                                                                                             "background": "#c2d69b"
                                                                                                                         },
                                                                                                                         "children": [
                                                                                                                             {
                                                                                                                                 "data": {
-                                                                                                                                    "id": "cr2c3zxiym80",
-                                                                                                                                    "created": 1678414010528,
-                                                                                                                                    "text": "// But 0.999 is 10 times more confident than 0.99",
+                                                                                                                                    "id": "cr2c2wtd5r40",
+                                                                                                                                    "created": 1678413925382,
+                                                                                                                                    "text": "// And the problem is PROBABILITIES are between 0 and 1",
                                                                                                                                     "background": "#c2d69b"
                                                                                                                                 },
                                                                                                                                 "children": []
-                                                                                                                            }
-                                                                                                                        ]
-                                                                                                                    },
-                                                                                                                    {
-                                                                                                                        "data": {
-                                                                                                                            "id": "cr2c6thvmow0",
-                                                                                                                            "created": 1678414231613,
-                                                                                                                            "text": "torch.log()",
-                                                                                                                            "background": "#b6dde8",
-                                                                                                                            "expandState": "expand"
-                                                                                                                        },
-                                                                                                                        "children": [
+                                                                                                                            },
                                                                                                                             {
                                                                                                                                 "data": {
-                                                                                                                                    "id": "cr2c4h5rmy00",
-                                                                                                                                    "created": 1678414048031,
-                                                                                                                                    "text": "// converting from 0 and 1 to negative INFINITY and 0",
+                                                                                                                                    "id": "cr2c3mlx3nc0",
+                                                                                                                                    "created": 1678413981528,
+                                                                                                                                    "text": "// model doesn't care diff between 0.99 and 0.999",
                                                                                                                                     "expandState": "expand",
                                                                                                                                     "background": "#c2d69b"
                                                                                                                                 },
                                                                                                                                 "children": [
                                                                                                                                     {
                                                                                                                                         "data": {
-                                                                                                                                            "id": "cr2c4yvbq400",
-                                                                                                                                            "created": 1678414086582,
-                                                                                                                                            "text": "THIS FIXES IT SOMEHOW????",
-                                                                                                                                            "background": "#f79646"
-                                                                                                                                        },
-                                                                                                                                        "children": []
-                                                                                                                                    }
-                                                                                                                                ]
-                                                                                                                            },
-                                                                                                                            {
-                                                                                                                                "data": {
-                                                                                                                                    "id": "cr2c7jjq0pc0",
-                                                                                                                                    "created": 1678414288321,
-                                                                                                                                    "text": "BUT IS NAN < 0 ????",
-                                                                                                                                    "expandState": "expand",
-                                                                                                                                    "background": "#f79646"
-                                                                                                                                },
-                                                                                                                                "children": [
-                                                                                                                                    {
-                                                                                                                                        "data": {
-                                                                                                                                            "id": "cr2c7yuhhsw0",
-                                                                                                                                            "created": 1678414321624,
-                                                                                                                                            "text": "WTF",
-                                                                                                                                            "background": "#f79646"
+                                                                                                                                            "id": "cr2c3zxiym80",
+                                                                                                                                            "created": 1678414010528,
+                                                                                                                                            "text": "// But 0.999 is 10 times more confident than 0.99",
+                                                                                                                                            "background": "#c2d69b"
                                                                                                                                         },
                                                                                                                                         "children": []
                                                                                                                                     }
