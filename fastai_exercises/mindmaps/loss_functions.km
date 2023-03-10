@@ -28,42 +28,42 @@
                                     "created": 1678297844210,
                                     "text": "Sigmoid",
                                     "expandState": "expand",
-                                    "progress": null,
+                                    "progress": 5,
                                     "priority": 1
                                 },
                                 "children": [
                                     {
                                         "data": {
-                                            "id": "cr16zn2cmkw0",
-                                            "created": 1678298003558,
-                                            "text": "returns",
+                                            "id": "cr18y36gsn40",
+                                            "created": 1678303524127,
+                                            "text": "xform",
                                             "expandState": "expand",
-                                            "background": "#d9d9d9"
+                                            "layout": null,
+                                            "background": "#548dd4",
+                                            "color": "#f2f2f2"
                                         },
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cr18y36gsn40",
-                                                    "created": 1678303524127,
-                                                    "text": "xform",
-                                                    "expandState": "expand",
-                                                    "layout": null,
-                                                    "background": "#808080",
-                                                    "color": "#f2f2f2"
+                                                    "id": "cr16yl2mg1c0",
+                                                    "created": 1678297920857,
+                                                    "text": "Normalized between 0 and 1",
+                                                    "background": "#b6dde8",
+                                                    "layout": null
                                                 },
-                                                "children": [
-                                                    {
-                                                        "data": {
-                                                            "id": "cr16yl2mg1c0",
-                                                            "created": 1678297920857,
-                                                            "text": "// Normalized between 0 and 1",
-                                                            "background": "#c2d69b",
-                                                            "layout": null
-                                                        },
-                                                        "children": []
-                                                    }
-                                                ]
-                                            },
+                                                "children": []
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "data": {
+                                            "id": "cr16zn2cmkw0",
+                                            "created": 1678298003558,
+                                            "text": "output",
+                                            "expandState": "expand",
+                                            "background": "#d9d9d9"
+                                        },
+                                        "children": [
                                             {
                                                 "data": {
                                                     "id": "cr16zrdfzvc0",
@@ -85,80 +85,61 @@
                                     "created": 1678298545157,
                                     "text": "Softmax",
                                     "priority": 2,
-                                    "expandState": "expand"
+                                    "expandState": "expand",
+                                    "progress": 5
                                 },
                                 "children": [
                                     {
                                         "data": {
-                                            "id": "cr16zn2cmkw0",
-                                            "created": 1678298003558,
-                                            "text": "returns",
+                                            "id": "cr18x9wofa00",
+                                            "created": 1678303460409,
+                                            "text": "xform",
                                             "expandState": "expand",
-                                            "background": "#d9d9d9"
+                                            "background": "#548dd4",
+                                            "color": "#f2f2f2"
                                         },
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cr18x9wofa00",
-                                                    "created": 1678303460409,
-                                                    "text": "xform",
+                                                    "id": "cr18zn9zruw0",
+                                                    "created": 1678303646240,
+                                                    "text": "// probability distribution",
                                                     "expandState": "expand",
-                                                    "background": "#808080",
-                                                    "color": "#f2f2f2"
+                                                    "background": "#c2d69b"
                                                 },
                                                 "children": [
                                                     {
                                                         "data": {
-                                                            "id": "cr18zn9zruw0",
-                                                            "created": 1678303646240,
-                                                            "text": "// probability distribution",
-                                                            "expandState": "expand",
-                                                            "background": "#c2d69b"
+                                                            "id": "cr1927c2h400",
+                                                            "created": 1678303846630,
+                                                            "text": "exponential each value",
+                                                            "background": "#b6dde8",
+                                                            "expandState": "expand"
                                                         },
                                                         "children": [
                                                             {
                                                                 "data": {
-                                                                    "id": "cr1927c2h400",
-                                                                    "created": 1678303846630,
-                                                                    "text": "// exponential each value",
+                                                                    "id": "cr194grnxl40",
+                                                                    "created": 1678304023892,
+                                                                    "text": "// AMPLIFIES relative DIFFERENCE",
                                                                     "background": "#c2d69b",
                                                                     "expandState": "expand"
                                                                 },
                                                                 "children": [
                                                                     {
                                                                         "data": {
-                                                                            "id": "cr194grnxl40",
-                                                                            "created": 1678304023892,
-                                                                            "text": "// AMPLIFIES relative DIFFERENCE",
-                                                                            "background": "#c2d69b",
-                                                                            "expandState": "expand"
+                                                                            "id": "cr1952rerxs0",
+                                                                            "created": 1678304071766,
+                                                                            "text": "// REALLY wants to pick ONE LEAD category",
+                                                                            "background": "#c2d69b"
                                                                         },
-                                                                        "children": [
-                                                                            {
-                                                                                "data": {
-                                                                                    "id": "cr1952rerxs0",
-                                                                                    "created": 1678304071766,
-                                                                                    "text": "// REALLY wants to pick ONE LEAD category",
-                                                                                    "background": "#c2d69b"
-                                                                                },
-                                                                                "children": []
-                                                                            },
-                                                                            {
-                                                                                "data": {
-                                                                                    "id": "cr195xhcgow0",
-                                                                                    "created": 1678304138638,
-                                                                                    "text": "// DECREASES probability of TRAILING category",
-                                                                                    "background": "#c2d69b"
-                                                                                },
-                                                                                "children": []
-                                                                            }
-                                                                        ]
+                                                                        "children": []
                                                                     },
                                                                     {
                                                                         "data": {
-                                                                            "id": "cr192qt1w740",
-                                                                            "created": 1678303889016,
-                                                                            "text": "// ensures only POSITIVE values",
+                                                                            "id": "cr195xhcgow0",
+                                                                            "created": 1678304138638,
+                                                                            "text": "// DECREASES probability of TRAILING category",
                                                                             "background": "#c2d69b"
                                                                         },
                                                                         "children": []
@@ -167,45 +148,65 @@
                                                             },
                                                             {
                                                                 "data": {
-                                                                    "id": "cr19119z4xk0",
-                                                                    "created": 1678303755078,
-                                                                    "text": "// divided by",
-                                                                    "expandState": "expand",
+                                                                    "id": "cr192qt1w740",
+                                                                    "created": 1678303889016,
+                                                                    "text": "// ensures only POSITIVE values",
                                                                     "background": "#c2d69b"
+                                                                },
+                                                                "children": []
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "data": {
+                                                            "id": "cr19119z4xk0",
+                                                            "created": 1678303755078,
+                                                            "text": "divided by",
+                                                            "expandState": "expand",
+                                                            "background": "#b6dde8"
+                                                        },
+                                                        "children": [
+                                                            {
+                                                                "data": {
+                                                                    "id": "cr191i3sk140",
+                                                                    "created": 1678303791710,
+                                                                    "text": "N",
+                                                                    "progress": 1,
+                                                                    "expandState": "expand"
                                                                 },
                                                                 "children": [
                                                                     {
                                                                         "data": {
-                                                                            "id": "cr191i3sk140",
-                                                                            "created": 1678303791710,
-                                                                            "text": "N",
-                                                                            "progress": 1,
+                                                                            "id": "cr18wreqr600",
+                                                                            "created": 1678303420142,
+                                                                            "text": "sums up to 1",
+                                                                            "background": "#b6dde8",
                                                                             "expandState": "expand"
                                                                         },
-                                                                        "children": [
-                                                                            {
-                                                                                "data": {
-                                                                                    "id": "cr18wreqr600",
-                                                                                    "created": 1678303420142,
-                                                                                    "text": "// sums up to 1",
-                                                                                    "background": "#c2d69b",
-                                                                                    "expandState": "expand"
-                                                                                },
-                                                                                "children": []
-                                                                            }
-                                                                        ]
+                                                                        "children": []
                                                                     }
                                                                 ]
                                                             }
                                                         ]
                                                     }
                                                 ]
-                                            },
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "data": {
+                                            "id": "cr16zn2cmkw0",
+                                            "created": 1678298003558,
+                                            "text": "output",
+                                            "expandState": "expand",
+                                            "background": "#d9d9d9"
+                                        },
+                                        "children": [
                                             {
                                                 "data": {
                                                     "id": "cr16zrdfzvc0",
                                                     "created": 1678298012936,
-                                                    "text": "N",
+                                                    "text": "ARRAY",
                                                     "expandState": "expand",
                                                     "progress": 1
                                                 },
@@ -221,57 +222,69 @@
                                                         "children": [
                                                             {
                                                                 "data": {
-                                                                    "id": "cr17anabip40",
-                                                                    "created": 1678298866046,
-                                                                    "text": "Sigmoid",
+                                                                    "id": "cr22e73iczc0",
+                                                                    "created": 1678386598670,
+                                                                    "text": "***",
                                                                     "expandState": "expand",
-                                                                    "priority": 1
+                                                                    "background": "#548dd4",
+                                                                    "color": "#f2f2f2"
                                                                 },
                                                                 "children": [
                                                                     {
                                                                         "data": {
-                                                                            "id": "cr179d32ikw0",
-                                                                            "created": 1678298765476,
-                                                                            "text": "// difference",
+                                                                            "id": "cr17anabip40",
+                                                                            "created": 1678298866046,
+                                                                            "text": "{  Sigmoid  }",
                                                                             "expandState": "expand",
-                                                                            "background": "#c2d69b"
+                                                                            "priority": 1
                                                                         },
                                                                         "children": [
                                                                             {
                                                                                 "data": {
-                                                                                    "id": "cr17azq82940",
-                                                                                    "created": 1678298893129,
-                                                                                    "text": "[3]",
-                                                                                    "expandState": "expand"
+                                                                                    "id": "cr179d32ikw0",
+                                                                                    "created": 1678298765476,
+                                                                                    "text": "difference",
+                                                                                    "expandState": "expand",
+                                                                                    "background": "#b6dde8"
                                                                                 },
                                                                                 "children": [
                                                                                     {
                                                                                         "data": {
-                                                                                            "id": "cr18ulsszvk0",
-                                                                                            "created": 1678303251203,
-                                                                                            "text": "// sigmoid value",
-                                                                                            "background": "#c2d69b"
+                                                                                            "id": "cr17azq82940",
+                                                                                            "created": 1678298893129,
+                                                                                            "text": "[3]",
+                                                                                            "expandState": "expand"
                                                                                         },
-                                                                                        "children": []
-                                                                                    }
-                                                                                ]
-                                                                            },
-                                                                            {
-                                                                                "data": {
-                                                                                    "id": "cr17b2ffiqo0",
-                                                                                    "created": 1678298899007,
-                                                                                    "text": "[7]",
-                                                                                    "expandState": "expand"
-                                                                                },
-                                                                                "children": [
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr18ulsszvk0",
+                                                                                                    "created": 1678303251203,
+                                                                                                    "text": "// sigmoid value",
+                                                                                                    "background": "#c2d69b"
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
+                                                                                    },
                                                                                     {
                                                                                         "data": {
-                                                                                            "id": "cr18uuuy3h40",
-                                                                                            "created": 1678303270924,
-                                                                                            "text": "// 1 - sigmoid value",
-                                                                                            "background": "#c2d69b"
+                                                                                            "id": "cr17b2ffiqo0",
+                                                                                            "created": 1678298899007,
+                                                                                            "text": "[7]",
+                                                                                            "expandState": "expand"
                                                                                         },
-                                                                                        "children": []
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr18uuuy3h40",
+                                                                                                    "created": 1678303270924,
+                                                                                                    "text": "// 1 - sigmoid value",
+                                                                                                    "background": "#c2d69b"
+                                                                                                },
+                                                                                                "children": []
+                                                                                            }
+                                                                                        ]
                                                                                     }
                                                                                 ]
                                                                             }
@@ -364,9 +377,44 @@
                                     "id": "cr14tht4v6g0",
                                     "created": 1678291879712,
                                     "text": "MNIST",
-                                    "layout": null
+                                    "layout": null,
+                                    "progress": 9
                                 },
                                 "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr22i3ukjiw0",
+                                            "created": 1678386905055,
+                                            "text": "xform",
+                                            "background": "#548dd4",
+                                            "color": "#f2f2f2",
+                                            "expandState": "expand"
+                                        },
+                                        "children": [
+                                            {
+                                                "data": {
+                                                    "id": "cr14u642wrk0",
+                                                    "created": 1678291932617,
+                                                    "text": "Categories",
+                                                    "expandState": "expand",
+                                                    "layout": null,
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cr14ufd9g3k0",
+                                                            "created": 1678291952763,
+                                                            "text": "DISTANCE",
+                                                            "layout": null
+                                                        },
+                                                        "children": []
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
                                     {
                                         "data": {
                                             "id": "cr14svqh67s0",
@@ -379,38 +427,20 @@
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cr14u642wrk0",
-                                                    "created": 1678291932617,
-                                                    "text": "Categories",
+                                                    "id": "cr14udfuygg0",
+                                                    "created": 1678291948567,
+                                                    "text": "Labels",
                                                     "expandState": "expand",
-                                                    "layout": null
+                                                    "layout": null,
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
                                                 },
                                                 "children": [
                                                     {
                                                         "data": {
                                                             "id": "cr14um09f8g0",
                                                             "created": 1678291967215,
-                                                            "text": "BINARY",
-                                                            "layout": null
-                                                        },
-                                                        "children": []
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "data": {
-                                                    "id": "cr14udfuygg0",
-                                                    "created": 1678291948567,
-                                                    "text": "Labels",
-                                                    "expandState": "expand",
-                                                    "layout": null
-                                                },
-                                                "children": [
-                                                    {
-                                                        "data": {
-                                                            "id": "cr14ufd9g3k0",
-                                                            "created": 1678291952763,
-                                                            "text": "DISTANCE",
+                                                            "text": "BOOL",
                                                             "layout": null
                                                         },
                                                         "children": []
@@ -432,7 +462,8 @@
                                     },
                                     "expandState": "expand",
                                     "layout": null,
-                                    "priority": 3
+                                    "priority": 3,
+                                    "progress": 9
                                 },
                                 "children": [
                                     {
@@ -442,100 +473,343 @@
                                             "text": "xform",
                                             "layout": null,
                                             "expandState": "expand",
-                                            "background": "#808080",
+                                            "background": "#548dd4",
                                             "color": "#f2f2f2"
                                         },
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cr16vlncvko0",
-                                                    "created": 1678297687018,
-                                                    "text": "SoftMax",
+                                                    "id": "cr14u642wrk0",
+                                                    "created": 1678291932617,
+                                                    "text": "Categories",
                                                     "expandState": "expand",
-                                                    "priority": 2,
-                                                    "layout": null
-                                                },
-                                                "children": []
-                                            },
-                                            {
-                                                "data": {
-                                                    "id": "cr16vpodpio0",
-                                                    "created": 1678297695787,
-                                                    "text": "Log LikeliHood",
-                                                    "expandState": "expand",
-                                                    "layout": null
+                                                    "layout": null,
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
                                                 },
                                                 "children": [
                                                     {
                                                         "data": {
-                                                            "id": "cr1crz9cv6o0",
-                                                            "created": 1678314329850,
-                                                            "text": "LikeliHood",
-                                                            "expandState": "expand",
-                                                            "priority": 3,
-                                                            "layout": null
+                                                            "id": "cr14um09f8g0",
+                                                            "created": 1678291967215,
+                                                            "text": "ARRAY",
+                                                            "layout": null,
+                                                            "expandState": "expand"
                                                         },
                                                         "children": [
                                                             {
                                                                 "data": {
-                                                                    "id": "cr1ctepjjhk0",
-                                                                    "created": 1678314441844,
-                                                                    "text": "// From Softmax, look up with:",
-                                                                    "priority": 2,
+                                                                    "id": "cr16vpodpio0",
+                                                                    "created": 1678297695787,
+                                                                    "text": "Log LikeliHood",
                                                                     "expandState": "expand",
-                                                                    "background": "#c2d69b",
                                                                     "layout": null
                                                                 },
                                                                 "children": [
                                                                     {
                                                                         "data": {
-                                                                            "id": "cr1csk61l1k0",
-                                                                            "created": 1678314375362,
-                                                                            "text": "idx",
+                                                                            "id": "cr1crz9cv6o0",
+                                                                            "created": 1678314329850,
+                                                                            "text": "LikeliHood",
                                                                             "expandState": "expand",
+                                                                            "priority": 3,
                                                                             "layout": null
                                                                         },
                                                                         "children": [
                                                                             {
                                                                                 "data": {
-                                                                                    "id": "cr1cubhaifk0",
-                                                                                    "created": 1678314513179,
-                                                                                    "text": "// batch index",
-                                                                                    "background": "#c2d69b",
-                                                                                    "layout": null
-                                                                                },
-                                                                                "children": []
-                                                                            }
-                                                                        ]
-                                                                    },
-                                                                    {
-                                                                        "data": {
-                                                                            "id": "cr1cso9kgg00",
-                                                                            "created": 1678314384282,
-                                                                            "text": "target",
-                                                                            "expandState": "expand",
-                                                                            "layout": null
-                                                                        },
-                                                                        "children": [
-                                                                            {
-                                                                                "data": {
-                                                                                    "id": "cr1d27jzbh40",
-                                                                                    "created": 1678315131548,
-                                                                                    "text": "???",
-                                                                                    "background": "#f79646",
+                                                                                    "id": "cr16vlncvko0",
+                                                                                    "created": 1678297687018,
+                                                                                    "text": "{  SoftMax  }",
                                                                                     "expandState": "expand",
+                                                                                    "priority": 2,
                                                                                     "layout": null
                                                                                 },
                                                                                 "children": [
                                                                                     {
                                                                                         "data": {
-                                                                                            "id": "cr1cujp3nt40",
-                                                                                            "created": 1678314531066,
-                                                                                            "text": "// HEADER to specific LABEL to measure LOSS ",
+                                                                                            "id": "cr1ctepjjhk0",
+                                                                                            "created": 1678314441844,
+                                                                                            "text": "//, look up with:",
+                                                                                            "priority": null,
+                                                                                            "expandState": "expand",
                                                                                             "background": "#c2d69b",
                                                                                             "layout": null
                                                                                         },
-                                                                                        "children": []
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr1csk61l1k0",
+                                                                                                    "created": 1678314375362,
+                                                                                                    "text": "idx",
+                                                                                                    "expandState": "expand",
+                                                                                                    "layout": null
+                                                                                                },
+                                                                                                "children": [
+                                                                                                    {
+                                                                                                        "data": {
+                                                                                                            "id": "cr1cubhaifk0",
+                                                                                                            "created": 1678314513179,
+                                                                                                            "text": "// batch index",
+                                                                                                            "background": "#c2d69b",
+                                                                                                            "layout": null
+                                                                                                        },
+                                                                                                        "children": []
+                                                                                                    }
+                                                                                                ]
+                                                                                            },
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr1cso9kgg00",
+                                                                                                    "created": 1678314384282,
+                                                                                                    "text": "target",
+                                                                                                    "expandState": "expand",
+                                                                                                    "layout": null
+                                                                                                },
+                                                                                                "children": [
+                                                                                                    {
+                                                                                                        "data": {
+                                                                                                            "id": "cr1d27jzbh40",
+                                                                                                            "created": 1678315131548,
+                                                                                                            "text": "???",
+                                                                                                            "background": "#f79646",
+                                                                                                            "expandState": "expand",
+                                                                                                            "layout": null
+                                                                                                        },
+                                                                                                        "children": [
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr1cujp3nt40",
+                                                                                                                    "created": 1678314531066,
+                                                                                                                    "text": "// HEADER to specific LABEL to measure LOSS ",
+                                                                                                                    "background": "#c2d69b",
+                                                                                                                    "layout": null
+                                                                                                                },
+                                                                                                                "children": []
+                                                                                                            }
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
+                                                                                    }
+                                                                                ]
+                                                                            }
+                                                                        ]
+                                                                    },
+                                                                    {
+                                                                        "data": {
+                                                                            "id": "cr1crvx9co00",
+                                                                            "created": 1678314322588,
+                                                                            "text": "Log",
+                                                                            "layout": null,
+                                                                            "priority": 4,
+                                                                            "expandState": "expand",
+                                                                            "progress": 5
+                                                                        },
+                                                                        "children": [
+                                                                            {
+                                                                                "data": {
+                                                                                    "id": "cr22m4j6ink0",
+                                                                                    "created": 1678387220000,
+                                                                                    "text": "xform",
+                                                                                    "background": "#548dd4",
+                                                                                    "color": "#f2f2f2",
+                                                                                    "expandState": "expand"
+                                                                                },
+                                                                                "children": [
+                                                                                    {
+                                                                                        "data": {
+                                                                                            "id": "cr228vo9g9s0",
+                                                                                            "created": 1678386181982,
+                                                                                            "text": "log(a*b) = log(a) + log(b)",
+                                                                                            "background": "#b6dde8",
+                                                                                            "expandState": "expand"
+                                                                                        },
+                                                                                        "children": [
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr2bvw5hczc0",
+                                                                                                    "created": 1678413375388,
+                                                                                                    "text": "// python log base is : ",
+                                                                                                    "expandState": "expand",
+                                                                                                    "background": "#c2d69b"
+                                                                                                },
+                                                                                                "children": [
+                                                                                                    {
+                                                                                                        "data": {
+                                                                                                            "id": "cr2bwd95uyg0",
+                                                                                                            "created": 1678413412616,
+                                                                                                            "text": "2.718 ...",
+                                                                                                            "background": "#b6dde8",
+                                                                                                            "expandState": "expand"
+                                                                                                        },
+                                                                                                        "children": [
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2bxtpiosw0",
+                                                                                                                    "created": 1678413526798,
+                                                                                                                    "text": "// natural logarithm is the logarithm to the base e",
+                                                                                                                    "background": "#c2d69b"
+                                                                                                                },
+                                                                                                                "children": []
+                                                                                                            },
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2by97x0ig0",
+                                                                                                                    "created": 1678413560562,
+                                                                                                                    "text": "// inverse function to the natural exponential function",
+                                                                                                                    "background": "#c2d69b"
+                                                                                                                },
+                                                                                                                "children": []
+                                                                                                            },
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2bz4uawso0",
+                                                                                                                    "created": 1678413629396,
+                                                                                                                    "text": "???",
+                                                                                                                    "background": "#f79646",
+                                                                                                                    "expandState": "expand"
+                                                                                                                },
+                                                                                                                "children": [
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2byg70ta80",
+                                                                                                                            "created": 1678413575745,
+                                                                                                                            "text": "// meaning that it gives the exponent to which e must be raised to obtain a given number",
+                                                                                                                            "background": "#c2d69b"
+                                                                                                                        },
+                                                                                                                        "children": []
+                                                                                                                    }
+                                                                                                                ]
+                                                                                                            }
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            },
+                                                                                            {
+                                                                                                "data": {
+                                                                                                    "id": "cr2bzi8k8940",
+                                                                                                    "created": 1678413658556,
+                                                                                                    "text": "???",
+                                                                                                    "background": "#f79646",
+                                                                                                    "expandState": "expand"
+                                                                                                },
+                                                                                                "children": [
+                                                                                                    {
+                                                                                                        "data": {
+                                                                                                            "id": "cr2c02wrxnk0",
+                                                                                                            "created": 1678413703556,
+                                                                                                            "text": " // Explain why Taking the LOG of the LOSS improves PERFORMANCE",
+                                                                                                            "background": "#c2d69b",
+                                                                                                            "expandState": "expand"
+                                                                                                        },
+                                                                                                        "children": [
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2c0f75o680",
+                                                                                                                    "created": 1678413730305,
+                                                                                                                    "text": "Are we using LOG to unbend the SIGMOID to a LINEAR curve?",
+                                                                                                                    "background": "#f79646"
+                                                                                                                },
+                                                                                                                "children": []
+                                                                                                            },
+                                                                                                            {
+                                                                                                                "data": {
+                                                                                                                    "id": "cr2c2pwkl280",
+                                                                                                                    "created": 1678413910338,
+                                                                                                                    "text": "// Softmax outputs PROBABILITIES",
+                                                                                                                    "expandState": "expand",
+                                                                                                                    "background": "#c2d69b"
+                                                                                                                },
+                                                                                                                "children": [
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2c2wtd5r40",
+                                                                                                                            "created": 1678413925382,
+                                                                                                                            "text": "// And the problem is PROBABILITIES are between 0 and 1",
+                                                                                                                            "background": "#c2d69b"
+                                                                                                                        },
+                                                                                                                        "children": []
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2c3mlx3nc0",
+                                                                                                                            "created": 1678413981528,
+                                                                                                                            "text": "// model doesn't care diff between 0.99 and 0.999",
+                                                                                                                            "expandState": "expand",
+                                                                                                                            "background": "#c2d69b"
+                                                                                                                        },
+                                                                                                                        "children": [
+                                                                                                                            {
+                                                                                                                                "data": {
+                                                                                                                                    "id": "cr2c3zxiym80",
+                                                                                                                                    "created": 1678414010528,
+                                                                                                                                    "text": "// But 0.999 is 10 times more confident than 0.99",
+                                                                                                                                    "background": "#c2d69b"
+                                                                                                                                },
+                                                                                                                                "children": []
+                                                                                                                            }
+                                                                                                                        ]
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "data": {
+                                                                                                                            "id": "cr2c6thvmow0",
+                                                                                                                            "created": 1678414231613,
+                                                                                                                            "text": "torch.log()",
+                                                                                                                            "background": "#b6dde8",
+                                                                                                                            "expandState": "expand"
+                                                                                                                        },
+                                                                                                                        "children": [
+                                                                                                                            {
+                                                                                                                                "data": {
+                                                                                                                                    "id": "cr2c4h5rmy00",
+                                                                                                                                    "created": 1678414048031,
+                                                                                                                                    "text": "// converting from 0 and 1 to negative INFINITY and 0",
+                                                                                                                                    "expandState": "expand",
+                                                                                                                                    "background": "#c2d69b"
+                                                                                                                                },
+                                                                                                                                "children": [
+                                                                                                                                    {
+                                                                                                                                        "data": {
+                                                                                                                                            "id": "cr2c4yvbq400",
+                                                                                                                                            "created": 1678414086582,
+                                                                                                                                            "text": "THIS FIXES IT SOMEHOW????",
+                                                                                                                                            "background": "#f79646"
+                                                                                                                                        },
+                                                                                                                                        "children": []
+                                                                                                                                    }
+                                                                                                                                ]
+                                                                                                                            },
+                                                                                                                            {
+                                                                                                                                "data": {
+                                                                                                                                    "id": "cr2c7jjq0pc0",
+                                                                                                                                    "created": 1678414288321,
+                                                                                                                                    "text": "BUT IS NAN < 0 ????",
+                                                                                                                                    "expandState": "expand",
+                                                                                                                                    "background": "#f79646"
+                                                                                                                                },
+                                                                                                                                "children": [
+                                                                                                                                    {
+                                                                                                                                        "data": {
+                                                                                                                                            "id": "cr2c7yuhhsw0",
+                                                                                                                                            "created": 1678414321624,
+                                                                                                                                            "text": "WTF",
+                                                                                                                                            "background": "#f79646"
+                                                                                                                                        },
+                                                                                                                                        "children": []
+                                                                                                                                    }
+                                                                                                                                ]
+                                                                                                                            }
+                                                                                                                        ]
+                                                                                                                    }
+                                                                                                                ]
+                                                                                                            }
+                                                                                                        ]
+                                                                                                    }
+                                                                                                ]
+                                                                                            }
+                                                                                        ]
                                                                                     }
                                                                                 ]
                                                                             }
@@ -544,13 +818,83 @@
                                                                 ]
                                                             }
                                                         ]
-                                                    },
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "data": {
+                                            "id": "cr14svqh67s0",
+                                            "created": 1678291831663,
+                                            "text": "output",
+                                            "layout": null,
+                                            "expandState": "expand",
+                                            "background": "#d9d9d9"
+                                        },
+                                        "children": [
+                                            {
+                                                "data": {
+                                                    "id": "cr14udfuygg0",
+                                                    "created": 1678291948567,
+                                                    "text": "Labels",
+                                                    "expandState": "expand",
+                                                    "layout": null,
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
+                                                },
+                                                "children": [
                                                     {
                                                         "data": {
-                                                            "id": "cr1crvx9co00",
-                                                            "created": 1678314322588,
-                                                            "text": "Log",
+                                                            "id": "cr14ufd9g3k0",
+                                                            "created": 1678291952763,
+                                                            "text": "INDEX",
                                                             "layout": null
+                                                        },
+                                                        "children": []
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "data": {
+                                    "id": "cqpadkxuwxs0",
+                                    "created": 1677088839881,
+                                    "text": "Binary Cross Entropy",
+                                    "expandState": "expand",
+                                    "layout": null,
+                                    "priority": 4,
+                                    "progress": 9
+                                },
+                                "children": [
+                                    {
+                                        "data": {
+                                            "id": "cr22his7urk0",
+                                            "created": 1678386859201,
+                                            "text": "xform",
+                                            "expandState": "expand",
+                                            "background": "#548dd4",
+                                            "color": "#f2f2f2"
+                                        },
+                                        "children": [
+                                            {
+                                                "data": {
+                                                    "id": "cr14u642wrk0",
+                                                    "created": 1678291932617,
+                                                    "text": "Categories",
+                                                    "expandState": "expand",
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
+                                                },
+                                                "children": [
+                                                    {
+                                                        "data": {
+                                                            "id": "cr14um09f8g0",
+                                                            "created": 1678291967215,
+                                                            "text": "ARRAY"
                                                         },
                                                         "children": []
                                                     }
@@ -570,99 +914,19 @@
                                         "children": [
                                             {
                                                 "data": {
-                                                    "id": "cr14u642wrk0",
-                                                    "created": 1678291932617,
-                                                    "text": "Categories",
-                                                    "expandState": "expand",
-                                                    "layout": null
-                                                },
-                                                "children": [
-                                                    {
-                                                        "data": {
-                                                            "id": "cr14um09f8g0",
-                                                            "created": 1678291967215,
-                                                            "text": "N",
-                                                            "layout": null
-                                                        },
-                                                        "children": []
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "data": {
                                                     "id": "cr14udfuygg0",
                                                     "created": 1678291948567,
                                                     "text": "Labels",
                                                     "expandState": "expand",
-                                                    "layout": null
+                                                    "background": "#808080",
+                                                    "color": "#f2f2f2"
                                                 },
                                                 "children": [
                                                     {
                                                         "data": {
                                                             "id": "cr14ufd9g3k0",
                                                             "created": 1678291952763,
-                                                            "text": "ONE",
-                                                            "layout": null
-                                                        },
-                                                        "children": []
-                                                    }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            {
-                                "data": {
-                                    "id": "cqpadkxuwxs0",
-                                    "created": 1677088839881,
-                                    "text": "Binary Cross Entropy",
-                                    "expandState": "expand",
-                                    "layout": null,
-                                    "priority": 4
-                                },
-                                "children": [
-                                    {
-                                        "data": {
-                                            "id": "cr14svqh67s0",
-                                            "created": 1678291831663,
-                                            "text": "output",
-                                            "layout": null,
-                                            "expandState": "expand",
-                                            "background": "#d9d9d9"
-                                        },
-                                        "children": [
-                                            {
-                                                "data": {
-                                                    "id": "cr14u642wrk0",
-                                                    "created": 1678291932617,
-                                                    "text": "Categories",
-                                                    "expandState": "expand"
-                                                },
-                                                "children": [
-                                                    {
-                                                        "data": {
-                                                            "id": "cr14um09f8g0",
-                                                            "created": 1678291967215,
-                                                            "text": "N"
-                                                        },
-                                                        "children": []
-                                                    }
-                                                ]
-                                            },
-                                            {
-                                                "data": {
-                                                    "id": "cr14udfuygg0",
-                                                    "created": 1678291948567,
-                                                    "text": "Labels",
-                                                    "expandState": "expand"
-                                                },
-                                                "children": [
-                                                    {
-                                                        "data": {
-                                                            "id": "cr14ufd9g3k0",
-                                                            "created": 1678291952763,
-                                                            "text": "N"
+                                                            "text": "INDEX_ARRAY"
                                                         },
                                                         "children": []
                                                     }
