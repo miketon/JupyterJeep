@@ -12,6 +12,7 @@ LEARNING_RATE = 1e-3
 # Allows you to run on GPU if you have one
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 EVAL_ITERS = 200
+N_EMBED = 32 # number of embedding dimensions
 VALIDATION_SPLIT = "validation_split"
 
 # -------------
@@ -22,6 +23,8 @@ with open('input.txt', 'r', encoding='utf-8') as f:
 
 # here are all the unique characters that occur in the text
 chars = sorted(list(set(text)))
+# TODO : vocab_size is a global variable IMPLICITly referenced by the model
+# is there a way to be more EXPLICIT about this?
 vocab_size = len(chars)
 # create a mapping from character to integers
 stoi = {ch:i for i,ch in enumerate(chars)} # string to int
@@ -77,7 +80,7 @@ def estimate_loss():
 # super simple bigram model
 class BigramLanguageModel(nn.Module):
 
-    def __init__(self, vocab_size):
+    def __init__(self):
         # super().init() in Python is a special method used to call the parent 
         # class’s init() method. This is useful when you want to extend the 
         # functionality of the parent class by adding additional attributes or 
@@ -89,11 +92,32 @@ class BigramLanguageModel(nn.Module):
 
         # each token directly reads off the logits for the next token from a 
         # lookup table
-        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+        # TODO : why is the argument vocab_size, N_EMBED in that order?
+        self.token_embedding_table = nn.Embedding(vocab_size, N_EMBED)
+        # we also want the embedded position of each token
+        # TODO : why is the argument BLOCK_SIZE, N_EMBED in that order?
+        self.position_embedding_table = nn.Embedding(BLOCK_SIZE, N_EMBED)
+        # language model head
+        # TODO : why is the argument N_EMBED, vocab_size in that order?
+        self.lm_head = nn.Linear(N_EMBED, vocab_size)
 
     def forward(self, idx, targets=None):
+        B, T = idx.shape
         #idx and targets are both (B(atch), T(ime)) tensors of integers
-        logits = self.token_embedding_table(idx) # (B, T, C)
+        # (B,T,C) ... this C is NOT the vocab_size
+        # TODO : what is this C?
+        # Answer : C is N_EMBED, the number of embedding dimensions
+        token_embeds = self.token_embedding_table(idx)
+        # (T,C)
+        # C here is also N_EMBED, the number of embedding dimensions
+        # integers 0 to T-1
+        position_embeds = self.position_embedding_table(torch.arange(T, device=DEVICE))
+        # broadcast resolves the (T,C) to (B,T,C)
+        # ----[ATTENTION]----
+        # x will hold the token ID AND the POSITION of the token!
+        # ----[ATTENTION]----
+        x = token_embeds + position_embeds # (B,T,C)
+        logits = self.lm_head(x) # (B,T,C(vocab_size)) ... NOT equal ^^
 
         if targets is None:
             loss = None
@@ -126,7 +150,7 @@ class BigramLanguageModel(nn.Module):
             idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
         return idx
 
-model = BigramLanguageModel(vocab_size)
+model = BigramLanguageModel()
 # move to device and run there if available
 m = model.to(DEVICE)
 
