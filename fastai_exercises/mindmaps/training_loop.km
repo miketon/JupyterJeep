@@ -110,6 +110,16 @@
                                 "children": [
                                     {
                                         "data": {
+                                            "id": "crdypuhidls0",
+                                            "created": 1679594946628,
+                                            "text": "# Loss function = measures how BAD the model is ",
+                                            "layout": null,
+                                            "background": "#daeef3"
+                                        },
+                                        "children": []
+                                    },
+                                    {
+                                        "data": {
                                             "id": "crd0q661w0g0",
                                             "created": 1679499054320,
                                             "text": "loss_function = nn.MSELoss()",
@@ -151,6 +161,15 @@
                                     "priority": 4
                                 },
                                 "children": [
+                                    {
+                                        "data": {
+                                            "id": "crdyqges1s00",
+                                            "created": 1679594994352,
+                                            "text": "# Optimizer : Tries to make model LESS BAD by optimizing it accordingly",
+                                            "background": "#daeef3"
+                                        },
+                                        "children": []
+                                    },
                                     {
                                         "data": {
                                             "id": "crd0s1obre00",
