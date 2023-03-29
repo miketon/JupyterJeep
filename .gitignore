@@ -16,3 +16,6 @@
 
 # local Jupyter Notebook
 .ipynb_checkpoints/*
+
+# compiled python code
+*.pyc
