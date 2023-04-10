@@ -120,6 +120,21 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         result = component_manager.gather_entities_with_all_components([SleepComponent])
         assert result == expected_results, f"Expected {expected_results}, got {result}"
 
+    def test_gather_entities_single_component_no_match(self):
+        entity1 = Entity("JigglyPuff")
+        entity2 = Entity("Kirby")
+        entity3 = Entity("Little Mac")
+
+        component_manager = TestHelper.setup_component_manager()
+        component_manager.add_component(entity1, SleepComponent())
+        component_manager.add_component(entity2, DietComponent())
+        # expecting no entity, since Little Mac is not exercising
+        expected_result: List[Entity] = []
+        result = component_manager.gather_entities_with_all_components(
+            [ExerciseComponent]
+        )
+        assert result == expected_result, f"Expected {expected_result}, got {result}"
+
     def test_gather_entities_multi_component_match(self):
         entity1 = Entity("JigglyPuff")
         entity2 = Entity("Kirby")
@@ -144,25 +159,10 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
 
         component_manager = TestHelper.setup_component_manager()
         component_manager.add_component(entity1, SleepComponent())
+        component_manager.add_component(entity1, ExerciseComponent())
         component_manager.add_component(entity2, DietComponent())
         # expecting no entity has BOTH SleepComponent AND DietComponent
         result = component_manager.gather_entities_with_all_components(
             [SleepComponent, DietComponent]
         )
         assert result == expected_result, f"Expected {expected_result}, got {result}"
-
-    def test_gather_entities_with_all_components_all(self):
-        # Test case 3: some entities with some components, and some with all the specified components
-        entity1 = Entity("JigglyPuff")
-        entity2 = Entity("Kirby")
-        entity3 = Entity("Little Mac")
-
-        component_manager = TestHelper.setup_component_manager()
-        component_manager.add_component(entity1, SleepComponent())
-        component_manager.add_component(entity2, DietComponent())
-        component_manager.add_component(entity3, SleepComponent())
-        component_manager.add_component(entity3, DietComponent())
-        result = component_manager.gather_entities_with_all_components(
-            [SleepComponent, DietComponent]
-        )
-        self.assertEqual(result, [entity3])
