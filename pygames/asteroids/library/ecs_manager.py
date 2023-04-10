@@ -15,7 +15,7 @@ class ComponentManagerABC(ABC):
     """Interface for a Component Manager Class"""
 
     @abstractmethod
-    def add_component(self, entity, component) -> None:
+    def add_component(self, entity, component: Any) -> None:
         """Add a component to an entity"""
 
     @abstractmethod
@@ -33,7 +33,7 @@ class ComponentManagerABC(ABC):
     @abstractmethod
     def gather_entities_with_all_components(
         self, component_types: List[Type]
-    ) -> Optional[List[Entity]]:
+    ) -> List[Entity]:
         """Gather a list of entities that have ALL of the specified COMPONENTS"""
 
 
@@ -51,10 +51,13 @@ class ComponentManager(ComponentManagerABC):
         # dictionary. In this case, if a key is not found, it will automatically
         # create a new empty dictionary as its value.
         # - simplifies the code for `add_component`
-        self.components: Dict[int, Dict[Type, Any]] = defaultdict(dict)
+        self.components: Dict[str, Dict[Type, Any]] = defaultdict(dict)
         self.event_manager = event_manager
+        # - `self.entities` is a dictionary that maps entity IDs to entity
+        # instances. This is used to quickly look up an entity by its ID.
+        self.entities = {}
 
-    def add_component(self, entity, component) -> None:
+    def add_component(self, entity, component: Any) -> None:
         # - defaultdict will automatically create a new dictionary for the entity
         # if it does not exist : greatly simplifies the code
         # - check if component already exists
@@ -69,6 +72,8 @@ class ComponentManager(ComponentManagerABC):
                 f"[ERROR] tried to --add_component-- [{type(component).__name__}] that already exists on entity [{entity.name}]"
             )
         self.components[entity.id][type(component)] = component
+        # also add to the self.entities dictionary cache with the entity object
+        self.entities[entity.id] = entity
         self.event_manager.publish(
             ComponentManager.ADD_COMPONENT, entity=entity, component=component
         )
@@ -102,18 +107,20 @@ class ComponentManager(ComponentManagerABC):
             )
 
     def gather_entities_with_all_components(
-        self, component_types: Optional[List[Type]]
+        self, component_types: List[Type]
     ) -> List[Entity]:
         # early exit with None if no component types passed in
-        if component_types is None:
+        if not component_types:
             return []
         # @audit 💨 : Convert the list of component types to a set for faster lookup
         # - in O(1) time instead of O(n) time where n is # of component types
         # - order of component types passed in does not matter, any permutation
         # will give the same result
         component_set = set(component_types)
-        entities = []
+        matching_entities = []
         for entity_id, components in self.components.items():
             if component_set.issubset(set(components.keys())):
-                entities.append(Entity(entity_id))
-        return entities
+                # get the cached entity instance from the `self.entities` dictionary
+                matching_entity = self.entities[entity_id]
+                matching_entities.append(matching_entity)
+        return matching_entities

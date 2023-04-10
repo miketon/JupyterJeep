@@ -1,5 +1,5 @@
 import unittest
-from pubsub_event_manager import PubSubEventManager
+from ..pubsub_event_manager import PubSubEventManager
 
 UNIT_TEST_EVENT_NAME_1 = "contra_complete_1_life"
 UNIT_TEST_EVENT_NAME_2 = "contra_complete_konami_code"
