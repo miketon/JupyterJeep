@@ -123,4 +123,27 @@ class ComponentManager(ComponentManagerABC):
                 # get the cached entity instance from the `self.entities` dictionary
                 matching_entity = self.entities[entity_id]
                 matching_entities.append(matching_entity)
+        ComponentManager.entities_gathered_debug_print(
+            matching_entities, component_types, self.entities_count()
+        )
         return matching_entities
+
+    def entities_count(self):
+        """Returns the number of entities in the game"""
+        return len(self.entities)
+
+    @staticmethod
+    def entities_gathered_debug_print(
+        gathered_entities: List[Entity],
+        list_component: List[Type],
+        total_entities_count: int,
+    ):
+        """Debug print the list of entities"""
+        component_names = [component.__name__ for component in list_component]
+        # @todo : using split workaround to get entity name from Entity object
+        # Fix this later
+        gathered_entities_names = [str(entity.name).split('_')[0] for entity in gathered_entities]
+
+        print(
+            f"[entities_debug_print]: [{len(gathered_entities)}]/[{total_entities_count}] with components [{len(component_names)}] {component_names} gathered [{len(gathered_entities)}] {gathered_entities_names}"
+        )
