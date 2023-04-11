@@ -6,33 +6,26 @@ from pygame.math import Vector2
 from typing import NamedTuple, List, Dict, Any
 
 
+# GameConfig will be init on awake
+class GameConfig(NamedTuple):
+    WIDTH: int = 640
+    HEIGHT: int = 480
+    BACKGROUND_COLOR = (64, 64, 0)
+    FPS: int = 30
+    ASSET_FOLDER_PATH: str = os.path.join("assets", "images")
+    GAME_NAME: str = "Asteroids"
+    GAME_VERSION: str = "ECS Edition"
+
+
 class SystemContext(NamedTuple):
     screen: pygame.Surface
     clock: pygame.time.Clock
 
 
-# System Context will be init on awake
-class RenderContext(NamedTuple):
-    WIDTH: int
-    HEIGHT: int
-    BACKGROUND_COLOR: tuple
-    FPS: int
-
-
-class AssetContext(NamedTuple):
-    ASSET_FOLDER_PATH: str
-
-
 class PygameSystemContext:
-    ASSET = AssetContext(ASSET_FOLDER_PATH=os.path.join("assets", "images"))
-
-    # Statically define CONTEXT CONSTANTS
-    RENDER = RenderContext(
-        640,  # RESOLUTION_WIDTH
-        480,  # RESOLUTION_HEIGHT
-        (64, 64, 0),  # BACKGROUND_COLOR
-        30,  # FPS
-    )
+    CONFIG = GameConfig()
+    # load asset on initialization, loading on_awake will cause delay
+    ICON = pygame.image.load(os.path.join(CONFIG.ASSET_FOLDER_PATH, "app_icon.jpg"))
 
     @staticmethod
     def on_awake() -> SystemContext:
@@ -47,8 +40,8 @@ class PygameSystemContext:
         screen = pygame.display.set_mode(
             # @audit-ok 💨 : Use `HWSURFACE` and `DOUBLEBUF` for better performance
             (
-                PygameSystemContext.RENDER.WIDTH,
-                PygameSystemContext.RENDER.HEIGHT,
+                PygameSystemContext.CONFIG.WIDTH,
+                PygameSystemContext.CONFIG.HEIGHT,
             ),
             pygame.HWSURFACE | pygame.DOUBLEBUF,
         )
@@ -60,11 +53,10 @@ class PygameSystemContext:
         clock = pygame.time.Clock()
 
         # Set the title and icon (optional)
-        pygame.display.set_caption("Asteroids_ECS_Edition")
-        icon = pygame.image.load(
-            os.path.join(PygameSystemContext.ASSET.ASSET_FOLDER_PATH, "app_icon.jpg")
-        ).convert_alpha()
-        pygame.display.set_icon(icon)
+        pygame.display.set_caption(
+            f"{PygameSystemContext.CONFIG.GAME_NAME} {PygameSystemContext.CONFIG.GAME_VERSION}"
+        )
+        pygame.display.set_icon(PygameSystemContext.ICON)
 
         return SystemContext(screen, clock)
 
