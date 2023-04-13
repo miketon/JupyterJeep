@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Type, TypeVar
 from collections import defaultdict
 from .pubsub_event_manager import PubSubEventManager
 from .entity import Entity
+from .environment_flag import EnvironmentFlag
 
 # type variable `T`. This allows you to define a function that works with any
 # type, while still providing type hints for better code readability and
@@ -44,6 +45,7 @@ class ComponentManager(ComponentManagerABC):
     REMOVE_COMPONENT = "remove_component"
 
     def __init__(self, event_manager: PubSubEventManager):
+        self.envFlag = EnvironmentFlag()
         # With a `defaultdict`, you can directly add a component without first
         # checking if the `entity.id` exists in `self.components`.
         # The `defaultdict` is a specialized version of the built-in `dict` that
@@ -123,9 +125,12 @@ class ComponentManager(ComponentManagerABC):
                 # get the cached entity instance from the `self.entities` dictionary
                 matching_entity = self.entities[entity_id]
                 matching_entities.append(matching_entity)
-        ComponentManager.entities_gathered_debug_print(
-            matching_entities, component_types, self.entities_count()
-        )
+        
+        # @audit 💨 : Only print debug info if not in production
+        if not self.envFlag.is_production :
+            ComponentManager.entities_gathered_debug_print(
+                matching_entities, component_types, self.entities_count()
+            )
         return matching_entities
 
     def entities_count(self):

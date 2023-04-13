@@ -1,13 +1,16 @@
 import configparser
 import logging
-
+import os
+import os.path
 
 class EnvironmentFlag:
     """
     Class for managing environment flags from a configuration file
     """
 
-    CONFIG_FILE_PATH: str = "config.ini"
+    # absolute path to this EnvironmentFlag.py file
+    CONFIG_FILE_PATH:str = os.path.dirname(os.path.abspath(__file__))
+    CONFIG_FILE: str = "config.ini"
     SECTION_FLAGS: str = "Flags"
     IS_PRODUCTION_FLAG: str = "IS_PRODUCTION_BUILD"
     IS_MAC_BUILD_FLAG: str = "IS_MAC_BUILD"
@@ -15,7 +18,9 @@ class EnvironmentFlag:
     IS_PRODUCTION_DEFAULT: bool = False
     IS_MAC_BUILD_DEFAULT: bool = False
 
-    def __init__(self, config_file_path: str = CONFIG_FILE_PATH):
+    def __init__(self, config_file_path: str =""):
+        if(config_file_path == ""):
+            config_file_path = os.path.join(EnvironmentFlag.CONFIG_FILE_PATH, EnvironmentFlag.CONFIG_FILE)
         self.config = configparser.ConfigParser()
         # set default values to False
         self.is_production = EnvironmentFlag.IS_PRODUCTION_DEFAULT
