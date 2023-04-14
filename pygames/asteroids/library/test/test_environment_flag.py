@@ -1,10 +1,11 @@
 import unittest
-from unittest.mock import patch
 import sys
+import configparser
+import random
+from unittest.mock import patch
 from io import StringIO
 from contextlib import contextmanager
 from ..environment_flag import EnvironmentFlag, InvalidFlagValueError
-import random
 
 
 class TestEnvironmentFlag(unittest.TestCase):
@@ -53,7 +54,7 @@ class TestEnvironmentFlag(unittest.TestCase):
             self.assertFalse(flag.has_section())
 
     def test_missing_section(self):
-        # neglecting to include any section header : [Flags]
+        # neglect to include any section header : [Flags]
         invalid_config = StringIO(
             "IS_PRODUCTION_BUILD = False\n" "IS_MAC_BUILD = True\n"
         )
@@ -72,6 +73,16 @@ class TestEnvironmentFlag(unittest.TestCase):
                 self.assertTrue(
                     flag.is_mac_build == EnvironmentFlag.IS_MAC_BUILD_DEFAULT
                 )
+
+    def test_missing_flag_expected_from_config(self):
+        # neglect to set IS_MAC_BUILD flag
+        missing_flag_config = StringIO("[Flags]\n" "IS_PRODUCTION_BUILD = True\n")
+        with patch("builtins.open", return_value=missing_flag_config), patch(
+            "os.path.exists", return_value=True
+        ):
+            # Check that a NoOptionError is raised when IS_MAC_BUILD flag is missing
+            with self.assertRaises(configparser.NoOptionError):
+                EnvironmentFlag("test_generated_dummy_path")
 
     def test_invalid_option_values(self):
         # IS_PRODUCTION_BUILD = 1 is valid, but IS_MAC_BUILD = not_a_bool is not

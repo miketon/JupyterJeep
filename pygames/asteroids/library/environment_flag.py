@@ -46,7 +46,7 @@ class EnvironmentFlag:
                         EnvironmentFlag.SECTION_FLAGS, EnvironmentFlag.IS_MAC_BUILD_FLAG
                     )
                 except configparser.NoOptionError as e:
-                    logging.warning(f"Missing option in config file : {e}")
+                    raise
                 except ValueError as e:
                     raise InvalidFlagValueError("Invalid value in config file : {e}")
             else:
