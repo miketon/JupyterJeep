@@ -125,9 +125,9 @@ class ComponentManager(ComponentManagerABC):
                 # get the cached entity instance from the `self.entities` dictionary
                 matching_entity = self.entities[entity_id]
                 matching_entities.append(matching_entity)
-        
+
         # @audit 💨 : Only print debug info if not in production
-        if not self.envFlag.is_production :
+        if not self.envFlag.is_production:
             ComponentManager.entities_gathered_debug_print(
                 matching_entities, component_types, self.entities_count()
             )
@@ -147,7 +147,9 @@ class ComponentManager(ComponentManagerABC):
         component_names = [component.__name__ for component in list_component]
         # @todo : using split workaround to get entity name from Entity object
         # Fix this later
-        gathered_entities_names = [str(entity.name).split('_')[0] for entity in gathered_entities]
+        gathered_entities_names = [
+            str(entity.name).split("_")[0] for entity in gathered_entities
+        ]
 
         print(
             f"[entities_debug_print]: [{len(gathered_entities)}]/[{total_entities_count}] with components [{len(component_names)}] {component_names} gathered [{len(gathered_entities)}] {gathered_entities_names}"

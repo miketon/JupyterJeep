@@ -1,7 +1,10 @@
 import unittest
-from io import StringIO
 from unittest.mock import patch
+import sys
+from io import StringIO
+from contextlib import contextmanager
 from ..environment_flag import EnvironmentFlag, InvalidFlagValueError
+import random
 
 
 class TestEnvironmentFlag(unittest.TestCase):
@@ -78,12 +81,64 @@ class TestEnvironmentFlag(unittest.TestCase):
         with patch("builtins.open", return_value=invalid_option_config), patch(
             "os.path.exists", return_value=True
         ):
-            # Check that EnvironmentFlag raises an error when invalid option 
+            # Check that EnvironmentFlag raises an error when invalid option
             # values are found in the config file
             # Asserts that the given exception InvalidFlagValueError is raised
             # ... if the expected exception is not raised, the test FAILS
             with self.assertRaises(InvalidFlagValueError):
                 EnvironmentFlag("test_generated_dummy_path")
+
+    @staticmethod
+    @contextmanager
+    def capture_stdout():
+        original_stdout = sys.stdout
+        sys.stdout = StringIO()
+        try:
+            yield sys.stdout
+        finally:
+            sys.stdout = original_stdout
+
+    # @note 🧠 : has "_" prefix so that it is not added to the test suite
+    # ... also indicates that this is a helper function
+    def _get_stdout(self, func, *args):
+        with TestEnvironmentFlag.capture_stdout() as new_stdout:
+            func(*args)
+            output = new_stdout.getvalue().strip()
+        return output
+
+    def test_debug_print_in_non_production_environment(self):
+        config_not_production = StringIO(
+            "[Flags]\n" "IS_PRODUCTION_BUILD = 0\n" "IS_MAC_BUILD = True\n"
+        )
+
+        # Check EnvironmentFlag with is_production = False [debug mode]
+        with patch("builtins.open", return_value=config_not_production), patch(
+            "os.path.exists", return_value=True
+        ):
+            flag = EnvironmentFlag("test_generated_dummy_path")
+            debug_message = "Kevin has a tiny person inside operating him like a crane"
+            random_key = random.randint(-999, 999)
+            # get output from the debug_print() function
+            output = self._get_stdout(flag.debug_print, debug_message, random_key)
+            # check that debug message equals the std output
+            self.assertTrue(f"{debug_message} {random_key}" == output)
+
+    def test_debug_print_in_production_environment(self):
+        config_is_production = StringIO(
+            "[Flags]\n" "IS_PRODUCTION_BUILD = 1\n" "IS_MAC_BUILD = True\n"
+        )
+
+        # Check EnvironmentFlag with is_production = True [production mode]
+        with patch("builtins.open", return_value=config_is_production), patch(
+            "os.path.exists", return_value=True
+        ):
+            flag = EnvironmentFlag("test_generated_dummy_path")
+            debug_message = "Kevin has a tiny person inside operating him like a crane"
+            random_key = random.randint(-999, 999)
+            # get output from debug_print() function
+            output = self._get_stdout(flag.debug_print, debug_message, random_key)
+            # verify that output is empty when in production environment
+            self.assertTrue(output == "")
 
 
 """ 
