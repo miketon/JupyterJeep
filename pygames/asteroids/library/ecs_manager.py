@@ -127,10 +127,11 @@ class ComponentManager(ComponentManagerABC):
                 matching_entities.append(matching_entity)
 
         # @audit 💨 : Only print debug info if not in production
-        if not self.envFlag.is_production:
-            ComponentManager.entities_gathered_debug_print(
+        self.envFlag.debug_print(
+            ComponentManager.entities_debug_message(
                 matching_entities, component_types, self.entities_count()
             )
+        )
         return matching_entities
 
     def entities_count(self):
@@ -138,7 +139,7 @@ class ComponentManager(ComponentManagerABC):
         return len(self.entities)
 
     @staticmethod
-    def entities_gathered_debug_print(
+    def entities_debug_message(
         gathered_entities: List[Entity],
         list_component: List[Type],
         total_entities_count: int,
@@ -151,6 +152,8 @@ class ComponentManager(ComponentManagerABC):
             str(entity.name).split("_")[0] for entity in gathered_entities
         ]
 
-        print(
-            f"[entities_debug_print]: [{len(gathered_entities)}]/[{total_entities_count}] with components [{len(component_names)}] {component_names} gathered [{len(gathered_entities)}] {gathered_entities_names}"
+        return (
+            f"[entities_debug] : [{len(gathered_entities)}]/[{total_entities_count}]"
+            f"\n-- [{len(component_names)}] : {component_names}"
+            f"\n-- [{len(gathered_entities)}] : {gathered_entities_names}"
         )
