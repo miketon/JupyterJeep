@@ -123,9 +123,15 @@ class ComponentManager(ComponentManagerABC):
         # will give the same result
         component_set = set(component_types)
         # @note 🧠 : Use a list comprehension to filter the entities
-        matching_entities = [
+        matching_entities = [ # list comprehension to create matching entities
+            # entity_id is the key, self.entities is the dictionary we are
+            # iterating over to find our matching entities
             self.entities[entity_id]
+            # loop part of the list comprehension
             for entity_id, components in self.components.items()
+            # filter part of the list comprehension
+            # @note 🧠 : issubset() returns TRUE if ALL items in the set exist 
+            # in the other set - in this case the set of KEYS from components
             if component_set.issubset(set(components.keys()))
         ]
 
