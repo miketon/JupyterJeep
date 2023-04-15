@@ -95,7 +95,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager = TestHelper.setup_component_manager()
         # empty Entity list expected to return empty match list
         expected_result: List[Entity] = []
-        result = component_manager.gather_entities_with_all_components(
+        result = component_manager.gather_entities_with_components(
             [SleepComponent, DietComponent]
         )
         assert result == expected_result, f"Expected {expected_result}, got {result}"
@@ -106,7 +106,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager = TestHelper.setup_component_manager()
         # empty component input expected to return empty Entity list
         expected_result: List[Entity] = []
-        result = component_manager.gather_entities_with_all_components([])
+        result = component_manager.gather_entities_with_components([])
         assert result == expected_result, f"Expected {expected_result}, got {result}"
 
     def test_gather_entities_single_component_match(self):
@@ -117,7 +117,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager.add_component(entity2, DietComponent())
         # expecting Sleepy Kirby to match
         expected_results: List[Entity] = [entity1]
-        result = component_manager.gather_entities_with_all_components([SleepComponent])
+        result = component_manager.gather_entities_with_components([SleepComponent])
         assert result == expected_results, f"Expected {expected_results}, got {result}"
 
     def test_gather_entities_single_component_no_match(self):
@@ -130,7 +130,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager.add_component(entity2, DietComponent())
         # expecting no entity, since Little Mac is not exercising
         expected_result: List[Entity] = []
-        result = component_manager.gather_entities_with_all_components(
+        result = component_manager.gather_entities_with_components(
             [ExerciseComponent]
         )
         assert result == expected_result, f"Expected {expected_result}, got {result}"
@@ -147,7 +147,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager.add_component(entity3, DietComponent())
         # expecting Little Mac to match
         expected_results: List[Entity] = [entity3]
-        result = component_manager.gather_entities_with_all_components(
+        result = component_manager.gather_entities_with_components(
             [ExerciseComponent, DietComponent]
         )
         assert result == expected_results, f"Expected {expected_results}, got {result}"
@@ -162,7 +162,7 @@ class TestComponentManager_Gather_Entities(unittest.TestCase):
         component_manager.add_component(entity1, ExerciseComponent())
         component_manager.add_component(entity2, DietComponent())
         # expecting no entity has BOTH SleepComponent AND DietComponent
-        result = component_manager.gather_entities_with_all_components(
+        result = component_manager.gather_entities_with_components(
             [SleepComponent, DietComponent]
         )
         assert result == expected_result, f"Expected {expected_result}, got {result}"

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar
 from collections import defaultdict
 from .pubsub_event_manager import PubSubEventManager
 from .entity import Entity
@@ -32,11 +32,14 @@ class ComponentManagerABC(ABC):
         """Get a component of a specific type from an entity"""
 
     @abstractmethod
-    def gather_entities_with_all_components(
+    def gather_entities_with_components(
         self, component_types: List[Type]
     ) -> List[Entity]:
         """Gather a list of entities that have ALL of the specified COMPONENTS"""
 
+# using type alias to improve readability
+ComponentDict = Dict[Type, Any]
+EntityComponents = Dict[str, ComponentDict]
 
 # Implement a simple ComponentManager class that manages a dictionary of components
 class ComponentManager(ComponentManagerABC):
@@ -53,7 +56,7 @@ class ComponentManager(ComponentManagerABC):
         # dictionary. In this case, if a key is not found, it will automatically
         # create a new empty dictionary as its value.
         # - simplifies the code for `add_component`
-        self.components: Dict[str, Dict[Type, Any]] = defaultdict(dict)
+        self.components: EntityComponents = defaultdict(dict)
         self.event_manager = event_manager
         # - `self.entities` is a dictionary that maps entity IDs to entity
         # instances. This is used to quickly look up an entity by its ID.
@@ -108,7 +111,7 @@ class ComponentManager(ComponentManagerABC):
                 f"[ERROR] tried to --get_component-- [{component_type.__name__}] that does not exist on entity [{entity.name}]"
             )
 
-    def gather_entities_with_all_components(
+    def gather_entities_with_components(
         self, component_types: List[Type]
     ) -> List[Entity]:
         # early exit with None if no component types passed in
@@ -119,12 +122,12 @@ class ComponentManager(ComponentManagerABC):
         # - order of component types passed in does not matter, any permutation
         # will give the same result
         component_set = set(component_types)
-        matching_entities = []
-        for entity_id, components in self.components.items():
-            if component_set.issubset(set(components.keys())):
-                # get the cached entity instance from the `self.entities` dictionary
-                matching_entity = self.entities[entity_id]
-                matching_entities.append(matching_entity)
+        # @note 🧠 : Use a list comprehension to filter the entities
+        matching_entities = [
+            self.entities[entity_id]
+            for entity_id, components in self.components.items()
+            if component_set.issubset(set(components.keys()))
+        ]
 
         # @audit 💨 : Only print debug info if not in production
         self.envFlag.debug_print(
