@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import torch
 from typing import Optional, Callable, Union
-from IPython.display import display, DisplayHandle
+from IPython.display import display
 
 
 class UtilDataFrameTable:
@@ -41,26 +41,21 @@ class UtilDataFrameTable:
     @staticmethod
     def array_to_table(data: np.ndarray) -> np.ndarray:
         """
-        Convert a 1D array to a padded (balanced) 2D table
+        Convert a 1D array to balanced 2D table
         :param data: 1D Numpy array
         :return: 2D Numpy array padded to be balanced
         """
         # Calculate the total number of elements in the input array
         total_elements = len(data)
-        # find the closes lower square
-        lower_square = int(math.sqrt(total_elements)) ** 2
-
-        # calculate the square root of the closest lower square
-        square_root = int(math.sqrt(lower_square))
-
-        # caculate the required padding length
-        padding_length = (square_root + 1) * square_root - total_elements
-
-        # pad the Numpy array with the next consequitive integers
-        padded_array = np.pad(
-            data, (0, padding_length), mode="constant", constant_values=(np.nan,)
-        )
+        # find the closest lower square
+        data_sq_root = int(math.sqrt(total_elements))
+        if total_elements % data_sq_root != 0:
+            # Calculate the next perfect square
+            data_sq_root += 1
+            # Pad the input array with zeros to make it a perfect square
+            padding = (data_sq_root ** 2) - total_elements
+            data = np.pad(data, (0, np.abs(padding)), "constant", constant_values=0)
 
         # reshape the padded array to the desired dimension
-        table = padded_array.reshape(square_root, square_root + 1)
+        table = data.reshape(data_sq_root, -1)
         return table
