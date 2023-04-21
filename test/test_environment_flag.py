@@ -5,7 +5,7 @@ import random
 from unittest.mock import patch
 from io import StringIO
 from contextlib import contextmanager
-from ..environment_flag import EnvironmentFlag, InvalidFlagValueError
+from pygames.asteroids.library.environment_flag import EnvironmentFlag, InvalidFlagValueError
 
 
 class TestEnvironmentFlag(unittest.TestCase):

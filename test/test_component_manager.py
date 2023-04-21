@@ -1,7 +1,7 @@
 import unittest
-from ..ecs_manager import ComponentManager, ComponentManagerABC
-from ..entity import Entity
-from ..pubsub_event_manager import PubSubEventManager
+from pygames.asteroids.library.ecs_manager import ComponentManager, ComponentManagerABC
+from pygames.asteroids.library.entity import Entity
+from pygames.asteroids.library.pubsub_event_manager import PubSubEventManager
 from typing import List
 from abc import ABC
 
