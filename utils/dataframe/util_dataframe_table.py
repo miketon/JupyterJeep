@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import torch
 from typing import Optional, Callable, Union
-from IPython.display import display
+from IPython.display import display, DisplayHandle
 
 
-class DataFrameTableUtil:
+class UtilDataFrameTable:
     """
     Utility class to generate and display a DataFrame table
     """
@@ -16,22 +16,27 @@ class DataFrameTableUtil:
         data: Union[torch.Tensor, pd.DataFrame],
         func: Optional[Callable] = None,
         label: Optional[str] = None,
-    ) -> None:
+    ) -> bool:
         """
         Generates a DataFrame table and display() it given a tensor and map function
         :param data: torch.Tensor or pd.DataFrame (to visualize tables that have strings)
         """
+
         if label is not None:
             print(f"--[{label}]--")
+
         if isinstance(data, torch.Tensor):
             df = pd.DataFrame(data.numpy())
         else:
             df = data
+
         if func is None:
             display(df)
         else:
             df_result = df.applymap(lambda x: func(int(x)))
             display(pd.concat([df, df_result]).sort_index(kind="mergesort"))
+        # has displayed table successfully
+        return True
 
     @staticmethod
     def array_to_table(data: np.ndarray) -> np.ndarray:
