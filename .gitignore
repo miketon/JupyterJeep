@@ -19,3 +19,7 @@
 
 # compiled python code
 *.pyc
+
+# rust
+*.bin
+rusty_jeep_project/target/*
