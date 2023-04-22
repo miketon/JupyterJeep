@@ -36,7 +36,7 @@ class TestUtilDataFrameTable(unittest.TestCase):
         """
         Test array_to_table() handling a 1D array that square roots cleanly
         """
-        array = np.arange(1,10) # 9
+        array = np.arange(1, 10)  # 9
         table = UtilDataFrameTable.array_to_table(array)
         np.testing.assert_array_equal(
             table, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
@@ -49,8 +49,7 @@ class TestUtilDataFrameTable(unittest.TestCase):
         array = np.array([1, 2, 3, 4, 5, 6, 7, 8])
         table = UtilDataFrameTable.array_to_table(array)
         np.testing.assert_array_equal(
-            table, np.array([[1, 2, 3, 4], 
-                             [5, 6, 7, 8]])
+            table, np.array([[1, 2, 3], [4, 5, 6], [7, 8, 0]])
         )
 
     def test_array_to_table_odd(self):
@@ -60,30 +59,40 @@ class TestUtilDataFrameTable(unittest.TestCase):
         array = np.array([1, 2, 3, 4, 5, 6, 7])
         table = UtilDataFrameTable.array_to_table(array)
         np.testing.assert_array_equal(
-            table, np.array([[1, 2, 3], 
-                             [4, 5, 6], 
-                             [7, 0, 0]])
+            table, np.array([[1, 2, 3], [4, 5, 6], [7, 0, 0]])
         )
 
     def test_array_to_table_char(self):
         """
         Test array_to_table() handling a 1d array of characters
-        """ 
-        array = np.array(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']) # 10
+        """
+        array = np.array(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])  # 10
         table = UtilDataFrameTable.array_to_table(array)
         np.testing.assert_array_equal(
-            table, np.array([['a', 'b', 'c', 'd'], 
-                             ['e','f', 'g', 'h'], 
-                             ['i', 'j', '0', '0'], 
-                             ['0', '0', '0', '0']])
+            table,
+            np.array(
+                [["a", "b", "c", "d"], ["e", "f", "g", "h"], ["i", "j", "0", "0"]]
+            ),
         )
-    
 
     def test_array_to_table_char_mix(self):
         """
         Test array_to_table() handling a 1d array of mixed characters and numbers
         """
-        
+        array = np.array([0, "a", 1, "b", 2, "c", 3, "d", 4, "e", 5])
+        table = UtilDataFrameTable.array_to_table(array)
+        """ 
+        In this case, it's because the array contains both numbers and 
+        characters, and they are stored as Unicode strings.
+        - `<U21` means "Unicode string of max length 21". 
+        - `dtype='<U21'` - This is the data type of the elements in the array 
+        """
+        np.testing.assert_array_equal(
+            table,
+            np.array(
+                [["0", "a", "1", "b"], ["2", "c", "3", "d"], ["4", "e", "5", "0"]]
+            ),
+        )
 
 
 if __name__ == "__main__":

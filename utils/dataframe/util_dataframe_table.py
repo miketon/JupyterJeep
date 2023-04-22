@@ -48,14 +48,18 @@ class UtilDataFrameTable:
         # Calculate the total number of elements in the input array
         total_elements = len(data)
         # find the closest lower square
-        data_sq_root = int(math.sqrt(total_elements))
-        if total_elements % data_sq_root != 0:
+        data_sq_x = data_sq_y = int(math.ceil(math.sqrt(total_elements)))
+        mod = total_elements % data_sq_x
+        if mod != 0:
             # Calculate the next perfect square
-            data_sq_root += 1
-            # Pad the input array with zeros to make it a perfect square
-            padding = (data_sq_root ** 2) - total_elements
+            # Pad the input array with zeros
+            padding = (data_sq_x * data_sq_y) - total_elements
+            if padding > data_sq_x:
+                padding = padding - data_sq_x
+                data_sq_x = data_sq_x - 1
+
             data = np.pad(data, (0, np.abs(padding)), "constant", constant_values=0)
 
         # reshape the padded array to the desired dimension
-        table = data.reshape(data_sq_root, -1)
+        table = data.reshape(data_sq_x, data_sq_y)
         return table
