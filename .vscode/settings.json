@@ -15,4 +15,7 @@
     ],
     "inline-bookmarks.view.showVisibleFilesOnly": true,
     "python.formatting.provider": "black",
+    "rust-analyzer.linkedProjects": [
+        "./rusty_jeep_project/guessing_game/Cargo.toml"
+    ],
 }
