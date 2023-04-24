@@ -7,10 +7,6 @@ fn main() {
         .run();
 }
 
-fn hello_world() {
-    println!("Hello world! Bevy birds are NOT angry!");
-}
-
 #[derive(Component)]
 struct Person;
 
@@ -24,9 +20,29 @@ fn add_people(mut commands: Commands) {
     commands.spawn((Person, Name("Peach".to_string())));
 }
 
-fn greet_people(query: Query<&Name, With<Person>>) {
-    for name in &query {
-        println!("Hello {}!", name.0);
+/*
+Entities and Components are great for representing complex, query-able groups of
+data. But most Apps will also require "globally unique" data of some kind.
+In Bevy ECS, we represent globally unique data using Resources.
+
+Here are some examples of data that could be encoded as Resources:
+- Elapsed Time
+- Asset Collections (sounds, textures, meshes)
+- Renderers
+ */
+
+// Resources are just types that implement the Resource trait
+// Using time to rate limit greeting people
+#[derive(Resource)]
+struct GreetTimer(Timer);
+
+fn greet_people(time: Res<Time>, mut timer: ResMut<GreetTimer>, query: Query<&Name, With<Person>>) {
+    // Update our timer with the time elapsed since the last update
+    // If that caused the timer to finish, we can greet people
+    if timer.0.tick(time.delta()).just_finished() {
+        for name in &query {
+            println!("Hello {}!", name.0);
+        }
     }
 }
 
@@ -35,8 +51,12 @@ pub struct HelloPlugin;
 
 impl Plugin for HelloPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(add_people)
-            .add_startup_system(hello_world)
-            .add_system(greet_people); // why does this not print as add_startup_system?
+        app
+            // Add a repeating timer resource to our plugin
+            .insert_resource(GreetTimer(Timer::from_seconds(2.0, TimerMode::Repeating)))
+            .add_startup_system(add_people)
+            .add_system(greet_people);
     }
 }
+
+// https://bevy-cheatbook.github.io/
