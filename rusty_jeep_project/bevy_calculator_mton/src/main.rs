@@ -3,6 +3,11 @@ use bevy::{prelude::*, winit::WinitSettings};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        // .init_resource::<Configuration>() // `ResourceInspectorPlugin` won't initialize the resource
+        // .register_type::<Configuration>() // you need to register your type to display it       .add_plugin(ResourceInspectorPlugin::<Configuration>::default())
+        // also works with built-in resources, as long as they implement `Reflect`
+        // .add_plugin(ResourceInspectorPlugin::<Time>::default())
+        // .add_plugins(WorldInspectorPlugin::new('WorldInspectorPlugin'))
         // Reduce CPU/GPU usage : Only run app when there is user input
         .insert_resource(WinitSettings::desktop_app())
         .add_startup_system(hello_world)
@@ -46,14 +51,39 @@ fn button_system(
 */
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-    commands.spawn(NodeBundle {
+    let canvas_node = NodeBundle {
         style: Style {
             size: Size::width(Val::Percent(100.0)),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             ..default()
         },
+        background_color: Color::rgb(0.0, 1.0, 0.0).into(),
         ..default()
+    };
+
+    let button_node = ButtonBundle {
+        style: Style {
+            size: Size::new(Val::Px(200.0), Val::Px(100.0)),
+            align_items: AlignItems::Center,
+            justify_content: JustifyContent::Center,
+            ..default()
+        }, 
+        background_color: Color::rgb(1.0, 0.0, 0.0).into(),
+        ..default() };
+    let text_node = TextBundle::from_section(
+        "Hello World",
+        TextStyle {
+            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+            font_size: 40.0,
+            color: Color::WHITE,
+        }
+    );
+
+    commands.spawn(Camera2dBundle::default());
+    commands.spawn(canvas_node).with_children(|parent| {
+        parent.spawn(button_node).with_children(|parent| {
+            parent.spawn(text_node);
+        });
     });
 }
