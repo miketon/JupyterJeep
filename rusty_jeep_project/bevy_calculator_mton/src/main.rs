@@ -10,14 +10,20 @@ fn main() {
         // .add_plugins(WorldInspectorPlugin::new('WorldInspectorPlugin'))
         // Reduce CPU/GPU usage : Only run app when there is user input
         .insert_resource(WinitSettings::desktop_app())
+        // .init_resource::<ButtonMaterials>()
         .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
+        .add_system(button_system)
         .run();
 }
 
 fn hello_world() {
     println!("Hello, world! BEVY CALCULATOR MTON");
 }
+
+const NORMAL_BUTTON: Color = Color::rgb(0.02, 0.02, 0.02);
+const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
+const PRESSED_BUTTON: Color = Color::rgb(0.95, 0.95, 0.25);
 
 struct ButtonMaterials {
     normal: Handle<ColorMaterial>,
@@ -38,17 +44,31 @@ impl FromWorld for ButtonMaterials {
     }
 }
 
-/*
 fn button_system(
-    button_materials: Res<ButtonMaterials>,
     mut interaction_query: Query<
-        (&Interaction, &mut Handle<ColorMaterial>),
+        (&Interaction, &mut BackgroundColor, &Children),
         (Changed<Interaction>, With<Button>),
-    >
+    >,
+    mut text_query: Query<&mut Text>,
 ) {
-
+    for (interaction, mut color, children) in &mut interaction_query {
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        match *interaction {
+            Interaction::Clicked => {
+                text.sections[0].value = "Clicked".to_string();
+                *color = PRESSED_BUTTON.into();
+            }
+            Interaction::Hovered => {
+                text.sections[0].value = "Hovered".to_string();
+                *color = HOVERED_BUTTON.into();
+            }
+            Interaction::None => {
+                text.sections[0].value = "Button".to_string();
+                *color = NORMAL_BUTTON.into();
+            }
+        }
+    }
 }
-*/
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     let canvas_node = NodeBundle {
@@ -58,7 +78,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        background_color: Color::rgb(0.0, 1.0, 0.0).into(),
+        background_color: Color::rgb(0.0, 0.5, 0.0).into(),
         ..default()
     };
 
@@ -68,16 +88,17 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
             ..default()
-        }, 
-        background_color: Color::rgb(1.0, 0.0, 0.0).into(),
-        ..default() };
+        },
+        background_color: NORMAL_BUTTON.into(),
+        ..default()
+    };
     let text_node = TextBundle::from_section(
         "Hello World",
         TextStyle {
             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
             font_size: 40.0,
             color: Color::WHITE,
-        }
+        },
     );
 
     commands.spawn(Camera2dBundle::default());
