@@ -21,9 +21,21 @@ fn hello_world() {
     println!("Hello, world! BEVY CALCULATOR MTON");
 }
 
-const NORMAL_BUTTON: Color = Color::rgb(0.02, 0.02, 0.02);
-const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-const PRESSED_BUTTON: Color = Color::rgb(0.95, 0.95, 0.25);
+struct ButtonColors {
+    normal: Color,
+    hovered: Color,
+    pressed: Color,
+}
+
+impl ButtonColors {
+    fn new() -> Self {
+        ButtonColors {
+            normal: Color::rgb(0.2, 0.2, 0.2),
+            hovered: Color::rgb(0.4, 0.4, 0.4),
+            pressed: Color::rgb(0.9, 0.9, 0.6),
+        }
+    }
+}
 
 struct ButtonMaterials {
     normal: Handle<ColorMaterial>,
@@ -53,24 +65,31 @@ fn button_system(
 ) {
     for (interaction, mut color, children) in &mut interaction_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
-        match *interaction {
-            Interaction::Clicked => {
-                text.sections[0].value = "Clicked".to_string();
-                *color = PRESSED_BUTTON.into();
-            }
-            Interaction::Hovered => {
-                text.sections[0].value = "Hovered".to_string();
-                *color = HOVERED_BUTTON.into();
-            }
-            Interaction::None => {
-                text.sections[0].value = "Button".to_string();
-                *color = NORMAL_BUTTON.into();
-            }
+        let color = &mut color;
+        update_button(interaction, text.as_mut(), color);
+    }
+}
+
+fn update_button(interaction: &Interaction, text: &mut Text, color: &mut BackgroundColor) {
+    let button_colors = ButtonColors::new();
+    match *interaction {
+        Interaction::Clicked => {
+            text.sections[0].value = "Clicked".to_string();
+            *color = button_colors.pressed.into();
+        }
+        Interaction::Hovered => {
+            text.sections[0].value = "Hovered".to_string();
+            *color = button_colors.hovered.into();
+        }
+        Interaction::None => {
+            text.sections[0].value = "Button".to_string();
+            *color = button_colors.normal.into();
         }
     }
 }
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let button_colors = ButtonColors::new();
     let canvas_node = NodeBundle {
         style: Style {
             size: Size::width(Val::Percent(100.0)),
@@ -89,7 +108,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             justify_content: JustifyContent::Center,
             ..default()
         },
-        background_color: NORMAL_BUTTON.into(),
+        background_color: button_colors.normal.into(),
         ..default()
     };
     let text_node = TextBundle::from_section(
@@ -101,7 +120,9 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     );
 
+    // Spawan a camera
     commands.spawn(Camera2dBundle::default());
+    // setup ui hierarchy
     commands.spawn(canvas_node).with_children(|parent| {
         parent.spawn(button_node).with_children(|parent| {
             parent.spawn(text_node);
