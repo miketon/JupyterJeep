@@ -1,8 +1,15 @@
-use bevy::{prelude::*, winit::WinitSettings};
+use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: "Calculator MTON Edition".to_string(),
+                resolution: WindowResolution::new(600., 1024.).with_scale_factor_override(1.0),
+                ..default()
+            }),
+            ..default()
+        }))
         // .init_resource::<Configuration>() // `ResourceInspectorPlugin` won't initialize the resource
         // .register_type::<Configuration>() // you need to register your type to display it       .add_plugin(ResourceInspectorPlugin::<Configuration>::default())
         // also works with built-in resources, as long as they implement `Reflect`
