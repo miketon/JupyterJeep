@@ -24,8 +24,9 @@ fn main() {
         .run();
 }
 
-fn hello_world() {
-    println!("Hello, world! BEVY CALCULATOR MTON");
+fn hello_world(mut local_counter: Local<i32>) {
+    *local_counter += 1;
+    println!("Hello, world! BEVY CALCULATOR MTON {} times", local_counter.to_string());
 }
 
 struct ButtonColors {
