@@ -23,7 +23,7 @@ fn hello_world(mut local_counter: Local<i32>) {
     *local_counter += 1;
     println!(
         "Hello, world! BEVY CALCULATOR MTON {} times",
-        local_counter.to_string()
+        *local_counter
     );
 }
 
@@ -45,7 +45,6 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    // let button_node = button::generate_button();
     let text_node = button::generate_text(&asset_server);
 
     // Spawan a camera
@@ -53,18 +52,23 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     // setup ui hierarchy
     commands.spawn(canvas_node).with_children(|parent| {
         populate_button_grid(parent, text_node);
-        // parent.spawn(button_node).with_children(|parent| {
-        //     parent.spawn(text_node);
-        // });
     });
 }
 
 fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
-    let button_symbols = vec!["0", "*", "/", "="];
+    let button_symbols = vec![
+        "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
+    ];
     for i in button_symbols {
-        println!("{}", i);
+        let button_label = button::ButtonEventLabel {
+            on_click: "X".to_string(),
+            on_hover: i.to_string(),
+            default: i.to_string(),
+        };
+        println!("spawn button : {}", i);
         parent
             .spawn(button::generate_button())
+            .insert(button_label)
             .with_children(|parent| {
                 parent.spawn(text_node.clone());
             });
