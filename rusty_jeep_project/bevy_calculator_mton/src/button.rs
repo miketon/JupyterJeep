@@ -26,7 +26,7 @@ impl Default for ButtonColors {
 pub fn generate_button() -> ButtonBundle {
     ButtonBundle {
         style: Style {
-            size: Size::new(Val::Px(120.0), Val::Px(120.0)),
+            size: Size::new(Val::Px(140.0), Val::Px(140.0)),
             padding: UiRect {
                 left: Val::Px(10.0),
                 right: Val::Px(10.0),
