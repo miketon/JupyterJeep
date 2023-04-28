@@ -1,5 +1,4 @@
 use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
-use egui::emath::align;
 mod button;
 
 fn main() {
@@ -42,7 +41,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    let canvas_border = NodeBundle {
+    let canvas_output_display = NodeBundle {
         style: Style {
             size: Size {
                 width: Val::Percent(100.0),
@@ -50,15 +49,15 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             position_type: PositionType::Absolute,
             position: UiRect {
-                left: Val::Px(0.0),
-                top: Val::Px(0.0),
+                left: Val::Percent(0.0),
+                top: Val::Percent(0.0),
                 ..default()
             },
             border: UiRect {
-                left: Val::Px(15.0),
-                right: Val::Px(15.0),
-                top: Val::Px(15.0),
-                bottom: Val::Px(15.0),
+                left: Val::Px(5.0),
+                right: Val::Px(5.0),
+                top: Val::Px(5.0),
+                bottom: Val::Px(5.0),
             },
             ..default()
         },
@@ -66,7 +65,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    let canvas_fill_content = NodeBundle {
+    let canvas_display_content = NodeBundle {
         style: Style {
             size: Size {
                 width: Val::Percent(100.0),
@@ -80,11 +79,20 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    let canvas_button_panel = NodeBundle {
+    let canvas_button_input = NodeBundle {
         style: Style {
             size: Size {
                 width: Val::Percent(100.0),
                 height: Val::Percent(70.0),
+            },
+            position_type: PositionType::Absolute,
+            // Shift down 30% of the screen
+            // @todo : Is there another way to do this without 
+            // hardcoding the value ?
+            position: UiRect {
+                left: Val::Percent(0.0),
+                top: Val::Percent(30.0),
+                ..default()
             },
             flex_direction: FlexDirection::Row,
             flex_wrap: FlexWrap::Wrap,
@@ -131,11 +139,11 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|parent| {
             parent
                 // border
-                .spawn(canvas_border)
+                .spawn(canvas_output_display)
                 .with_children(|parent| {
                     parent
                         // fill content
-                        .spawn(canvas_fill_content)
+                        .spawn(canvas_display_content)
                         .with_children(|parent| {
                             parent
                                 // calc screen
@@ -144,7 +152,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                 });
             parent
                 // button panel
-                .spawn(canvas_button_panel)
+                .spawn(canvas_button_input)
                 .with_children(|parent| {
                     // buttons
                     populate_button_grid(parent, button_label);
@@ -153,10 +161,9 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
-    // let button_symbols = vec![
-    //     "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
-    // ];
-    let button_symbols = vec!["C"];
+    let button_symbols = vec![
+         "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
+    ];
     for i in button_symbols {
         let button_label = button::ButtonEventLabel {
             on_click: "X".to_string(),
