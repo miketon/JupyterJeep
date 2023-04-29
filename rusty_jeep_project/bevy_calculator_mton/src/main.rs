@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
 mod button;
+mod calc;
 
 fn main() {
     App::new()
@@ -13,8 +14,10 @@ fn main() {
         }))
         // Reduce CPU/GPU usage : Only run app when there is user input
         .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(calc::Calc::new())
         .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
+        .add_system(display_system)
         .add_system(button::button_system)
         .run();
 }
@@ -25,6 +28,20 @@ fn hello_world(mut local_counter: Local<i32>) {
         "Hello, world! BEVY CALCULATOR MTON {} times",
         *local_counter
     );
+}
+
+#[derive(Debug, Component)]
+struct DisplayOutputText;
+fn display_system(
+    mut query: Query<(&DisplayOutputText, &mut Text)>,
+    mut local_click_count: Local<i32>,
+    calc: Res<calc::Calc>,
+) {
+    *local_click_count += 1;
+    for (_i, mut text) in query.iter_mut() {
+        // text.sections[0].value = local_click_count.to_string();
+        text.sections[0].value = calc.display();
+    }
 }
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -87,7 +104,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
             },
             position_type: PositionType::Absolute,
             // Shift down 30% of the screen
-            // @todo : Is there another way to do this without 
+            // @todo : Is there another way to do this without
             // hardcoding the value ?
             position: UiRect {
                 left: Val::Percent(0.0),
@@ -138,7 +155,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(canvas_root)
         .with_children(|parent| {
             parent
-                // border
+                // output display panel
                 .spawn(canvas_output_display)
                 .with_children(|parent| {
                     parent
@@ -147,11 +164,12 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         .with_children(|parent| {
                             parent
                                 // calc screen
-                                .spawn(text_screen);
+                                .spawn(text_screen)
+                                .insert(DisplayOutputText);
                         });
                 });
             parent
-                // button panel
+                // input button panel
                 .spawn(canvas_button_input)
                 .with_children(|parent| {
                     // buttons
@@ -162,7 +180,7 @@ fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
     let button_symbols = vec![
-         "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
+        "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
     ];
     for i in button_symbols {
         let button_label = button::ButtonEventLabel {
