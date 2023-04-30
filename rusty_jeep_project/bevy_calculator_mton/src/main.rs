@@ -39,7 +39,6 @@ fn display_system(
 ) {
     *local_click_count += 1;
     for (_i, mut text) in query.iter_mut() {
-        // text.sections[0].value = local_click_count.to_string();
         text.sections[0].value = calc.display();
     }
 }
