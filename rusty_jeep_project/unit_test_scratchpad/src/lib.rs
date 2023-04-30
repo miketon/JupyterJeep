@@ -10,6 +10,12 @@ mod tests {
     use super::*;
 
     #[test]
+    #[ignore]
+    fn expensive_test() {
+        panic!("This test takes HOURS to COMPLETE")
+    }
+
+    #[test]
     // Written to return Result instead of panicking
     // Writing tests so they return a Result<T, E> enables you to use the
     // question mark operator in the body of tests, which can be a convenient
@@ -52,7 +58,6 @@ mod tests {
         );
     }
 
-    /*
     fn test_setup_rectangles() -> (Rectangle, Rectangle) {
         let larger = Rectangle {
             width: 8,
@@ -87,10 +92,8 @@ mod tests {
     fn another() {
         panic!("Make this test fail");
     }
-    */
 }
 
-/*
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
@@ -106,8 +109,6 @@ impl Rectangle {
         self.width < other.width && self.height > other.height
     }
 }
-
-*/
 
 pub struct Guess {
     value: i32,
@@ -127,10 +128,8 @@ impl Guess {
 
 pub fn add_two(a: i32) -> i32 {
     a + 2
-    // a + 3
 }
 
 pub fn greeting(name: &str) -> String {
     format!("Hello {name}!")
-    //String::from("Hello!")
 }
