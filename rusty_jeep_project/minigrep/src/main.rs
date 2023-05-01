@@ -6,18 +6,46 @@ use std::fs;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    // with command line input : cargo run -- needle haystack.txt
-    // save argument values into  variables
-    let query = &args[1]; // needle
-    let file_path = &args[2]; // haystack.txt
+
+    // export from main to sub function because
+    // - subdivides scope to RELEASE closure only LOCAL variables
+    // - makes it easier to test, enforces single responsibility
+    let config = parse_config(&args);
 
     // the following output will be ...
-    println!("Searching for {query}"); // Searching for needle
-    println!("In file {file_path}"); // In file haystack.txt
+    println!("Searching for {}", config.query); // Searching for needle
+    println!("In file {}", config.file_path); // In file haystack.txt
 
-    let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
+    let contents =
+        fs::read_to_string(config.file_path).expect("Should have been able to read the file");
 
     println!("With text:\n{contents}");
 
     dbg!(args);
+}
+
+struct Config {
+    query: String,
+    file_path: String,
+}
+
+fn parse_config(args: &[String]) -> Config {
+    // &args[0] is the name of the program, we want the FIRST argument
+    // There’s a tendency among many Rustaceans to avoid using clone to fix 
+    // ownership problems because of its runtime cost. In Chapter 13, you’ll 
+    // learn how to use more efficient methods in this type of situation. 
+    // But for now, it’s okay to copy a few strings to continue making progress 
+    // because you’ll make these copies only once and your file path and query 
+    // string are very small. 
+    // It’s better to have a working program that’s a bit inefficient than to 
+    // try to hyperoptimize code on your first pass. As you become more 
+    // experienced with Rust, it’ll be easier to start with the most efficient 
+    // solution, but for now, it’s perfectly acceptable to call clone.
+    // @todo : learn more about clone, keep it simple for now
+    let query = args[1].clone();
+    let file_path = args[2].clone();
+
+    // updating to explicitly return a Config struct
+    // as opposed to a implicity tuple
+    Config { query, file_path }
 }
