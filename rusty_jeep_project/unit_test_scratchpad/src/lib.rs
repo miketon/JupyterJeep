@@ -1,4 +1,11 @@
 #![allow(dead_code)]
+
+/* Configures Rust to compile and run the test code only when you run cargo test, 
+@note :not when you run cargo build -- this saves compile time when you only want to 
+build the library and saves space in the resulting compiled artifact because 
+the tests are not included.
+*/
+
 #[cfg(test)]
 mod tests {
     // use super::*;. The tests module is a regular module that follows the
@@ -37,6 +44,7 @@ mod tests {
     // Checking if expected string contains "less than or equal to 100"
     // @note This makes our PANIC check MORE EXPLICIT and SPECIFIC
     #[should_panic(expected = "less than or equal to 100")]
+    #[ignore]
     fn greater_than_100() {
         Guess::new(200);
     }
@@ -89,6 +97,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn another() {
         panic!("Make this test fail");
     }
@@ -106,7 +115,7 @@ struct Rectangle {
 
 impl Rectangle {
     fn can_hold(&self, other: &Rectangle) -> bool {
-        self.width < other.width && self.height > other.height
+        self.width > other.width && self.height > other.height
     }
 }
 
