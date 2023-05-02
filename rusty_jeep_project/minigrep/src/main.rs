@@ -3,6 +3,7 @@
 // to capture those values into a collection
 use std::env;
 use std::fs;
+use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -10,16 +11,19 @@ fn main() {
     // export from main to sub function because
     // - subdivides scope to RELEASE closure only LOCAL variables
     // - makes it easier to test, enforces single responsibility
-    let config = Config::new(&args);
+
+    let config = Config::build(&args).unwrap_or_else(|err| {
+        println!("Problem parsing arguments : {err}");
+        process::exit(1);
+    });
 
     // the following output will be ...
     println!("Searching for {}", config.query); // Searching for needle
     println!("In file {}", config.file_path); // In file haystack.txt
 
-    let contents =
-        fs::read_to_string(config.file_path).expect("Should have been able to read the file");
+    let contents = fs::read_to_string(config.file_path).expect("File to read NOT found");
 
-    println!("With text:\n{contents}");
+    println!("With text:\n{}", contents);
 
     dbg!(args);
 }
@@ -30,9 +34,17 @@ struct Config {
 }
 
 impl Config {
-    fn new(args: &[String]) -> Config {
+    // updating new to build, devs expect new to return an instance without FAIL
+    // updated to return a Result as opposed to panicing
+    // - Config when successful
+    // - &str when error - a string slice initialized with a string literal.
+    // String literals have a static lifetime, which means it is guaranteed to
+    // be valid for the duration of the entire program...
+    // @audit-ok : verify that this makes sense for an error message to have a
+    // 'static lifetime
+    fn build(args: &[String]) -> Result<Config, &'static str> {
         if args.len() < 3 {
-            panic!("Not enough arguments");
+            return Err("atleast 2 arguements needed -> query and file path");
         }
         // &args[0] is the name of the program, we want the FIRST argument
         // There’s a tendency among many Rustaceans to avoid using clone to fix
@@ -49,6 +61,6 @@ impl Config {
         let query = args[1].clone();
         let file_path = args[2].clone();
 
-        Config { query, file_path }
+        Ok(Config { query, file_path })
     }
 }
