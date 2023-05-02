@@ -40,7 +40,9 @@ impl Config {
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
-    println!("With text:\n{}", contents);
+    for line in search(&config.query, &contents) {
+        println!("[lines] -> [{}]", line);
+    }
     // because this expression is about it's SIDE EFFECTS, we just returns ()
     Ok(())
 }
@@ -62,14 +64,15 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     // -If it does, add it to the list of values we’re returning.
     // -If it doesn’t, do nothing.
     // -Return the list of results that match.
+    println!("\n[SEARCHING] -> [{query}]");
     let mut results = Vec::new();
-    println!("\nReturning each line of the contents");
     for line in contents.lines() {
-        println!("line {}", line);
         if line.contains(query) {
-            println!("[FOUND] line [{line}] contiains => query [{query}]");
             results.push(line);
         }
+    }
+    if results.is_empty() {
+        println!("[NO RESULTS FOUND] for [{query}]");
     }
     results
 }
