@@ -44,3 +44,31 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     // because this expression is about it's SIDE EFFECTS, we just returns ()
     Ok(())
 }
+
+// Notice that we need to define an explicit lifetime 'a in the signature of 
+// search and use that lifetime with the contents argument and the return value
+// - e tell Rust that the data returned by the search function will live as long 
+// as the data passed into the search function in the contents argument
+// @note : This is important! The data referenced by a slice needs to be valid 
+// for the reference to be valid; if the compiler assumes we’re making string 
+// slices of query rather than contents, it will do its safety checking 
+// incorrectly
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    print!("Searching for {} {}", query, contents);
+    // Currently we will FAIL because we are ALWAYS returning an EMPTY vector
+    vec![]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn one_result() {
+        let query = "duct";
+        let contents = "\
+        Rust:
+        safe, fast, productive.
+        Pick three.";
+        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+    }
+}
