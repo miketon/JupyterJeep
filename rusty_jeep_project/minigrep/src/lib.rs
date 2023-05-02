@@ -45,18 +45,33 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-// Notice that we need to define an explicit lifetime 'a in the signature of 
+// Notice that we need to define an explicit lifetime 'a in the signature of
 // search and use that lifetime with the contents argument and the return value
-// - e tell Rust that the data returned by the search function will live as long 
+// - e tell Rust that the data returned by the search function will live as long
 // as the data passed into the search function in the contents argument
-// @note : This is important! The data referenced by a slice needs to be valid 
-// for the reference to be valid; if the compiler assumes we’re making string 
-// slices of query rather than contents, it will do its safety checking 
+// @note : This is important! The data referenced by a slice needs to be valid
+// for the reference to be valid; if the compiler assumes we’re making string
+// slices of query rather than contents, it will do its safety checking
 // incorrectly
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    print!("Searching for {} {}", query, contents);
+    print!("Searching for [{}] \n[{}]", query, contents);
     // Currently we will FAIL because we are ALWAYS returning an EMPTY vector
-    vec![]
+    // To fix that and implement search, our program needs to follow these steps:
+    // -Iterate through each line of the contents.
+    // -Check whether the line contains our query string.
+    // -If it does, add it to the list of values we’re returning.
+    // -If it doesn’t, do nothing.
+    // -Return the list of results that match.
+    let mut results = Vec::new();
+    println!("\nReturning each line of the contents");
+    for line in contents.lines() {
+        println!("line {}", line);
+        if line.contains(query) {
+            println!("[FOUND] line [{line}] contiains => query [{query}]");
+            results.push(line);
+        }
+    }
+    results
 }
 
 #[cfg(test)]
@@ -66,9 +81,9 @@ mod tests {
     fn one_result() {
         let query = "duct";
         let contents = "\
-        Rust:
-        safe, fast, productive.
-        Pick three.";
+Rust:
+safe, fast, productive.
+Pick three.";
         assert_eq!(vec!["safe, fast, productive."], search(query, contents));
     }
 }
