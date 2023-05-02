@@ -4,6 +4,7 @@
 use std::env;
 use std::fs;
 use std::process;
+use std::error::Error;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -21,11 +22,21 @@ fn main() {
     println!("Searching for {}", config.query); // Searching for needle
     println!("In file {}", config.file_path); // In file haystack.txt
 
-    let contents = fs::read_to_string(config.file_path).expect("File to read NOT found");
+    // Because run returns () in the success case, we only care about detecting 
+    // an error, so we don’t need unwrap_or_else to return the unwrapped value, 
+    // which would only be () ... run(config) only about the SIDE EFFECTS
+    // not the return value
+    if let Err(e) = run(config){
+        println!("Application error: {}", e);
+        process::exit(1);
+    }
+}
 
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.file_path)?;
     println!("With text:\n{}", contents);
-
-    dbg!(args);
+    // because this expression is about it's SIDE EFFECTS, we just returns ()
+    Ok(())
 }
 
 struct Config {
