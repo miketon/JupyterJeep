@@ -1,0 +1,7 @@
+VSCode artifact where rust functions failed to compile code completion :
+- can be fixed by loading the project at each sibling folder
+- as opposed to the monolithic parent rusty_jeep_project parent folder
+
+@todo : Figure out if this is because Rust projects expect
+- dir/sr/ folder for each project
+- or if this is because of the way VSCode handles Rust projects
