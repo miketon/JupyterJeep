@@ -1,9 +1,11 @@
+use std::env;
 use std::error::Error;
-use std::{fs, vec};
+use std::fs;
 
 pub struct Config {
     pub query: String,
     pub file_path: String,
+    pub ignore_case: bool,
 }
 
 impl Config {
@@ -34,13 +36,30 @@ impl Config {
         let query = args[1].clone();
         let file_path = args[2].clone();
 
-        Ok(Config { query, file_path })
+        // If the IGNORE_CASE environment variable isn’t set to anything, is_ok
+        // will return false
+        // - export IGNORE_CASE=1 // set
+        // - echo $IGNORE_CASE // check, make sure to preface with the '$'
+        // - unset IGNORE_CASE // unset
+        let ignore_case = env::var("IGNORE_CASE").is_ok();
+
+        Ok(Config {
+            query,
+            file_path,
+            ignore_case,
+        })
     }
 }
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.file_path)?;
-    for line in search(&config.query, &contents) {
+    let results = if config.ignore_case {
+        search_case_insensitive(&config.query, &contents)
+    } else {
+        search(&config.query, &contents)
+    };
+
+    for line in results {
         println!("[lines] -> [{}]", line);
     }
     // because this expression is about it's SIDE EFFECTS, we just returns ()
@@ -56,7 +75,6 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 // slices of query rather than contents, it will do its safety checking
 // incorrectly
 pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    print!("Searching for [{}] \n[{}]", query, contents);
     // Currently we will FAIL because we are ALWAYS returning an EMPTY vector
     // To fix that and implement search, our program needs to follow these steps:
     // -Iterate through each line of the contents.
@@ -64,7 +82,6 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     // -If it does, add it to the list of values we’re returning.
     // -If it doesn’t, do nothing.
     // -Return the list of results that match.
-    println!("\n[SEARCHING] -> [{query}]");
     let mut results = Vec::new();
     for line in contents.lines() {
         if line.contains(query) {
@@ -77,8 +94,23 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     results
 }
 
-pub fn search_case_insensitve<'a>(_query: &str, _contents: &'a str)-> Vec<&'a str>{
-    vec![]
+pub fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    // transform query to lowercase and neutralize case sensitivity
+    // Note that query is now a String rather than a string slice, because
+    // calling to_lowercase creates new data rather than referencing existing
+    // data
+    let query = query.to_lowercase();
+    let mut results = Vec::new();
+
+    for line in contents.lines() {
+        if line.to_lowercase().contains(&query) {
+            results.push(line);
+        }
+    }
+    if results.is_empty() {
+        println!("No results found for [{}]", query);
+    }
+    results
 }
 
 #[cfg(test)]
@@ -87,10 +119,10 @@ mod tests {
     #[test]
     fn case_sensitive() {
         let query = "duct";
-        // ensure that we don’t accidentally break the case-sensitive search 
+        // ensure that we don’t accidentally break the case-sensitive search
         // functionality that we’ve already implemented, but adding :
         // - "Duct tape." to the contents
-        // using a capital D that shouldn’t match the query "duct" when we’re 
+        // using a capital D that shouldn’t match the query "duct" when we’re
         // searching in a case-sensitive manner
         // So that we can test both cases, we’ll add a new test function that
         // calls search with a case-sensitive query and assert that the search
@@ -110,6 +142,9 @@ Rust:
 safe, fast, productive.
 Pick three.
 Trust me.";
-        assert_eq!(vec!["Rust:", "Trust me."], search_case_insensitve(query, contents));
+        assert_eq!(
+            vec!["Rust:", "Trust me."],
+            search_case_insensitive(query, contents)
+        );
     }
 }
