@@ -1,3 +1,4 @@
+use crate::calc::Calc;
 use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
 mod button;
 mod calc;
@@ -17,8 +18,8 @@ fn main() {
         .insert_resource(calc::Calc::new())
         .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
-        .add_system(display_system)
-        .add_system(button::button_system)
+        .add_startup_system(display_system)
+        .add_system(button_system)
         .run();
 }
 
@@ -30,6 +31,57 @@ fn hello_world(mut local_counter: Local<i32>) {
     );
 }
 
+/* Aliasing HELL
+type InteractiveQuery<'a> = Query<
+    (
+        &'a Interaction,
+        &'a mut BackgroundColor,
+        &'a Children,
+        &'a ButtonEventLabel,
+    ),
+    (Changed<Interaction>, With<Button>),
+>;
+
+type TextQuery<'a> = Query<&'a mut Text>;
+*/
+
+fn button_system(
+    // @note : implicitly this function is ENTIRELY side effects because
+    // we are ONLY GATHERING references (or resource for calc)
+    // -- not an expression
+    mut interaction_query: Query<
+        (
+            &Interaction,
+            &mut BackgroundColor,
+            &Children,
+            &button::ButtonEventLabel,
+        ),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut text_query: Query<&mut Text>,
+    mut calc: ResMut<Calc>,
+    mut local_counter: Local<i32>,
+) {
+    for (interaction, mut color, children, button_event_label) in &mut interaction_query {
+        println!(
+            "[interaction_system] on Query Interaction {}",
+            *local_counter
+        );
+        let mut text = text_query.get_mut(children[0]).unwrap();
+        let color = &mut color;
+        let on_click = Calc::on_click;
+        button::update_button(
+            interaction,
+            &mut text,
+            color,
+            button_event_label,
+            on_click,
+            &mut calc,
+        )
+    }
+    *local_counter += 1;
+}
+
 #[derive(Debug, Component)]
 struct DisplayOutputText;
 fn display_system(
@@ -39,8 +91,16 @@ fn display_system(
 ) {
     *local_click_count += 1;
     for (_i, mut text) in query.iter_mut() {
-        text.sections[0].value = calc.display();
+        if *local_click_count % 2 == 0 {
+            text.sections[0].value = calc.display();
+        } else {
+            text.sections[0].value = String::from("Monkey Mike");
+        }
     }
+    println!(
+        "[main] display_system local_click_count {}",
+        *local_click_count
+    );
 }
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
