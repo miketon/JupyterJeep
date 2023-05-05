@@ -1,4 +1,3 @@
-use crate::calc::Calc;
 use bevy::prelude::*;
 
 pub struct ButtonColors {
@@ -54,21 +53,20 @@ pub fn generate_text(asset_server: &AssetServer) -> TextBundle {
     )
 }
 
-
-pub fn update_button(
+pub fn update_button<T>(
     interaction: &Interaction,
     text: &mut Text,
     color: &mut BackgroundColor,
     button_event_label: &ButtonEventLabel,
-    mut on_click: impl FnMut(&mut Calc, String),
-    calc: &mut Calc,
+    mut on_click: impl FnMut(&mut T, String),
+    state: &mut T,
 ) {
     let button_colors = ButtonColors::default();
     match *interaction {
         Interaction::Clicked => {
             text.sections[0].value = button_event_label.on_click.to_string();
             *color = button_colors.on_click.into();
-            on_click(calc, String::from("1"));
+            on_click(state, String::from("1"));
         }
         Interaction::Hovered => {
             text.sections[0].value = button_event_label.on_hover.to_string();

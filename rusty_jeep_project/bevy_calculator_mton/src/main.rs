@@ -19,7 +19,7 @@ fn main() {
         .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
         .add_startup_system(display_system)
-        .add_system(button_system)
+        .add_system(interaction_system)
         .run();
 }
 
@@ -45,7 +45,7 @@ type InteractiveQuery<'a> = Query<
 type TextQuery<'a> = Query<&'a mut Text>;
 */
 
-fn button_system(
+fn interaction_system(
     // @note : implicitly this function is ENTIRELY side effects because
     // we are ONLY GATHERING references (or resource for calc)
     // -- not an expression
@@ -69,7 +69,7 @@ fn button_system(
         );
         let mut text = text_query.get_mut(children[0]).unwrap();
         let color = &mut color;
-        let on_click = Calc::on_click;
+        let on_click = |calc: &mut Calc, value: String| Calc::on_click(calc, value);
         button::update_button(
             interaction,
             &mut text,
