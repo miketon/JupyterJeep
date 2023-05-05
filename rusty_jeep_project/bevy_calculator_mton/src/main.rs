@@ -18,7 +18,6 @@ fn main() {
         .insert_resource(calc::Calc::new())
         .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
-        .add_startup_system(display_system)
         .add_system(interaction_system)
         .run();
 }
@@ -54,19 +53,16 @@ fn interaction_system(
             &Interaction,
             &mut BackgroundColor,
             &Children,
-            &button::ButtonEventLabel,
+            &button::ButtonEvent,
         ),
         (Changed<Interaction>, With<Button>),
     >,
-    mut text_query: Query<&mut Text>,
+    mut text_query: Query<&mut Text, Without<DisplayOutputText>>,
+    mut display_output_query: Query<(&DisplayOutputText, &mut Text)>,
     mut calc: ResMut<Calc>,
     mut local_counter: Local<i32>,
 ) {
     for (interaction, mut color, children, button_event_label) in &mut interaction_query {
-        println!(
-            "[interaction_system] on Query Interaction {}",
-            *local_counter
-        );
         let mut text = text_query.get_mut(children[0]).unwrap();
         let color = &mut color;
         let on_click = |calc: &mut Calc, value: String| Calc::on_click(calc, value);
@@ -77,30 +73,19 @@ fn interaction_system(
             button_event_label,
             on_click,
             &mut calc,
-        )
+        );
+        // on_button click update calculator display
+        for (_, mut text) in &mut display_output_query.iter_mut() {
+            update_calculator_display(&mut text, &calc, *local_counter);
+        }
     }
     *local_counter += 1;
 }
 
 #[derive(Debug, Component)]
 struct DisplayOutputText;
-fn display_system(
-    mut query: Query<(&DisplayOutputText, &mut Text)>,
-    mut local_click_count: Local<i32>,
-    calc: Res<calc::Calc>,
-) {
-    *local_click_count += 1;
-    for (_i, mut text) in query.iter_mut() {
-        if *local_click_count % 2 == 0 {
-            text.sections[0].value = calc.display();
-        } else {
-            text.sections[0].value = String::from("Monkey Mike");
-        }
-    }
-    println!(
-        "[main] display_system local_click_count {}",
-        *local_click_count
-    );
+fn update_calculator_display(text: &mut Text, calc: &ResMut<Calc>, click_count: i32) {
+    text.sections[0].value = calc.display();
 }
 
 fn setup_calc_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -241,13 +226,12 @@ fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
     let button_symbols = vec![
         "0", "*", "/", "=", "1", "2", "3", "+", "4", "5", "6", "-", "7", "8", "9", "C",
     ];
-    for i in button_symbols {
-        let button_label = button::ButtonEventLabel {
-            on_click: "X".to_string(),
-            on_hover: i.to_string(),
-            default: i.to_string(),
+    for button_value in button_symbols {
+        let button_label = button::ButtonEvent {
+            value: button_value.to_string(), // capture button value
+            on_click_label: "X".to_string(),
         };
-        println!("spawn button : {}", i);
+        println!("spawn button : {button_value}");
         parent
             .spawn(button::generate_button())
             .insert(button_label)

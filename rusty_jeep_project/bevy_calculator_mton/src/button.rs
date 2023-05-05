@@ -7,10 +7,9 @@ pub struct ButtonColors {
 }
 
 #[derive(Component)]
-pub struct ButtonEventLabel {
-    pub default: String,
-    pub on_hover: String,
-    pub on_click: String,
+pub struct ButtonEvent {
+    pub value: String,
+    pub on_click_label: String,
 }
 
 impl Default for ButtonColors {
@@ -57,23 +56,23 @@ pub fn update_button<T>(
     interaction: &Interaction,
     text: &mut Text,
     color: &mut BackgroundColor,
-    button_event_label: &ButtonEventLabel,
+    button_event: &ButtonEvent,
     mut on_click: impl FnMut(&mut T, String),
     state: &mut T,
 ) {
     let button_colors = ButtonColors::default();
     match *interaction {
         Interaction::Clicked => {
-            text.sections[0].value = button_event_label.on_click.to_string();
+            text.sections[0].value = button_event.on_click_label.to_string();
             *color = button_colors.on_click.into();
-            on_click(state, String::from("1"));
+            // pass button value to on_click callback
+            on_click(state, button_event.value.to_string());
         }
         Interaction::Hovered => {
-            text.sections[0].value = button_event_label.on_hover.to_string();
             *color = button_colors.on_hover.into();
         }
         Interaction::None => {
-            text.sections[0].value = button_event_label.default.to_string();
+            text.sections[0].value = button_event.value.to_string();
             *color = button_colors.default.into();
         }
     }
