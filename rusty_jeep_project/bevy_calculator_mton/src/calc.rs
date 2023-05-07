@@ -1,9 +1,24 @@
 use bevy::prelude::Resource;
 
+/**
+Tracks the state of the calculator
+Example:
+```rust
+self.check_if_cache_needs_clearing();
+assert_eq!(self._is_self_cleared(), true);
+
+```
+ */
 #[derive(Resource)]
 pub struct Calc {
+    /// display leftmost character
     left: f32,
+    /// display rightmost character -- additional user input characters go here
     right: Option<f32>,
+    /// cached symbol
+    symbol: Option<char>,
+    /// cached has been evaluated
+    is_evaluated: bool,
 }
 
 impl Calc {
@@ -11,37 +26,47 @@ impl Calc {
         Calc {
             left: 0.0,
             right: None,
+            symbol: None,
+            is_evaluated: false,
         }
+        // @todo : can I use the clear_self function here?
     }
 
-    pub fn on_click(calc: &mut Self, val: String) {
-        println!("[calc] on_click {}", val);
+    pub fn display(&mut self) -> String {
+        println!("[calc] display check_if_cache_needs_clearing {:?}", self.check_if_cache_needs_clearing());
+        self.check_if_cache_needs_clearing();
 
-        match &val[..] {
-            "0" => calc.set_number(0.0),
-            "1" => calc.set_number(1.0),
-            "2" => calc.set_number(2.0),
-            "3" => calc.set_number(3.0),
-            "4" => calc.set_number(4.0),
-            "5" => calc.set_number(5.0),
-            "6" => calc.set_number(6.0),
-            "7" => calc.set_number(7.0),
-            "8" => calc.set_number(8.0),
-            "9" => calc.set_number(9.0),
-            _ => calc.set_number(8008.0),
-        }
-    }
-
-    pub fn display(&self) -> String {
-        if let Some(right) = &self.right {
-            format!("{} + {}", self.left, right)
+        if self.symbol != None {
+            let new_val = format!("{}{}", self.right.unwrap_or(0.0), "val".to_string());
+            self.right = Some(new_val.parse::<f32>().unwrap());
+            return self.right.unwrap().to_string();
         } else {
-            format!("{}", self.left)
+            let new_val = format!("{}", self.left);
+            self.left = new_val.parse::<f32>().unwrap();
+            return self.left.to_string();
         }
     }
 
     pub fn set_number(&mut self, val: f32) {
-        println!("[calc] set_display {}", val);
+        println!("[calc] set_number {}", val);
         self.left = val;
+    }
+
+    fn check_if_cache_needs_clearing(&mut self) {
+        if self.is_evaluated
+            && !matches!(self.symbol, Some('+') | Some('-') | Some('*') | Some('/'))
+        {
+            self._clear_self();
+        }
+    }
+
+    fn _clear_self(&mut self) {
+        self.left = 0.0;
+        self.right = None;
+        self.is_evaluated = false;
+    }
+
+    fn _is_self_cleared(&mut self) -> bool {
+        self.left == 0.0 && self.right == None && self.symbol == None
     }
 }
