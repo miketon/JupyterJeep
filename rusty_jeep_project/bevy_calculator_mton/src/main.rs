@@ -64,30 +64,36 @@ fn interaction_system(
 ) {
     for (interaction, mut color, children, button_event_label) in &mut interaction_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
-        let color = &mut color;
         let on_click = |calc: &mut Calc, value: char| on_button_click(calc, value);
         button::update_button(
             interaction,
             &mut text,
-            color,
+            &mut color,
             button_event_label,
             on_click,
             &mut calc,
         );
-        println!(
-            "[interaction_system] display_query found {} instances",
-            display_query.iter().count()
-        );
-        // on_button click update calculator display
-        for mut text in &mut display_query.iter_mut() {
-            println!(
-                "[main] interaction system -> update calculator display {}",
-                *local_counter
-            );
-            update_calculator_display(&mut text, &mut calc);
+
+        match *interaction {
+            Interaction::Clicked => {
+                println!(
+                    "[interaction_system] display_query found {} instances",
+                    display_query.iter().count()
+                );
+                // on_button click update calculator display
+                for mut text in &mut display_query.iter_mut() {
+                    println!(
+                        "[main] interaction system -> update calculator display {}",
+                        *local_counter
+                    );
+                    update_calculator_display(&mut text, &mut calc);
+                }
+                *local_counter += 1;
+            }
+            Interaction::Hovered => {}
+            Interaction::None => {}
         }
     }
-    *local_counter += 1;
 }
 
 #[derive(Debug, Component)]
