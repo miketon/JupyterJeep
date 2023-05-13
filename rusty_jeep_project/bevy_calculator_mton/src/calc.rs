@@ -19,6 +19,17 @@ pub struct Calc {
     symbol: Option<char>,
     /// cached has been evaluated
     is_evaluated: bool,
+    operator: Operator,
+}
+
+#[derive(Debug)]
+pub enum Operator {
+    Default,
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Equal,
 }
 
 impl Calc {
@@ -28,12 +39,16 @@ impl Calc {
             right: None,
             symbol: None,
             is_evaluated: false,
+            operator: Operator::Default,
         }
         // @todo : can I use the clear_self function here?
     }
 
     pub fn display(&mut self) -> String {
-        println!("[calc] display check_if_cache_needs_clearing {:?}", self.check_if_cache_needs_clearing());
+        println!(
+            "[calc] display check_if_cache_needs_clearing {:?}",
+            self.check_if_cache_needs_clearing()
+        );
         self.check_if_cache_needs_clearing();
 
         if self.symbol != None {
@@ -52,6 +67,11 @@ impl Calc {
         self.left = val;
     }
 
+    pub fn set_operator(&mut self, operator: Operator) {
+        println!("[calc] set_operator {:?}", operator);
+        self.operator = operator;
+    }
+
     fn check_if_cache_needs_clearing(&mut self) {
         if self.is_evaluated
             && !matches!(self.symbol, Some('+') | Some('-') | Some('*') | Some('/'))
@@ -64,6 +84,7 @@ impl Calc {
         self.left = 0.0;
         self.right = None;
         self.is_evaluated = false;
+        self.operator = Operator::Default;
     }
 
     fn _is_self_cleared(&mut self) -> bool {

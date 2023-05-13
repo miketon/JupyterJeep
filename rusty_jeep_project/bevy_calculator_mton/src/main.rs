@@ -1,7 +1,19 @@
 use crate::calc::Calc;
+use crate::calc::Operator;
 use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
 mod button;
 mod calc;
+
+#[derive(Debug)]
+enum ButtonLabel {
+    Number(char),
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Equal,
+    Clear,
+}
 
 fn main() {
     App::new()
@@ -64,7 +76,7 @@ fn interaction_system(
 ) {
     for (interaction, mut color, children, button_event_label) in &mut interaction_query {
         let mut text = text_query.get_mut(children[0]).unwrap();
-        let on_click = |calc: &mut Calc, value: char| on_button_click(calc, value);
+        let on_click = on_button_click;
         button::update_button(
             interaction,
             &mut text,
@@ -108,10 +120,30 @@ fn on_button_click(calc: &mut Calc, val: char) {
     println!("[main not calc] on_button_click {}", val);
 
     match val {
+        // match digits between 0 and 9 inclusive
         '0'..='9' => {
+            // convert char to digit (floating point))
             if let Some(number) = val.to_digit(10) {
                 calc.set_number(number as f32);
+            } else {
+                error!("Invalid digit {}", val);
             }
+        }
+        // match operators + - * /
+        '+' => {
+            calc.set_operator(Operator::Add);
+        }
+        '-' => {
+            calc.set_operator(Operator::Subtract);
+        }
+        '*' => {
+            calc.set_operator(Operator::Multiply);
+        }
+        '/' => {
+            calc.set_operator(Operator::Divide);
+        }
+        '=' => {
+            calc.set_operator(Operator::Equal);
         }
         _ => calc.set_number(8008.0),
     }
@@ -258,21 +290,40 @@ fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
     // Populate the button grid with buttons that include:
     // - ButtonEvent component - to handle on_click events
     // @audit-ok ... not sure if this refactor is SIMPLER LOL
-    let button_symbols: Vec<char> = vec!['0', '*', '/', '=']
-        .into_iter()
-        .chain('1'..='3')
-        .chain(vec!['+'].into_iter())
-        .chain('4'..='6')
-        .chain(vec!['-'].into_iter())
-        .chain('7'..='9')
-        .chain(vec!['C'].into_iter())
-        .collect();
-    for button_value in button_symbols {
+    let button_labels: Vec<ButtonLabel> = vec![
+        ButtonLabel::Number('0'),
+        ButtonLabel::Multiply,
+        ButtonLabel::Divide,
+        ButtonLabel::Equal,
+        ButtonLabel::Number('1'),
+        ButtonLabel::Number('2'),
+        ButtonLabel::Number('3'),
+        ButtonLabel::Add,
+        ButtonLabel::Number('4'),
+        ButtonLabel::Number('5'),
+        ButtonLabel::Number('6'),
+        ButtonLabel::Subtract,
+        ButtonLabel::Number('7'),
+        ButtonLabel::Number('8'),
+        ButtonLabel::Number('9'),
+        ButtonLabel::Clear,
+    ];
+
+    for label in button_labels {
         let button_label = button::ButtonEvent {
-            value: button_value, // capture button value
+            // get the button label char
+            value: match &label {
+                ButtonLabel::Number(d) => *d,
+                ButtonLabel::Add => '+',
+                ButtonLabel::Subtract => '-',
+                ButtonLabel::Multiply => '*',
+                ButtonLabel::Divide => '/',
+                ButtonLabel::Equal => '=',
+                ButtonLabel::Clear => 'C',
+            },
             on_click_label: "X".to_string(),
         };
-        println!("spawn button : {button_value}");
+        println!("spawn button : {:?}", label);
         parent
             .spawn(button::generate_button())
             .insert(button_label)

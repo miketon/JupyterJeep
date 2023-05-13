@@ -59,7 +59,6 @@ pub fn update_button<T>(
     button_event: &ButtonEvent,
     mut on_click: impl FnMut(&mut T, char),
     state: &mut T,
-
 ) {
     let button_colors = ButtonColors::default();
     match *interaction {
