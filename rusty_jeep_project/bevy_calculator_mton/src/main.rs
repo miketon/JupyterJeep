@@ -28,18 +28,9 @@ fn main() {
         // Reduce CPU/GPU usage : Only run app when there is user input
         .insert_resource(WinitSettings::desktop_app())
         .insert_resource(calc::Calc::new())
-        .add_startup_system(hello_world)
         .add_startup_system(setup_calc_ui)
         .add_system(interaction_system)
         .run();
-}
-
-fn hello_world(mut local_counter: Local<i32>) {
-    *local_counter += 1;
-    println!(
-        "Hello, world! BEVY CALCULATOR MTON {} times",
-        *local_counter
-    );
 }
 
 /* Aliasing HELL
@@ -88,14 +79,16 @@ fn interaction_system(
 
         match *interaction {
             Interaction::Clicked => {
-                println!(
-                    "[interaction_system] display_query found {} instances",
-                    display_query.iter().count()
-                );
+                // println!(
+                //     "[interaction_system] display_query found {} instances",
+                //     display_query.iter().count()
+                // );
+                // @todo : Write unit test to ensure only 1 instance of 
+                // display_query ... instead of println it
                 // on_button click update calculator display
                 for mut text in &mut display_query.iter_mut() {
                     println!(
-                        "[main] interaction system -> update calculator display {}",
+                        "[main] interaction system -> update calculator count {}",
                         *local_counter
                     );
                     update_calculator_display(&mut text, &mut calc);
