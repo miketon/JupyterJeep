@@ -3,6 +3,7 @@ use crate::calc::Operator;
 use bevy::{prelude::*, window::WindowResolution, winit::WinitSettings};
 mod button;
 mod calc;
+use std::fmt;
 
 #[derive(Debug)]
 enum ButtonLabel {
@@ -12,7 +13,25 @@ enum ButtonLabel {
     Multiply,
     Divide,
     Equal,
+    OnClick,
     Clear,
+}
+
+impl button::ButtonLabelTrait for ButtonLabel {}
+
+impl fmt::Display for ButtonLabel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ButtonLabel::Number(value) => write!(f, "{}", value),
+            ButtonLabel::Add => write!(f, "+"),
+            ButtonLabel::Subtract => write!(f, "-"),
+            ButtonLabel::Multiply => write!(f, "*"),
+            ButtonLabel::Divide => write!(f, "/"),
+            ButtonLabel::Equal => write!(f, "="),
+            ButtonLabel::OnClick => write!(f, "X"),
+            ButtonLabel::Clear => write!(f, "C"),
+        }
+    }
 }
 
 fn main() {
@@ -56,7 +75,7 @@ fn interaction_system(
             &Interaction,
             &mut BackgroundColor,
             &Children,
-            &button::ButtonEvent,
+            &button::ButtonEvent<ButtonLabel>,
         ),
         (Changed<Interaction>, With<Button>),
     >,
@@ -83,7 +102,7 @@ fn interaction_system(
                 //     "[interaction_system] display_query found {} instances",
                 //     display_query.iter().count()
                 // );
-                // @todo : Write unit test to ensure only 1 instance of 
+                // @todo : Write unit test to ensure only 1 instance of
                 // display_query ... instead of println it
                 // on_button click update calculator display
                 for mut text in &mut display_query.iter_mut() {
@@ -312,9 +331,10 @@ fn populate_button_grid(parent: &mut ChildBuilder, text_node: TextBundle) {
                 ButtonLabel::Multiply => '*',
                 ButtonLabel::Divide => '/',
                 ButtonLabel::Equal => '=',
+                ButtonLabel::OnClick => 'X',
                 ButtonLabel::Clear => 'C',
             },
-            on_click_label: "X".to_string(),
+            on_click_label: ButtonLabel::OnClick,
         };
         println!("spawn button : {:?}", label);
         parent

@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 
+pub trait ButtonLabelTrait: std::fmt::Display {}
+
+#[derive(Component)]
+pub struct ButtonEvent<T: ButtonLabelTrait> {
+    pub value: char,
+    pub on_click_label: T,
+}
+
 pub struct ButtonColors {
     pub default: Color,
     pub on_hover: Color,
     pub on_click: Color,
-}
-
-#[derive(Component)]
-pub struct ButtonEvent {
-    pub value: char,
-    pub on_click_label: String,
 }
 
 impl Default for ButtonColors {
@@ -52,11 +54,11 @@ pub fn generate_text(asset_server: &AssetServer) -> TextBundle {
     )
 }
 
-pub fn update_button<T>(
+pub fn update_button<T, U: ButtonLabelTrait>(
     interaction: &Interaction,
     text: &mut Text,
     color: &mut BackgroundColor,
-    button_event: &ButtonEvent,
+    button_event: &ButtonEvent<U>,
     mut on_click: impl FnMut(&mut T, char),
     state: &mut T,
 ) {
