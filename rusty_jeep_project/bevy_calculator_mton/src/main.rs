@@ -124,12 +124,12 @@ fn interaction_system(
 struct DisplayText;
 
 fn update_calculator_display(text: &mut Text, calc: &mut ResMut<Calc>) {
-    println!("[main] update_calculator_display {}", calc.display());
-    text.sections[0].value = calc.display();
+    // println!("[main] update_calculator_display {}", calc.update_display());
+    text.sections[0].value = calc.update_display();
 }
 
 fn on_button_click(calc: &mut Calc, val: char) {
-    println!("[main not calc] on_button_click {}", val);
+    // println!("[main not calc] on_button_click {}", val);
 
     match val {
         // match digits between 0 and 9 inclusive
@@ -156,6 +156,9 @@ fn on_button_click(calc: &mut Calc, val: char) {
         }
         '=' => {
             calc.set_operator(Operator::Equal);
+        }
+        'C' => {
+            calc.set_operator(Operator::Clear);
         }
         _ => calc.set_number(8008.0),
     }
