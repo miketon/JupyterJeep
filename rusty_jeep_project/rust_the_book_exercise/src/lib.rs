@@ -1,15 +1,9 @@
-mod front_of_house {
-    mod hosting {
-        fn add_to_waitlist() {}
+// Note that you only need to load a file using a mod declaration once in your  
+// module tree
+mod front_of_house;
 
-        fn seat_at_table() {}
-    }
+pub use crate::front_of_house::hosting;
 
-    mod serving {
-        fn take_order() {}
-
-        fn serve_order() {}
-
-        fn take_payment() {}
-    }
+pub fn eat_at_restaurant(){
+    hosting::add_to_waitlist();
 }
