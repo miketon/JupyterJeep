@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, quick::WorldInspectorPlugin};
 mod egui_inspector;
-use egui_inspector::{on_update_ui, setup_ui_resources, UiState, SliderChangedF32};
+use egui_inspector::{on_update_ui, setup_ui_resources, SliderChangedF32, UiState};
 
 fn main() {
     App::new()
@@ -11,7 +11,7 @@ fn main() {
         .add_startup_system(setup_text)
         .add_startup_system(setup_ui)
         // directly calls pug setup_ui_resources from egui_inspector.rs
-        .add_startup_system(setup_ui_resources) 
+        .add_startup_system(setup_ui_resources)
         .add_system(inspector_draw)
         .add_system(update_font_size)
         .run();
@@ -19,7 +19,7 @@ fn main() {
 
 fn inspector_draw(
     contexts: EguiContexts,
-    // @audit : why did going from egui_inspector.rs -> egui_inspector/mod.rs 
+    // @audit : why did going from egui_inspector.rs -> egui_inspector/mod.rs
     // allow me to remove mut from on_change and still be able to resize text?
     on_change: ResMut<Events<SliderChangedF32>>,
     ui_state: ResMut<UiState>,
@@ -27,9 +27,12 @@ fn inspector_draw(
     on_update_ui(contexts, on_change, ui_state);
 }
 
-fn update_font_size(mut query: Query<&mut Text>, mut slider_changed: EventReader<SliderChangedF32>){
-    for slider in slider_changed.iter(){
-        for mut text in query.iter_mut(){
+fn update_font_size(
+    mut query: Query<&mut Text>,
+    mut slider_changed: EventReader<SliderChangedF32>,
+) {
+    for slider in slider_changed.iter() {
+        for mut text in query.iter_mut() {
             // println!("Text Size Changed to {}", size.get_size());
             text.sections[0].style.font_size = slider.get_value();
         }

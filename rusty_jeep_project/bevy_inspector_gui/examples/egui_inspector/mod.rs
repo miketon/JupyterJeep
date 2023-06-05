@@ -11,13 +11,13 @@ impl Resource for UiState {}
 #[derive(Debug, Clone)]
 pub struct SliderChangedF32(f32);
 
-impl SliderChangedF32{
-    pub fn get_value(&self) -> f32{
+impl SliderChangedF32 {
+    pub fn get_value(&self) -> f32 {
         self.0
     }
 }
 
-impl Resource for SliderChangedF32{}
+impl Resource for SliderChangedF32 {}
 
 pub fn setup_ui_resources(mut commands: Commands) {
     commands.insert_resource(UiState { slider_f32: 1.0 });
@@ -34,8 +34,9 @@ pub fn on_update_ui(
         ui.label("Eat Yo Avocado Skins!");
         if ui
             .add(egui::Slider::new(&mut ui_state.slider_f32, 0.0..=100.0).text("Slider F32"))
-            .changed(){
-                on_change.send(SliderChangedF32(ui_state.slider_f32));
-            }
+            .changed()
+        {
+            on_change.send(SliderChangedF32(ui_state.slider_f32));
+        }
     });
 }
