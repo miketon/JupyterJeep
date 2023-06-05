@@ -1,33 +1,26 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::{bevy_egui::EguiContexts, quick::WorldInspectorPlugin};
+use bevy_inspector_egui::bevy_egui::EguiContexts;
 mod egui_inspector;
-use egui_inspector::{on_update_ui, setup_ui_resources, SliderChangedF32, UiState};
+use egui_inspector::{draw_inspector, insert_inspector_resources, SliderChangedF32, UiState};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(WorldInspectorPlugin::new())
-        .add_startup_system(setup_camera)
-        .add_startup_system(setup_text)
-        .add_startup_system(setup_ui)
+        .add_plugin(bevy_inspector_egui::bevy_egui::EguiPlugin)
+        .add_startup_system(insert_camera)
+        .add_startup_system(spawn_text)
+        .add_startup_system(spawn_ui)
         // directly calls pug setup_ui_resources from egui_inspector.rs
-        .add_startup_system(setup_ui_resources)
-        .add_system(inspector_draw)
-        .add_system(update_font_size)
+        .add_startup_system(insert_inspector_resources)
+        .add_system(update_inspector)
+        .add_system(on_slider_changed)
         .run();
 }
 
-fn inspector_draw(
-    contexts: EguiContexts,
-    // @audit : why did going from egui_inspector.rs -> egui_inspector/mod.rs
-    // allow me to remove mut from on_change and still be able to resize text?
-    on_change: ResMut<Events<SliderChangedF32>>,
-    ui_state: ResMut<UiState>,
-) {
-    on_update_ui(contexts, on_change, ui_state);
-}
+// ***************** On Event Update ***************** //
 
-fn update_font_size(
+/// React to SliderChangedF32 events
+fn on_slider_changed(
     mut query: Query<&mut Text>,
     mut slider_changed: EventReader<SliderChangedF32>,
 ) {
@@ -39,19 +32,39 @@ fn update_font_size(
     }
 }
 
-fn setup_camera(mut commands: Commands) {
+// ***************** On Frame Update ***************** //
+
+/// Update the Inspector
+/// - draws the inspector to context
+/// - mutate UiState
+/// - publish event on change
+fn update_inspector(
+    contexts: EguiContexts,
+    // @audit : why did going from egui_inspector.rs -> egui_inspector/mod.rs
+    // allow me to remove mut from on_change and still be able to resize text?
+    on_change: ResMut<Events<SliderChangedF32>>,
+    ui_state: ResMut<UiState>,
+) {
+    draw_inspector(contexts, on_change, ui_state, "PlayGround", "Font Size");
+}
+
+// ***************** On App Awake ***************** //
+
+// Insert Resources
+fn insert_camera(mut commands: Commands) {
     // Camera
     commands.spawn(Camera2dBundle::default());
 }
 
-fn setup_text(mut commands: Commands, asset_server: Res<AssetServer>) {
+// Spawn Bundles
+fn spawn_text(mut commands: Commands, asset_server: Res<AssetServer>) {
     // asset/fonts/FiraSans-Bold.ttf -- no default font builtin to bevy
     let font_handle: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
-    let text_node = generate_text("Hello World Monkey", font_handle);
+    let text_node = generate_text("Hello World Slider", font_handle);
     commands.spawn(text_node.with_text_alignment(TextAlignment::Center));
 }
 
-fn setup_ui(mut commands: Commands) {
+fn spawn_ui(mut commands: Commands) {
     commands.spawn(NodeBundle {
         style: Style {
             size: Size::new(Val::Percent(50.0), Val::Percent(50.0)),
