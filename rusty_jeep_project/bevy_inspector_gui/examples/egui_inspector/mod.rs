@@ -18,15 +18,15 @@ use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, egui, egui::Color32, egui::RichText};
 
 /// UiState struct to hold the UI state
-#[derive(Debug)]
+// Resource trait allows insertion into Bevy world resource map
+#[derive(Debug, Resource)]
 pub struct UiState {
     slider_f32: f32,
 }
 
-// Resource trait allows insertion into Bevy world resource map
-impl Resource for UiState {}
-
 /// SliderChangedF32 event
+// Resource trait allows insertion into Bevy world resource map
+#[derive(Debug, Resource)]
 pub struct SliderChangedF32 {
     value: f32,
 }
@@ -37,9 +37,6 @@ impl SliderChangedF32 {
         self.value
     }
 }
-
-// Resource trait allows insertion into Bevy world resource map
-impl Resource for SliderChangedF32 {}
 
 /// Insert inspector resources, queue up Commands to insert resources:
 /// - UiState : holds the UI state
@@ -81,6 +78,11 @@ pub fn draw_inspector(
                     on_change.send(SliderChangedF32 {
                         value: ui_state.slider_f32,
                     });
+                }
+                if ui.button("SetSliderChanged=69").clicked() {
+                    on_change.send(SliderChangedF32 {
+                        value: 69.0, // very mature
+                    })
                 }
             },
         );
