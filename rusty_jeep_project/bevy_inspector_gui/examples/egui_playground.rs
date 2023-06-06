@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, bevy_egui::EguiPlugin, egui};
 
+mod dock_plugin;
+use dock_plugin::DockPlugin;
+
 #[derive(Debug, Default, Resource)]
 struct OccupiedScreenSpace {
     left: f32,
@@ -13,8 +16,8 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(EguiPlugin)
+        .add_plugin(DockPlugin)
         .insert_resource(OccupiedScreenSpace::default())
-        .add_system(ui_example_system)
         .add_system(ui_dock_draw)
         .run();
 }
@@ -57,10 +60,4 @@ fn ui_dock_draw(mut contexts: EguiContexts, mut oss: ResMut<OccupiedScreenSpace>
         .response
         .rect
         .height();
-}
-
-fn ui_example_system(mut ctx: EguiContexts) {
-    egui::Window::new("UI-MTONGUI").show(ctx.ctx_mut(), |ui| {
-        ui.label("Don't Eat Reynolds Wraps!");
-    });
 }
