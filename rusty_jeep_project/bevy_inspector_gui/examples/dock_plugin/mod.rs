@@ -1,16 +1,25 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, bevy_egui::EguiPlugin, egui, egui::Context};
 
+enum PanelBuildType {
+    Side(egui::SidePanel),
+    TopBottom(egui::TopBottomPanel),
+}
+
 #[derive(Debug, Resource, Default)]
-struct OccupiedScreenSpace {
+struct OccupiedSpace {
     left: f32,
     right: f32,
     top: f32,
     bottom: f32,
-    left_is_visible: bool,
-    right_is_visible: bool,
-    top_is_visible: bool,
-    bottom_is_visible: bool,
+}
+
+#[derive(Debug, Resource, Default)]
+struct IsVisible {
+    left: bool,
+    right: bool,
+    top: bool,
+    bottom: bool,
 }
 
 pub struct DockPlugin;
@@ -18,89 +27,75 @@ pub struct DockPlugin;
 impl Plugin for DockPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
-            .insert_resource(OccupiedScreenSpace::default())
+            .insert_resource(OccupiedSpace::default())
+            .insert_resource(IsVisible::default())
             .add_system(toggle_dock)
             .add_system(draw_dock)
             .add_system(ui_example_system);
     }
 }
 
-fn toggle_dock(mut oss: ResMut<OccupiedScreenSpace>, key_input: Res<Input<KeyCode>>) {
+fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
     match () {
-        _ if key_input.just_released(KeyCode::Left) => oss.left_is_visible = !oss.left_is_visible,
-        _ if key_input.just_released(KeyCode::Right) => {
-            oss.right_is_visible = !oss.right_is_visible
-        }
-        _ if key_input.just_released(KeyCode::Up) => oss.top_is_visible = !oss.top_is_visible,
-        _ if key_input.just_released(KeyCode::Down) => {
-            oss.bottom_is_visible = !oss.bottom_is_visible
-        }
+        _ if key_input.just_released(KeyCode::Left) => is_visible.left = !is_visible.left,
+        _ if key_input.just_released(KeyCode::Right) => is_visible.right = !is_visible.right,
+        _ if key_input.just_released(KeyCode::Up) => is_visible.top = !is_visible.top,
+        _ if key_input.just_released(KeyCode::Down) => is_visible.bottom = !is_visible.bottom,
         _ => (), // No-op if no relevant key was pressed
     }
 }
 
-fn draw_dock(mut contexts: EguiContexts, mut oss: ResMut<OccupiedScreenSpace>) {
+fn draw_dock(
+    mut contexts: EguiContexts,
+    mut o_space: ResMut<OccupiedSpace>,
+    is_visible: ResMut<IsVisible>,
+) {
     let ctx = contexts.ctx_mut();
-    left_panel(ctx, &mut oss);
-    right_panel(ctx, &mut oss);
-    top_panel(ctx, &mut oss);
-    bottom_panel(ctx, &mut oss);
-}
-
-fn left_panel(ctx: &mut Context, oss: &mut OccupiedScreenSpace) {
-    if oss.left_is_visible {
-        oss.left = egui::SidePanel::left("left_panel")
-            .resizable(true)
-            .show(ctx, |ui| {
-                ui.label("Left Panel");
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-            })
-            .response
-            .rect
-            .width()
+    if is_visible.left {
+        o_space.left = panel_builder(ctx, "left", "Left Panel".to_string()).x;
+    }
+    if is_visible.right {
+        o_space.right = panel_builder(ctx, "right", "Right Panel".to_string()).x;
+    }
+    if is_visible.top {
+        o_space.top = panel_builder(ctx, "top", "Top Panel".to_string()).y;
+    }
+    if is_visible.bottom {
+        o_space.bottom = panel_builder(ctx, "bottom", "Bottom Panel".to_string()).y;
     }
 }
 
-fn right_panel(ctx: &mut Context, oss: &mut OccupiedScreenSpace) {
-    if oss.right_is_visible {
-        oss.right = egui::SidePanel::right("right_panel")
-            .resizable(true)
-            .show(ctx, |ui| {
-                ui.label("Right Panel");
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-            })
-            .response
-            .rect
-            .width()
-    }
-}
+fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2 {
+    let panel_builder = match p_type {
+        "left" => PanelBuildType::Side(egui::SidePanel::left(p_label.clone())),
+        "right" => PanelBuildType::Side(egui::SidePanel::right(p_label.clone())),
+        "top" => PanelBuildType::TopBottom(egui::TopBottomPanel::top(p_label.clone())),
+        "bottom" => PanelBuildType::TopBottom(egui::TopBottomPanel::bottom(p_label.clone())),
+        _ => panic!("Invalid panel type"),
+    };
 
-fn top_panel(ctx: &mut Context, oss: &mut OccupiedScreenSpace) {
-    if oss.top_is_visible {
-        oss.top = egui::TopBottomPanel::top("top_panel")
-            .resizable(true)
-            .show(ctx, |ui| {
-                ui.label("Top Panel");
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-            })
-            .response
-            .rect
-            .height()
-    }
-}
+    let response = match panel_builder {
+        PanelBuildType::Side(side_panel) => {
+            side_panel
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.label(p_label);
+                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
+                })
+                .response
+        }
+        PanelBuildType::TopBottom(top_bottom_panel) => {
+            top_bottom_panel
+                .resizable(true)
+                .show(ctx, |ui| {
+                    ui.label(p_label);
+                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
+                })
+                .response
+        }
+    };
 
-fn bottom_panel(ctx: &mut Context, oss: &mut OccupiedScreenSpace) {
-    if oss.bottom_is_visible {
-        oss.bottom = egui::TopBottomPanel::bottom("bottom_panel")
-            .resizable(true)
-            .show(ctx, |ui| {
-                ui.label("Bottom Panel");
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
-            })
-            .response
-            .rect
-            .height()
-    }
+    response.rect.size()
 }
 
 fn ui_example_system(mut ctx: EguiContexts) {
