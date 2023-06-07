@@ -1,12 +1,13 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::bevy_egui::EguiContexts;
+use bevy_inspector_egui::{bevy_egui::EguiContexts, quick::WorldInspectorPlugin};
 mod egui_inspector;
 use egui_inspector::{draw_inspector, insert_inspector_resources, SliderChangedF32, UiState};
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(bevy_inspector_egui::bevy_egui::EguiPlugin)
+        .add_plugin(WorldInspectorPlugin::new())
+        // .add_plugin(bevy_inspector_egui::bevy_egui::EguiPlugin)
         .add_startup_system(insert_camera)
         .add_startup_system(spawn_text)
         .add_startup_system(spawn_ui)
