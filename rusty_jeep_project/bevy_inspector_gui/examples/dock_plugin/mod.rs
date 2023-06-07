@@ -14,13 +14,27 @@ struct OccupiedSpace {
     bottom: f32,
 }
 
-#[derive(Debug, Resource, Default)]
+#[derive(Debug, Resource)]
 struct IsVisible {
     left: bool,
     right: bool,
     top: bool,
     bottom: bool,
 }
+
+// Set default values for IsVisible
+impl Default for IsVisible {
+    fn default() -> Self {
+        IsVisible {
+            left: true,
+            right: true,
+            top: true,
+            bottom: true,
+        }
+    }
+}
+
+/* ------ DockPlugin ------- */
 
 pub struct DockPlugin;
 
@@ -35,20 +49,31 @@ impl Plugin for DockPlugin {
     }
 }
 
+/* ------ Panel Draw Functions ------- */
+
+/// toggles docking panels visibility
 fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
-    match () {
-        _ if key_input.just_released(KeyCode::Left) => is_visible.left = !is_visible.left,
-        _ if key_input.just_released(KeyCode::Right) => is_visible.right = !is_visible.right,
-        _ if key_input.just_released(KeyCode::Up) => is_visible.top = !is_visible.top,
-        _ if key_input.just_released(KeyCode::Down) => is_visible.bottom = !is_visible.bottom,
-        _ => (), // No-op if no relevant key was pressed
+    // if else exhaustive comparison as opposed to match because
+    // - forcing factor to handle new cases when added
+    if key_input.just_released(KeyCode::Left) {
+        is_visible.left = !is_visible.left;
+    } else if key_input.just_released(KeyCode::Right) {
+        is_visible.right = !is_visible.right;
+    } else if key_input.just_released(KeyCode::Up) {
+        is_visible.top = !is_visible.top;
+    } else if key_input.just_released(KeyCode::Down) {
+        is_visible.bottom = !is_visible.bottom;
     }
 }
 
+/// draws docking panesl
+/// - contexts: EguiContexts            // egui context
+/// - o_space: ResMut<OccupiedSpace>    // occupied space
+/// - is_visible: Res<IsVisible>        // is visible
 fn draw_dock(
     mut contexts: EguiContexts,
     mut o_space: ResMut<OccupiedSpace>,
-    is_visible: ResMut<IsVisible>,
+    is_visible: Res<IsVisible>,
 ) {
     let ctx = contexts.ctx_mut();
     if is_visible.left {
@@ -65,6 +90,12 @@ fn draw_dock(
     }
 }
 
+/* ------ Panel Utilitie Functions ------- */
+
+/// Returns an egui::Vec2 representing the size of the panel
+/// - ctx: &mut Context // the egui context to build the panel in
+/// - p_type: &str      // a string slice for the panel TYPE to build
+/// - p_label: String   // a string for the panel LABEL to build
 fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2 {
     let panel_builder = match p_type {
         "left" => PanelBuildType::Side(egui::SidePanel::left(p_label.clone())),
@@ -74,12 +105,15 @@ fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2
         _ => panic!("Invalid panel type"),
     };
 
+    // match expression to create an egui::Response based on PanelBuildType enum
+    // -
     let response = match panel_builder {
         PanelBuildType::Side(side_panel) => {
             side_panel
                 .resizable(true)
                 .show(ctx, |ui| {
-                    ui.label(p_label);
+                    ui.label(&p_label);
+                    // allocate layout space for the panel
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
                 })
                 .response
@@ -88,13 +122,19 @@ fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2
             top_bottom_panel
                 .resizable(true)
                 .show(ctx, |ui| {
-                    ui.label(p_label);
+                    ui.label(&p_label);
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
                 })
                 .response
         }
     };
 
+    // extract the RECT size of the panel from the response
+    // egui::Response represents the result of interacting with a user interface
+    // (UI) element. It contains information about the current state of the
+    // interaction, such as whether the element was clicked, hovered, or
+    // dragged, along with other details like the position and size of the
+    // element.
     response.rect.size()
 }
 
