@@ -6,7 +6,7 @@ enum PanelBuildType {
     TopBottom(egui::TopBottomPanel),
 }
 
-#[derive(Debug, Resource, Default)]
+#[derive(Debug, Default)]
 struct OccupiedSpace {
     left: f32,
     right: f32,
@@ -14,6 +14,8 @@ struct OccupiedSpace {
     bottom: f32,
 }
 
+// Shared between toggle_dock and draw_dock, so it needs to be a resource
+// and can't be a Local<T>
 #[derive(Debug, Resource)]
 struct IsVisible {
     left: bool,
@@ -41,7 +43,6 @@ pub struct DockPlugin;
 impl Plugin for DockPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(EguiPlugin)
-            .insert_resource(OccupiedSpace::default())
             .insert_resource(IsVisible::default())
             .add_system(toggle_dock)
             .add_system(draw_dock)
@@ -72,7 +73,7 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 /// - is_visible: Res<IsVisible>        // is visible
 fn draw_dock(
     mut contexts: EguiContexts,
-    mut o_space: ResMut<OccupiedSpace>,
+    mut o_space: Local<OccupiedSpace>,
     is_visible: Res<IsVisible>,
 ) {
     let ctx = contexts.ctx_mut();
