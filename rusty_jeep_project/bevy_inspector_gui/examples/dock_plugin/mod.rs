@@ -7,6 +7,11 @@ enum PanelBuildType {
 }
 
 #[derive(Debug, Default)]
+struct UiState {
+    is_checked: bool,
+}
+
+#[derive(Debug, Default)]
 struct OccupiedSpace {
     left: f32,
     right: f32,
@@ -45,8 +50,7 @@ impl Plugin for DockPlugin {
         app.add_plugin(EguiPlugin)
             .insert_resource(IsVisible::default())
             .add_system(toggle_dock)
-            .add_system(draw_dock)
-            .add_system(ui_example_system);
+            .add_system(draw_dock);
     }
 }
 
@@ -74,20 +78,21 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 fn draw_dock(
     mut contexts: EguiContexts,
     mut o_space: Local<OccupiedSpace>,
+    mut ui_state: Local<UiState>,
     is_visible: Res<IsVisible>,
 ) {
     let ctx = contexts.ctx_mut();
     if is_visible.left {
-        o_space.left = panel_builder(ctx, "left", "Left Panel".to_string()).x;
+        o_space.left = panel_builder(ctx, &mut ui_state, "left", "Left Panel".to_string()).x;
     }
     if is_visible.right {
-        o_space.right = panel_builder(ctx, "right", "Right Panel".to_string()).x;
+        o_space.right = panel_builder(ctx, &mut ui_state, "right", "Right Panel".to_string()).x;
     }
     if is_visible.top {
-        o_space.top = panel_builder(ctx, "top", "Top Panel".to_string()).y;
+        o_space.top = panel_builder(ctx, &mut ui_state, "top", "Top Panel".to_string()).y;
     }
     if is_visible.bottom {
-        o_space.bottom = panel_builder(ctx, "bottom", "Bottom Panel".to_string()).y;
+        o_space.bottom = panel_builder(ctx, &mut ui_state, "bottom", "Bottom Panel".to_string()).y;
     }
 }
 
@@ -97,7 +102,12 @@ fn draw_dock(
 /// - ctx: &mut Context // the egui context to build the panel in
 /// - p_type: &str      // a string slice for the panel TYPE to build
 /// - p_label: String   // a string for the panel LABEL to build
-fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2 {
+fn panel_builder(
+    ctx: &mut Context,
+    ui_state: &mut UiState,
+    p_type: &str,
+    p_label: String,
+) -> egui::Vec2 {
     let panel_builder = match p_type {
         "left" => PanelBuildType::Side(egui::SidePanel::left(p_label.clone())),
         "right" => PanelBuildType::Side(egui::SidePanel::right(p_label.clone())),
@@ -114,6 +124,9 @@ fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2
                 .resizable(true)
                 .show(ctx, |ui| {
                     ui.label(&p_label);
+                    if p_type == "left" {
+                        left_dock_widgets(ui, ui_state);
+                    }
                     // allocate layout space for the panel
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
                 })
@@ -139,8 +152,9 @@ fn panel_builder(ctx: &mut Context, p_type: &str, p_label: String) -> egui::Vec2
     response.rect.size()
 }
 
-fn ui_example_system(mut ctx: EguiContexts) {
-    egui::Window::new("DockPlugin").show(ctx.ctx_mut(), |ui| {
-        ui.label("Don't Eat Reynolds Wraps Ovie!");
-    });
+fn left_dock_widgets(ui: &mut egui::Ui, ui_state: &mut UiState) {
+    ui.checkbox(&mut ui_state.is_checked, "Check me! Out");
+    if ui_state.is_checked {
+        ui.label("I am checked!");
+    }
 }
