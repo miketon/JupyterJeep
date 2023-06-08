@@ -1,14 +1,10 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, bevy_egui::EguiPlugin, egui, egui::Context};
+use std::sync::Arc;
 
 enum PanelBuildType {
     Side(egui::SidePanel),
     TopBottom(egui::TopBottomPanel),
-}
-
-#[derive(Debug, Default)]
-struct UiState {
-    is_checked: bool,
 }
 
 #[derive(Debug, Default)]
@@ -43,14 +39,43 @@ impl Default for IsVisible {
 
 /* ------ DockPlugin ------- */
 
-pub struct DockPlugin;
+// @note : Add a field to `DockPlugin` to store the closure:
+pub struct DockPlugin {
+    left_dock_widgets: Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>,
+}
+// @note :  Update the `DockPlugin` implementation to store the closure in the plugin
+impl DockPlugin {
+    pub fn new(left_dock_widgets: impl Fn(&mut egui::Ui) + Send + Sync + 'static) -> Self {
+        DockPlugin {
+            left_dock_widgets: Arc::new(left_dock_widgets),
+        }
+    }
+}
 
 impl Plugin for DockPlugin {
     fn build(&self, app: &mut App) {
+        let left_dock_widgets = self.left_dock_widgets.clone();
+
         app.add_plugin(EguiPlugin)
             .insert_resource(IsVisible::default())
+            .insert_resource(DrawDockParams {
+                left_dock_widgets: left_dock_widgets.clone(),
+            })
             .add_system(toggle_dock)
             .add_system(draw_dock);
+    }
+}
+
+#[derive(Resource)]
+struct DrawDockParams {
+    left_dock_widgets: Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>,
+}
+
+impl Default for DrawDockParams {
+    fn default() -> Self {
+        Self {
+            left_dock_widgets: Arc::new(|_| {}),
+        }
     }
 }
 
@@ -75,24 +100,33 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 /// - contexts: EguiContexts            // egui context
 /// - o_space: ResMut<OccupiedSpace>    // occupied space
 /// - is_visible: Res<IsVisible>        // is visible
+/// - params: Res<DrawDockParams>       // draw dock params
 fn draw_dock(
     mut contexts: EguiContexts,
     mut o_space: Local<OccupiedSpace>,
-    mut ui_state: Local<UiState>,
     is_visible: Res<IsVisible>,
+    params: Res<DrawDockParams>,
 ) {
+    let left_dock_widgets = &params.left_dock_widgets;
     let ctx = contexts.ctx_mut();
     if is_visible.left {
-        o_space.left = panel_builder(ctx, &mut ui_state, "left", "Left Panel".to_string()).x;
+        o_space.left = panel_builder(ctx, &left_dock_widgets, "left", "Left Panel".to_string()).x;
     }
     if is_visible.right {
-        o_space.right = panel_builder(ctx, &mut ui_state, "right", "Right Panel".to_string()).x;
+        o_space.right =
+            panel_builder(ctx, &left_dock_widgets, "right", "Right Panel".to_string()).x;
     }
     if is_visible.top {
-        o_space.top = panel_builder(ctx, &mut ui_state, "top", "Top Panel".to_string()).y;
+        o_space.top = panel_builder(ctx, &left_dock_widgets, "top", "Top Panel".to_string()).y;
     }
     if is_visible.bottom {
-        o_space.bottom = panel_builder(ctx, &mut ui_state, "bottom", "Bottom Panel".to_string()).y;
+        o_space.bottom = panel_builder(
+            ctx,
+            &left_dock_widgets,
+            "bottom",
+            "Bottom Panel".to_string(),
+        )
+        .y;
     }
 }
 
@@ -100,11 +134,12 @@ fn draw_dock(
 
 /// Returns an egui::Vec2 representing the size of the panel
 /// - ctx: &mut Context // the egui context to build the panel in
+/// - left_dock_widgets: &Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>
 /// - p_type: &str      // a string slice for the panel TYPE to build
 /// - p_label: String   // a string for the panel LABEL to build
 fn panel_builder(
     ctx: &mut Context,
-    ui_state: &mut UiState,
+    left_dock_widgets: &Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>,
     p_type: &str,
     p_label: String,
 ) -> egui::Vec2 {
@@ -125,7 +160,7 @@ fn panel_builder(
                 .show(ctx, |ui| {
                     ui.label(&p_label);
                     if p_type == "left" {
-                        left_dock_widgets(ui, ui_state);
+                        left_dock_widgets(ui);
                     }
                     // allocate layout space for the panel
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover())
@@ -150,11 +185,4 @@ fn panel_builder(
     // dragged, along with other details like the position and size of the
     // element.
     response.rect.size()
-}
-
-fn left_dock_widgets(ui: &mut egui::Ui, ui_state: &mut UiState) {
-    ui.checkbox(&mut ui_state.is_checked, "Check me! Out");
-    if ui_state.is_checked {
-        ui.label("I am checked!");
-    }
 }
