@@ -1,10 +1,31 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::{bevy_egui::EguiContexts, bevy_egui::EguiPlugin, egui, egui::Context};
-use core::panic;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-#[derive(Debug, Default)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub enum PanelType {
+    Top,
+    Bottom,
+    Left,
+    Right,
+}
+
+pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
+pub type PanelBuilderHash = HashMap<PanelType, PanelData>;
+
+#[derive(Clone)]
+pub struct PanelData {
+    builder: PanelBuilder,
+}
+
+impl PanelData {
+    pub fn new(builder: PanelBuilder) -> Self {
+        PanelData { builder }
+    }
+}
+
+#[derive(Debug, Default, Resource)]
 struct OccupiedSpace {
     top: f32,
     bottom: f32,
@@ -34,31 +55,29 @@ impl Default for IsVisible {
     }
 }
 
-type PanelBuilder = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
-type PanelBuilderHash = HashMap<String, PanelBuilder>;
-
 /* ------ DockPlugin ------- */
 
 // @note : Add a field to `DockPlugin` to store the closure:
 pub struct DockPlugin {
-    panel_builders: PanelBuilderHash,
+    panels: PanelBuilderHash,
 }
 // @note :  Update the `DockPlugin` implementation to store the closure in the plugin
 impl DockPlugin {
-    pub fn new(
-        panel_builders: PanelBuilderHash,
-    ) -> Self {
-        DockPlugin { panel_builders }
+    pub fn new(panels: PanelBuilderHash) -> Self {
+        DockPlugin { panels }
     }
 }
 
 impl Plugin for DockPlugin {
     fn build(&self, app: &mut App) {
-        let panel_builders = self.panel_builders.clone();
+        let panels = self.panels.clone();
 
         app.add_plugin(EguiPlugin)
             .insert_resource(IsVisible::default())
-            .insert_resource(DrawDockParams { panel_builders })
+            .insert_resource(OccupiedSpace::default())
+            .insert_resource(DrawDockParams {
+                panel_builders: panels,
+            })
             .add_system(toggle_dock)
             .add_system(draw_dock);
     }
@@ -81,16 +100,25 @@ impl Default for DrawDockParams {
 
 /// toggles docking panels visibility
 fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
-    // if else exhaustive comparison as opposed to match because
-    // - forcing factor to handle new cases when added
-    if key_input.just_released(KeyCode::Left) {
-        is_visible.left = !is_visible.left;
-    } else if key_input.just_released(KeyCode::Right) {
-        is_visible.right = !is_visible.right;
-    } else if key_input.just_released(KeyCode::Up) {
-        is_visible.top = !is_visible.top;
+    let panel_type = if key_input.just_released(KeyCode::Up) {
+        Some(PanelType::Top)
     } else if key_input.just_released(KeyCode::Down) {
-        is_visible.bottom = !is_visible.bottom;
+        Some(PanelType::Bottom)
+    } else if key_input.just_released(KeyCode::Left) {
+        Some(PanelType::Left)
+    } else if key_input.just_released(KeyCode::Right) {
+        Some(PanelType::Right)
+    } else {
+        None
+    };
+
+    if let Some(panel_type) = panel_type {
+        match panel_type {
+            PanelType::Top => is_visible.top = !is_visible.top,
+            PanelType::Bottom => is_visible.bottom = !is_visible.bottom,
+            PanelType::Left => is_visible.left = !is_visible.left,
+            PanelType::Right => is_visible.right = !is_visible.right,
+        }
     }
 }
 
@@ -98,34 +126,36 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
 /// - params: Res<DrawDockParams>       // draw dock params
-fn draw_dock(mut contexts: EguiContexts, is_visible: Res<IsVisible>, params: Res<DrawDockParams>) {
+fn draw_dock(
+    mut contexts: EguiContexts,
+    is_visible: Res<IsVisible>,
+    params: Res<DrawDockParams>,
+    mut o_space: ResMut<OccupiedSpace>,
+) {
     let ctx = contexts.ctx_mut();
-    let mut o_space = OccupiedSpace::default();
 
-    for (panel_type, p_builder) in &params.panel_builders {
-        let p_label = format!("{} Panel", panel_type.to_uppercase());
+    for (panel_type, panel_data) in &params.panel_builders {
+        let p_label = format!("{} Panel", format!("{:?}", panel_type).to_uppercase());
 
-        if (panel_type == "top" && is_visible.top)
-            || (panel_type == "bottom" && is_visible.bottom)
-            || (panel_type == "left" && is_visible.left)
-            || (panel_type == "right" && is_visible.right)
+        if (*panel_type == PanelType::Top && is_visible.top)
+            || (*panel_type == PanelType::Bottom && is_visible.bottom)
+            || (*panel_type == PanelType::Left && is_visible.left)
+            || (*panel_type == PanelType::Right && is_visible.right)
         {
-            let size = panel_builder(ctx, p_builder, panel_type, p_label);
-
-            match panel_type.as_str() {
-                "top" => {
+            let size = panel_builder(ctx, &panel_data.builder, panel_type, p_label);
+            match *panel_type {
+                PanelType::Top => {
                     o_space.top = size.y;
                 }
-                "bottom" => {
+                PanelType::Bottom => {
                     o_space.bottom = size.y;
                 }
-                "left" => {
+                PanelType::Left => {
                     o_space.left = size.x;
                 }
-                "right" => {
+                PanelType::Right => {
                     o_space.right = size.x;
                 }
-                _ => panic!("Invalid panel type {}", panel_type),
             }
         }
     }
@@ -142,31 +172,32 @@ fn draw_dock(mut contexts: EguiContexts, is_visible: Res<IsVisible>, params: Res
 fn panel_builder(
     ctx: &mut Context,
     panel_builder: &PanelBuilder,
-    p_type: &str,
+    p_type: &PanelType,
     p_label: String,
 ) -> egui::Vec2 {
-    let ui = match p_type {
-        "top" => egui::TopBottomPanel::top(p_label)
+    let ui = match *p_type {
+        PanelType::Top => egui::TopBottomPanel::top(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 panel_builder(ui);
             }),
-        "bottom" => egui::TopBottomPanel::bottom(p_label)
+        PanelType::Bottom => {
+            egui::TopBottomPanel::bottom(p_label)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    panel_builder(ui);
+                })
+        }
+        PanelType::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 panel_builder(ui);
             }),
-        "left" => egui::SidePanel::left(p_label)
+        PanelType::Right => egui::SidePanel::right(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 panel_builder(ui);
             }),
-        "right" => egui::SidePanel::right(p_label)
-            .resizable(true)
-            .show(ctx, |ui| {
-                panel_builder(ui);
-            }),
-        _ => panic!("Invalid panel type {}", p_type),
     };
 
     ui.response.rect.size()
