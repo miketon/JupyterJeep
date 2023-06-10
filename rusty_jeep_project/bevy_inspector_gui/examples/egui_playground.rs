@@ -9,18 +9,6 @@ use dock_plugin::{DockPlugin, PanelData, PanelType};
 fn main() {
     let mut panel_builders = HashMap::new();
     panel_builders.insert(
-        PanelType::Top,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
-            ui.label("Top of the Playground");
-        })),
-    );
-    panel_builders.insert(
-        PanelType::Bottom,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
-            ui.label("Bottom of the Playground");
-        })),
-    );
-    panel_builders.insert(
         PanelType::Left,
         PanelData::new(Arc::new(|ui: &mut egui::Ui| {
             ui.label("Left Corner of the Playground");
@@ -32,6 +20,18 @@ fn main() {
         PanelType::Right,
         PanelData::new(Arc::new(|ui: &mut egui::Ui| {
             ui.label("Right of the Playground");
+        })),
+    );
+    panel_builders.insert(
+        PanelType::Top,
+        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
+            ui.label("Top of the Playground");
+        })),
+    );
+    panel_builders.insert(
+        PanelType::Bottom,
+        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
+            ui.label("Bottom of the Playground");
         })),
     );
     let dock_plugin = DockPlugin::new(panel_builders);
