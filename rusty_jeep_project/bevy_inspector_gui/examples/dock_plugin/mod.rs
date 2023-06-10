@@ -12,15 +12,15 @@ use std::sync::Arc;
 /// without additional synchronization.
 /// - `dyn Fn(&mut egui::Ui)`
 /// This is a trait object representing a function pointer. It is a dynamically  
-/// dispatched function that takes a mutable reference to an `egui::Ui` object. 
-/// The `dyn` keyword indicates that the function pointer can refer to any object 
+/// dispatched function that takes a mutable reference to an `egui::Ui` object.
+/// The `dyn` keyword indicates that the function pointer can refer to any object
 /// implementing the `Fn` trait with the given function signature.
-/// - + Send + Sync 
+/// - + Send + Sync
 /// Traits for thread safety so they can be shared between threads
 /// - + 'static
-/// This is a lifetime bound. It indicates that the function object must have a 
-/// `'static` lifetime, meaning it can live for the entire duration of the 
-/// program. This is required because trait objects have a default lifetime 
+/// This is a lifetime bound. It indicates that the function object must have a
+/// `'static` lifetime, meaning it can live for the entire duration of the
+/// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
 pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
 
@@ -28,8 +28,8 @@ pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
 /// - `HashMap`: This is a container that can store and organize pieces of  
 /// information called "key-value pairs." It lets us quickly find a value based  
 /// on its key, like using a word in a dictionary to find its definition.
-/// -  `<PanelType, PanelData>`: These are the types of keys and values that the 
-/// `HashMap` can store. `PanelType` is the type of key, and `PanelData` is the 
+/// -  `<PanelType, PanelData>`: These are the types of keys and values that the
+/// `HashMap` can store. `PanelType` is the type of key, and `PanelData` is the
 /// type of value.
 pub type PanelBuilderHash = HashMap<PanelType, PanelData>;
 
@@ -130,7 +130,7 @@ impl Default for DrawDockParams {
 /* ------ Panel Draw Functions ------- */
 
 /// toggles docking panels visibility
-/// 
+///
 /// - is_visible: ResMut<IsVisible>     // is visible
 /// - key_input: Res<Input<KeyCode>>    // key input
 fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
