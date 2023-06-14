@@ -156,6 +156,19 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
     }
 }
 
+struct Images {
+    icon: Handle<Image>,
+}
+
+impl FromWorld for Images {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
+        Self {
+            icon: asset_server.load("icon.png"),
+        }
+    }
+}
+
 /// draws docking panesl
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
@@ -166,7 +179,15 @@ fn draw_dock(
     is_visible: Res<IsVisible>,
     params: Res<DrawDockParams>,
     mut o_space: Local<OccupiedSpace>,
+    mut texture_id: Local<egui::TextureId>,
+    mut is_initialized: Local<bool>,
+    images: Local<Images>,
 ) {
+    if !*is_initialized {
+        *is_initialized = true;
+        *texture_id = contexts.add_image(images.icon.clone_weak());
+    }
+
     let ctx = contexts.ctx_mut();
 
     for (panel_type, panel_data) in &params.panel_builders {
@@ -177,7 +198,7 @@ fn draw_dock(
             || (*panel_type == PanelType::Top && is_visible.top)
             || (*panel_type == PanelType::Bottom && is_visible.bottom)
         {
-            let size = panel_builder(ctx, &panel_data.builder, panel_type, p_label);
+            let size = panel_builder(ctx, &panel_data.builder, panel_type, p_label, *texture_id);
             match *panel_type {
                 PanelType::Left => {
                     o_space.left = size.x;
@@ -198,7 +219,7 @@ fn draw_dock(
 
 /* ------ Panel Utilitie Functions ------- */
 
-/// Returns an egui::Vec2 representing the size of the panel
+/// Returns an egui::Vec2 representing the size of the panel (to draw function)
 /// - ctx: &mut Context             // the egui context to build the panel in
 /// - panel_builder: &PanelBuilder  // closure used to populate the panel
 /// - p_type: &PanelType            // the panel type
@@ -208,11 +229,13 @@ fn panel_builder(
     panel_builder: &PanelBuilder,
     p_type: &PanelType,
     p_label: String,
+    texture_id: egui::TextureId,
 ) -> egui::Vec2 {
     let ui = match *p_type {
         PanelType::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
+                ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
                 panel_builder(ui);
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             }),
