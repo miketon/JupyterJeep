@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::egui;
+// use bevy::render::render_resource::TextureId;
+use bevy_inspector_egui::egui::{self, TextureId};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -25,7 +26,7 @@ fn main() {
 
     panel_builders.insert(
         PanelType::Left,
-        PanelData::new(Arc::new(move |ui: &mut egui::Ui| {
+        PanelData::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Left Corner of the Playground");
 
             // checkbox
@@ -81,19 +82,22 @@ fn main() {
     );
     panel_builders.insert(
         PanelType::Right,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
+        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Right of the Playground");
+            let image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
+            // let texture_id = TextureId::from(image_handle);
+            // ui.image(texture_id, [100.0, 100.0]);
         })),
     );
     panel_builders.insert(
         PanelType::Top,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
+        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Top of the Playground");
         })),
     );
     panel_builders.insert(
         PanelType::Bottom,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui| {
+        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Bottom of the Playground");
         })),
     );

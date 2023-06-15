@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::{bevy_egui::EguiContexts, bevy_egui::EguiPlugin, egui, egui::Context};
+use bevy_inspector_egui::bevy_egui::{egui, EguiContexts, EguiPlugin};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -22,7 +22,7 @@ use std::sync::Arc;
 /// `'static` lifetime, meaning it can live for the entire duration of the
 /// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
-pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
+pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
 
 /// PanelBuilderHash Type Aliasing
 /// - `HashMap`: This is a container that can store and organize pieces of  
@@ -44,6 +44,17 @@ pub enum PanelType {
     Right,
     Top,
     Bottom,
+}
+
+impl PanelType {
+    fn label(&self) -> &str {
+        match self {
+            PanelType::Left => "Left Panel",
+            PanelType::Right => "Right Panel",
+            PanelType::Top => "Top Panel",
+            PanelType::Bottom => "Bottom Panel",
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -85,6 +96,22 @@ struct OccupiedSpace {
     bottom: f32,
     left: f32,
     right: f32,
+}
+
+/* ------ Image Resources ------ */
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Images {
+    icon: Handle<Image>,
+}
+
+impl FromWorld for Images {
+    fn from_world(world: &mut World) -> Self {
+        let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
+        Self {
+            icon: asset_server.load("icon.png"),
+        }
+    }
 }
 
 /* ------ DockPlugin ------- */
@@ -156,19 +183,6 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
     }
 }
 
-struct Images {
-    icon: Handle<Image>,
-}
-
-impl FromWorld for Images {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.get_resource_mut::<AssetServer>().unwrap();
-        Self {
-            icon: asset_server.load("icon.png"),
-        }
-    }
-}
-
 /// draws docking panesl
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
@@ -182,23 +196,27 @@ fn draw_dock(
     mut texture_id: Local<egui::TextureId>,
     mut is_initialized: Local<bool>,
     images: Local<Images>,
+    asset_server: Res<AssetServer>,
 ) {
     if !*is_initialized {
         *is_initialized = true;
         *texture_id = contexts.add_image(images.icon.clone_weak());
     }
 
-    let ctx = contexts.ctx_mut();
-
     for (panel_type, panel_data) in &params.panel_builders {
-        let p_label = format!("{} Panel", format!("{:?}", panel_type).to_uppercase());
-
         if (*panel_type == PanelType::Left && is_visible.left)
             || (*panel_type == PanelType::Right && is_visible.right)
             || (*panel_type == PanelType::Top && is_visible.top)
             || (*panel_type == PanelType::Bottom && is_visible.bottom)
         {
-            let size = panel_builder(ctx, &panel_data.builder, panel_type, p_label, *texture_id);
+            let size = panel_builder(
+                &mut contexts,
+                &panel_data.builder,
+                panel_type,
+                panel_type.label().to_string(),
+                *texture_id,
+                &asset_server,
+            );
             match *panel_type {
                 PanelType::Left => {
                     o_space.left = size.x;
@@ -225,37 +243,39 @@ fn draw_dock(
 /// - p_type: &PanelType            // the panel type
 /// - p_label: String               // a string for the panel LABEL to build
 fn panel_builder(
-    ctx: &mut Context,
+    contexts: &mut EguiContexts,
     panel_builder: &PanelBuilder,
     p_type: &PanelType,
     p_label: String,
     texture_id: egui::TextureId,
+    asset_server: &Res<AssetServer>,
 ) -> egui::Vec2 {
+    let ctx = contexts.ctx_mut();
     let ui = match *p_type {
         PanelType::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
-                panel_builder(ui);
+                panel_builder(ui, &*asset_server);
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             }),
         PanelType::Right => egui::SidePanel::right(p_label)
             .resizable(true)
             .show(ctx, |ui| {
-                panel_builder(ui);
+                panel_builder(ui, &*asset_server);
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             }),
         PanelType::Top => egui::TopBottomPanel::top(p_label)
             .resizable(true)
             .show(ctx, |ui| {
-                panel_builder(ui);
+                panel_builder(ui, &*asset_server);
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             }),
         PanelType::Bottom => {
             egui::TopBottomPanel::bottom(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
-                    panel_builder(ui);
+                    panel_builder(ui, &*asset_server);
                     ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
                 })
         }
