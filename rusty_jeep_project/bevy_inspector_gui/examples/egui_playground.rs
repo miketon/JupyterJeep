@@ -1,6 +1,5 @@
 use bevy::prelude::*;
-// use bevy::render::render_resource::TextureId;
-use bevy_inspector_egui::egui::{self, TextureId};
+use bevy_inspector_egui::egui::{self, Button, Sense};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -68,7 +67,10 @@ fn main() {
             // collapsing header
             ui.separator();
             ui.collapsing("Click to See What is Hidden!", |ui| {
-                ui.label("Not Much as it turns out!");
+                ui.heading("Behold ALL the SECRETS...");
+                ui.label(
+                    egui::RichText::new("Not Much as it turns out!").color(egui::Color32::RED),
+                );
                 ui.separator();
                 // @todo : what does speed do?
                 ui.add(egui::DragValue::new(&mut *slider_value_lock).speed(0.01));
@@ -77,9 +79,11 @@ fn main() {
                 let text_edit = egui::TextEdit::singleline(&mut *text_input_lock)
                     .desired_width(*slider_value_lock + 5.0);
                 ui.add(text_edit);
+                ui.strong("Strong Text : Weak Secrets");
             });
         })),
     );
+
     panel_builders.insert(
         PanelType::Right,
         PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
@@ -87,6 +91,46 @@ fn main() {
             let image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
             // let texture_id = TextureId::from(image_handle);
             // ui.image(texture_id, [100.0, 100.0]);
+            ui.separator();
+            let is_collapsed = ui.collapsing("Scratchpad", |ui| {
+                ui.code(
+                    "if (secret) { 
+                        hide(); 
+                    } else {
+                        show();
+                    }",
+                );
+                ui.hyperlink("https://github.com/emilk/egui");
+            });
+            ui.separator();
+            if is_collapsed.fully_closed() {
+                ui.heading("Click to Expand");
+            } else {
+                let button = ui.button("Click to Toggle ScratchPad");
+                if button.hovered() {
+                    ui.separator();
+                    ui.heading("Hovering");
+                }
+                if button.clicked() {
+                    ui.separator();
+                    // @todo : this just flashes on click, find a way to countdown
+                    // before hiding
+                    ui.label("Clicked");
+                }
+                /*
+                const draggable_button: egui::Button = egui::Button::new("Square").sense(Sense::drag());
+
+                if draggable_button.drag_started() {
+                    ui.label("Drag Started");
+                }
+                if draggable_button.dragging() {
+                    ui.label("Dragging");
+                }
+                else {
+                    ui.label("Drag Released");
+                }
+                */
+            }
         })),
     );
     panel_builders.insert(
