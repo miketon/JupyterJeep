@@ -1,5 +1,6 @@
 use bevy::prelude::*;
-use bevy_inspector_egui::egui::{self, Button, Sense};
+use bevy_inspector_egui::egui::emath::RectTransform;
+use bevy_inspector_egui::egui::{self, Pos2, Rect, Sense, Vec2};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
@@ -27,6 +28,7 @@ fn main() {
         PanelType::Left,
         PanelData::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Left Corner of the Playground");
+            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
             // checkbox
             ui.separator();
@@ -88,7 +90,8 @@ fn main() {
         PanelType::Right,
         PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Right of the Playground");
-            let image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
+
+            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
             // let texture_id = TextureId::from(image_handle);
             // ui.image(texture_id, [100.0, 100.0]);
             ui.separator();
@@ -104,7 +107,33 @@ fn main() {
             });
             ui.separator();
             if is_collapsed.fully_closed() {
+                ui.separator();
                 ui.heading("Click to Expand");
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.label("Same");
+                    ui.separator();
+                    ui.label("uh");
+                    ui.heading("WIDE LOAD LOL");
+                    ui.label("no");
+                    ui.separator();
+                    ui.label("Row");
+                });
+                ui.separator();
+                ui.vertical(|ui| {
+                    ui.label("Same");
+                    ui.separator();
+                    ui.horizontal(|ui| {
+                        ui.label("waah");
+                        ui.separator();
+                        ui.heading("CRY ME A RIVER!!! LOL ... NEED to WRAP OOF");
+                        ui.separator();
+                        ui.label("sniff");
+                    });
+                    ui.separator();
+                    ui.label("Column");
+                    ui.separator();
+                });
             } else {
                 let button = ui.button("Click to Toggle ScratchPad");
                 if button.hovered() {
@@ -137,12 +166,52 @@ fn main() {
         PanelType::Top,
         PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Top of the Playground");
+            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
         })),
     );
+
+    // gets moved to PanelType::Bottom ... @audit : Explain what's happening here lol
+    let counter = Arc::new(Mutex::new(0));
+
     panel_builders.insert(
         PanelType::Bottom,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        PanelData::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Bottom of the Playground");
+
+            let counter_clone = Arc::clone(&counter);
+            let mut counter_lock = counter_clone.lock().unwrap();
+            ui_counter(&mut *ui, &mut *counter_lock);
+
+            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
+            // Create a "canvas" for drawing on that's 100% x 300 px
+            let (response, _painter) =
+                ui.allocate_painter(Vec2::new(ui.available_width(), 100.0), Sense::hover());
+            // Get the relative position of our canvas
+            let to_screen = RectTransform::from_to(
+                Rect::from_min_size(Pos2::ZERO, response.rect.size()),
+                response.rect,
+            );
+
+            // Create an absolute point
+            let point = Pos2::ZERO;
+            // Make the absolute point relative to the canvas container
+            let point_in_screen = to_screen.transform_pos(point);
+            // e.g. x: 330.0, y: 245.0
+            ui.label(format!("{:?}", point_in_screen));
+
+            // Absolutely place Ui relative to the container
+            let position = Pos2::new(10.0, 10.0);
+
+            let _animation_clip_button = ui.put(
+                Rect {
+                    min: to_screen.transform_pos(position),
+                    max: to_screen.transform_pos(Pos2 {
+                        x: position.x + 150.0,
+                        y: position.y + 100.0,
+                    }),
+                },
+                egui::Button::new("Animation Clip"),
+            );
         })),
     );
     let dock_plugin = DockPlugin::new(panel_builders);
@@ -150,4 +219,17 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(dock_plugin)
         .run();
+}
+
+fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
+    // Put the  buttons and label on the same row
+    ui.horizontal(|ui|{
+        if ui.button("-").clicked() {
+            *counter -= 1;
+        }
+        ui.label(counter.to_string());
+        if ui.button("+").clicked() {
+            *counter += 1;
+        }
+    });
 }
