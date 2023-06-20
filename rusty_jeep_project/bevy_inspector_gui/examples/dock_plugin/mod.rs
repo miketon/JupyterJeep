@@ -3,7 +3,7 @@ use bevy_inspector_egui::bevy_egui::{egui, EguiContexts, EguiPlugin};
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-/// UiWidgetInsertClosure Type Aliasing Complex Traits
+/// WidgetInsertClosure Type Aliasing Complex Traits
 /// - `Arc`
 /// This is a smart pointer that provides shared ownership of a heap-allocated  
 /// value. It stands for "Atomic Reference Counting" and ensures that the value  
@@ -22,7 +22,7 @@ use std::sync::Arc;
 /// `'static` lifetime, meaning it can live for the entire duration of the
 /// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
-pub type UiWidgetInsertClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
+pub type WidgetInsertClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
 
 /// PanelBuildTree Type Aliasing
 /// - `BTreeMap`: Container for key-value pairs that is :
@@ -58,11 +58,11 @@ impl DockPanelLocation {
 
 #[derive(Clone)]
 pub struct DockPanelProperties {
-    builder: UiWidgetInsertClosure,
+    builder: WidgetInsertClosure,
 }
 
 impl DockPanelProperties {
-    pub fn new(builder: UiWidgetInsertClosure) -> Self {
+    pub fn new(builder: WidgetInsertClosure) -> Self {
         DockPanelProperties { builder }
     }
 }
@@ -87,14 +87,6 @@ impl Default for IsVisible {
             right: true,
         }
     }
-}
-
-#[derive(Debug, Default, Resource)]
-struct OccupiedSpace {
-    top: f32,
-    bottom: f32,
-    left: f32,
-    right: f32,
 }
 
 /* ------ Image Resources ------ */
@@ -186,12 +178,10 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
 /// - params: Res<DrawDockParams>       // draw dock params
-/// - mut o_space: Local<OccupiedSpace> // occupied space
 fn draw_dock_panels(
     mut contexts: EguiContexts,
     is_visible: Res<IsVisible>,
     params: Res<DrawDockParams>,
-    mut o_space: Local<OccupiedSpace>,
     mut texture_id: Local<egui::TextureId>,
     mut is_initialized: Local<bool>,
     images: Local<Images>,
@@ -208,7 +198,7 @@ fn draw_dock_panels(
             || (*panel_type == DockPanelLocation::Top && is_visible.top)
             || (*panel_type == DockPanelLocation::Bottom && is_visible.bottom)
         {
-            let size = panel_builder(
+            panel_builder(
                 &mut contexts,
                 &panel_data.builder,
                 panel_type,
@@ -216,20 +206,6 @@ fn draw_dock_panels(
                 *texture_id,
                 &asset_server,
             );
-            match *panel_type {
-                DockPanelLocation::Left => {
-                    o_space.left = size.x;
-                }
-                DockPanelLocation::Right => {
-                    o_space.right = size.x;
-                }
-                DockPanelLocation::Top => {
-                    o_space.top = size.y;
-                }
-                DockPanelLocation::Bottom => {
-                    o_space.bottom = size.y;
-                }
-            }
         }
     }
 }
@@ -237,49 +213,53 @@ fn draw_dock_panels(
 /* ------ Panel Utilitie Functions ------- */
 
 /// Returns an egui::Vec2 representing the size of the panel (to draw function)
-/// - ctx: &mut Context             // the egui context to build the panel in
-/// - panel_builder: &PanelBuilder  // closure used to populate the panel
-/// - p_type: &PanelType            // the panel type
+/// - contexts: &mut Context             // the egui context to build the panel in
+/// - widget_closure: &WidgetInsertClosure  // closure used to populate the panel
+/// - p_type: &DockPanelLocation            // the panel type
 /// - p_label: String               // a string for the panel LABEL to build
 fn panel_builder(
     contexts: &mut EguiContexts,
-    panel_builder: &UiWidgetInsertClosure,
-    p_type: &DockPanelLocation,
+    widget_closure: &WidgetInsertClosure,
+    p_location: &DockPanelLocation,
     p_label: String,
     texture_id: egui::TextureId,
     asset_server: &Res<AssetServer>,
 ) -> egui::Vec2 {
     let ctx = contexts.ctx_mut();
-    let ui = match *p_type {
+    let ui = match *p_location {
         DockPanelLocation::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
-                panel_builder(ui, &*asset_server);
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                widget_closure(ui, &*asset_server);
+                let available_rect = ui.available_rect_before_wrap();
+                ui.allocate_rect(available_rect, egui::Sense::hover());
             }),
         DockPanelLocation::Right => {
             egui::SidePanel::right(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
-                    panel_builder(ui, &*asset_server);
-                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                    widget_closure(ui, &*asset_server);
+                    let available_rect = ui.available_rect_before_wrap();
+                    ui.allocate_rect(available_rect, egui::Sense::hover());
                 })
         }
         DockPanelLocation::Top => {
             egui::TopBottomPanel::top(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
-                    panel_builder(ui, &*asset_server);
-                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                    widget_closure(ui, &*asset_server);
+                    let available_rect = ui.available_rect_before_wrap();
+                    ui.allocate_rect(available_rect, egui::Sense::hover());
                 })
         }
         DockPanelLocation::Bottom => {
             egui::TopBottomPanel::bottom(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
-                    panel_builder(ui, &*asset_server);
-                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                    widget_closure(ui, &*asset_server);
+                    let available_rect = ui.available_rect_before_wrap();
+                    ui.allocate_rect(available_rect, egui::Sense::hover());
                 })
         }
     };
