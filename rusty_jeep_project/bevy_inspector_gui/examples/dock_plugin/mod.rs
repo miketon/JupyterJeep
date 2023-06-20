@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::{egui, EguiContexts, EguiPlugin};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
-/// PanelBuilder Type Aliasing Complex Traits
+/// UiWidgetInsertClosure Type Aliasing Complex Traits
 /// - `Arc`
 /// This is a smart pointer that provides shared ownership of a heap-allocated  
 /// value. It stands for "Atomic Reference Counting" and ensures that the value  
@@ -22,49 +22,48 @@ use std::sync::Arc;
 /// `'static` lifetime, meaning it can live for the entire duration of the
 /// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
-pub type PanelBuilder = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
+pub type UiWidgetInsertClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
 
-/// PanelBuilderHash Type Aliasing
-/// - `HashMap`: This is a container that can store and organize pieces of  
-/// information called "key-value pairs." It lets us quickly find a value based  
-/// on its key, like using a word in a dictionary to find its definition.
-/// -  `<PanelType, PanelData>`: These are the types of keys and values that the
-/// `HashMap` can store. `PanelType` is the type of key, and `PanelData` is the
-/// type of value.
-pub type PanelBuilderHash = HashMap<PanelType, PanelData>;
+/// PanelBuildTree Type Aliasing
+/// - `BTreeMap`: Container for key-value pairs that is :
+///    - Ordered by key, useful for UI elements where dock draw order matters
+///    - Fast for lookups
+///    - Insertion is slower when compared to HashMap
+/// -  `<DockPanelLocation, DockPanelProperties>`: keys and values
+pub type PanelBuildTree = BTreeMap<DockPanelLocation, DockPanelProperties>;
 
-/// PanelType Enum for the possible types of docking panels
+/// DockPanelLocation Enum for the possible types of docking panels
 /// - Left
 /// - Right
 /// - Top
 /// - Bottom
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
-pub enum PanelType {
+#[derive(Debug, PartialEq, Eq, Hash, Ord, PartialOrd, Clone, Copy)]
+pub enum DockPanelLocation {
     Left,
     Right,
     Top,
     Bottom,
 }
 
-impl PanelType {
+impl DockPanelLocation {
     fn label(&self) -> &str {
         match self {
-            PanelType::Left => "Left Panel",
-            PanelType::Right => "Right Panel",
-            PanelType::Top => "Top Panel",
-            PanelType::Bottom => "Bottom Panel",
+            DockPanelLocation::Left => "Left Panel",
+            DockPanelLocation::Right => "Right Panel",
+            DockPanelLocation::Top => "Top Panel",
+            DockPanelLocation::Bottom => "Bottom Panel",
         }
     }
 }
 
 #[derive(Clone)]
-pub struct PanelData {
-    builder: PanelBuilder,
+pub struct DockPanelProperties {
+    builder: UiWidgetInsertClosure,
 }
 
-impl PanelData {
-    pub fn new(builder: PanelBuilder) -> Self {
-        PanelData { builder }
+impl DockPanelProperties {
+    pub fn new(builder: UiWidgetInsertClosure) -> Self {
+        DockPanelProperties { builder }
     }
 }
 
@@ -118,11 +117,11 @@ impl FromWorld for Images {
 
 // PanelBuilderHash is a closure to build a panel
 pub struct DockPlugin {
-    panels: PanelBuilderHash,
+    panels: PanelBuildTree,
 }
 
 impl DockPlugin {
-    pub fn new(panels: PanelBuilderHash) -> Self {
+    pub fn new(panels: PanelBuildTree) -> Self {
         DockPlugin { panels }
     }
 }
@@ -137,19 +136,19 @@ impl Plugin for DockPlugin {
                 panel_builders: panels,
             })
             .add_system(toggle_dock)
-            .add_system(draw_dock);
+            .add_system(draw_dock_panels);
     }
 }
 
 #[derive(Resource)]
 struct DrawDockParams {
-    panel_builders: PanelBuilderHash,
+    panel_builders: PanelBuildTree,
 }
 
 impl Default for DrawDockParams {
     fn default() -> Self {
         Self {
-            panel_builders: HashMap::new(),
+            panel_builders: BTreeMap::new(),
         }
     }
 }
@@ -162,33 +161,33 @@ impl Default for DrawDockParams {
 /// - key_input: Res<Input<KeyCode>>    // key input
 fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
     let panel_type = if key_input.just_released(KeyCode::Left) {
-        Some(PanelType::Left)
+        Some(DockPanelLocation::Left)
     } else if key_input.just_released(KeyCode::Right) {
-        Some(PanelType::Right)
+        Some(DockPanelLocation::Right)
     } else if key_input.just_released(KeyCode::Up) {
-        Some(PanelType::Top)
+        Some(DockPanelLocation::Top)
     } else if key_input.just_released(KeyCode::Down) {
-        Some(PanelType::Bottom)
+        Some(DockPanelLocation::Bottom)
     } else {
         None
     };
 
     if let Some(panel_type) = panel_type {
         match panel_type {
-            PanelType::Left => is_visible.left = !is_visible.left,
-            PanelType::Right => is_visible.right = !is_visible.right,
-            PanelType::Top => is_visible.top = !is_visible.top,
-            PanelType::Bottom => is_visible.bottom = !is_visible.bottom,
+            DockPanelLocation::Left => is_visible.left = !is_visible.left,
+            DockPanelLocation::Right => is_visible.right = !is_visible.right,
+            DockPanelLocation::Top => is_visible.top = !is_visible.top,
+            DockPanelLocation::Bottom => is_visible.bottom = !is_visible.bottom,
         }
     }
 }
 
-/// draws docking panesl
+/// draws docking panels
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
 /// - params: Res<DrawDockParams>       // draw dock params
 /// - mut o_space: Local<OccupiedSpace> // occupied space
-fn draw_dock(
+fn draw_dock_panels(
     mut contexts: EguiContexts,
     is_visible: Res<IsVisible>,
     params: Res<DrawDockParams>,
@@ -204,10 +203,10 @@ fn draw_dock(
     }
 
     for (panel_type, panel_data) in &params.panel_builders {
-        if (*panel_type == PanelType::Left && is_visible.left)
-            || (*panel_type == PanelType::Right && is_visible.right)
-            || (*panel_type == PanelType::Top && is_visible.top)
-            || (*panel_type == PanelType::Bottom && is_visible.bottom)
+        if (*panel_type == DockPanelLocation::Left && is_visible.left)
+            || (*panel_type == DockPanelLocation::Right && is_visible.right)
+            || (*panel_type == DockPanelLocation::Top && is_visible.top)
+            || (*panel_type == DockPanelLocation::Bottom && is_visible.bottom)
         {
             let size = panel_builder(
                 &mut contexts,
@@ -218,16 +217,16 @@ fn draw_dock(
                 &asset_server,
             );
             match *panel_type {
-                PanelType::Left => {
+                DockPanelLocation::Left => {
                     o_space.left = size.x;
                 }
-                PanelType::Right => {
+                DockPanelLocation::Right => {
                     o_space.right = size.x;
                 }
-                PanelType::Top => {
+                DockPanelLocation::Top => {
                     o_space.top = size.y;
                 }
-                PanelType::Bottom => {
+                DockPanelLocation::Bottom => {
                     o_space.bottom = size.y;
                 }
             }
@@ -244,34 +243,38 @@ fn draw_dock(
 /// - p_label: String               // a string for the panel LABEL to build
 fn panel_builder(
     contexts: &mut EguiContexts,
-    panel_builder: &PanelBuilder,
-    p_type: &PanelType,
+    panel_builder: &UiWidgetInsertClosure,
+    p_type: &DockPanelLocation,
     p_label: String,
     texture_id: egui::TextureId,
     asset_server: &Res<AssetServer>,
 ) -> egui::Vec2 {
     let ctx = contexts.ctx_mut();
     let ui = match *p_type {
-        PanelType::Left => egui::SidePanel::left(p_label)
+        DockPanelLocation::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
                 panel_builder(ui, &*asset_server);
                 ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
             }),
-        PanelType::Right => egui::SidePanel::right(p_label)
-            .resizable(true)
-            .show(ctx, |ui| {
-                panel_builder(ui, &*asset_server);
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
-            }),
-        PanelType::Top => egui::TopBottomPanel::top(p_label)
-            .resizable(true)
-            .show(ctx, |ui| {
-                panel_builder(ui, &*asset_server);
-                ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
-            }),
-        PanelType::Bottom => {
+        DockPanelLocation::Right => {
+            egui::SidePanel::right(p_label)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    panel_builder(ui, &*asset_server);
+                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                })
+        }
+        DockPanelLocation::Top => {
+            egui::TopBottomPanel::top(p_label)
+                .resizable(true)
+                .show(ctx, |ui| {
+                    panel_builder(ui, &*asset_server);
+                    ui.allocate_rect(ui.available_rect_before_wrap(), egui::Sense::hover());
+                })
+        }
+        DockPanelLocation::Bottom => {
             egui::TopBottomPanel::bottom(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {

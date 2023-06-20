@@ -1,14 +1,14 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::egui::emath::RectTransform;
 use bevy_inspector_egui::egui::{self, Pos2, Rect, Sense, Vec2};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 mod dock_plugin;
-use dock_plugin::{DockPlugin, PanelData, PanelType};
+use dock_plugin::{DockPanelLocation, DockPanelProperties, DockPlugin};
 
 fn main() {
-    let mut panel_builders = HashMap::new();
+    let mut panel_builders = BTreeMap::new();
 
     let is_checked = Arc::new(Mutex::new(true));
     // Arc<Mutex<String>> allows edit, Arc<Mustex<&str>> does not
@@ -25,8 +25,8 @@ fn main() {
     let enum_value = Arc::new(Mutex::new(Enum::First));
 
     panel_builders.insert(
-        PanelType::Left,
-        PanelData::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockPanelLocation::Left,
+        DockPanelProperties::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Left Corner of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
@@ -87,8 +87,8 @@ fn main() {
     );
 
     panel_builders.insert(
-        PanelType::Right,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockPanelLocation::Right,
+        DockPanelProperties::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Right of the Playground");
 
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
@@ -163,8 +163,8 @@ fn main() {
         })),
     );
     panel_builders.insert(
-        PanelType::Top,
-        PanelData::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockPanelLocation::Top,
+        DockPanelProperties::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Top of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
         })),
@@ -174,8 +174,8 @@ fn main() {
     let counter = Arc::new(Mutex::new(0));
 
     panel_builders.insert(
-        PanelType::Bottom,
-        PanelData::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockPanelLocation::Bottom,
+        DockPanelProperties::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Bottom of the Playground");
 
             let counter_clone = Arc::clone(&counter);
@@ -223,7 +223,7 @@ fn main() {
 
 fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
     // Put the  buttons and label on the same row
-    ui.horizontal(|ui|{
+    ui.horizontal(|ui| {
         if ui.button("-").clicked() {
             *counter -= 1;
         }
