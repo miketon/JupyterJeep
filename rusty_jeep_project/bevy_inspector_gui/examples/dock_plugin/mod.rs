@@ -29,41 +29,43 @@ pub type WidgetInsertClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + 
 ///    - Ordered by key, useful for UI elements where dock draw order matters
 ///    - Fast for lookups
 ///    - Insertion is slower when compared to HashMap
-/// -  `<DockPanelLocation, DockPanelProperties>`: keys and values
-pub type PanelBuildTree = BTreeMap<DockPanelLocation, DockPanelProperties>;
+/// -  `<DockLocation, DockClosure>`: keys and values
+pub type PanelBuildTree = BTreeMap<DockLocation, DockClosure>;
 
-/// DockPanelLocation Enum for the possible types of docking panels
+/// DockLocation Enum for the possible location docking panels
 /// - Left
 /// - Right
 /// - Top
 /// - Bottom
 #[derive(Debug, PartialEq, Eq, Hash, Ord, PartialOrd, Clone, Copy)]
-pub enum DockPanelLocation {
+pub enum DockLocation {
     Left,
     Right,
     Top,
     Bottom,
 }
 
-impl DockPanelLocation {
+impl DockLocation {
     fn label(&self) -> &str {
         match self {
-            DockPanelLocation::Left => "Left Panel",
-            DockPanelLocation::Right => "Right Panel",
-            DockPanelLocation::Top => "Top Panel",
-            DockPanelLocation::Bottom => "Bottom Panel",
+            DockLocation::Left => "Left Panel",
+            DockLocation::Right => "Right Panel",
+            DockLocation::Top => "Top Panel",
+            DockLocation::Bottom => "Bottom Panel",
         }
     }
 }
 
 #[derive(Clone)]
-pub struct DockPanelProperties {
-    builder: WidgetInsertClosure,
+pub struct DockClosure {
+    widget_closure: WidgetInsertClosure,
 }
 
-impl DockPanelProperties {
-    pub fn new(builder: WidgetInsertClosure) -> Self {
-        DockPanelProperties { builder }
+impl DockClosure {
+    pub fn new(closure: WidgetInsertClosure) -> Self {
+        DockClosure {
+            widget_closure: closure,
+        }
     }
 }
 
@@ -153,23 +155,23 @@ impl Default for DrawDockParams {
 /// - key_input: Res<Input<KeyCode>>    // key input
 fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
     let panel_type = if key_input.just_released(KeyCode::Left) {
-        Some(DockPanelLocation::Left)
+        Some(DockLocation::Left)
     } else if key_input.just_released(KeyCode::Right) {
-        Some(DockPanelLocation::Right)
+        Some(DockLocation::Right)
     } else if key_input.just_released(KeyCode::Up) {
-        Some(DockPanelLocation::Top)
+        Some(DockLocation::Top)
     } else if key_input.just_released(KeyCode::Down) {
-        Some(DockPanelLocation::Bottom)
+        Some(DockLocation::Bottom)
     } else {
         None
     };
 
     if let Some(panel_type) = panel_type {
         match panel_type {
-            DockPanelLocation::Left => is_visible.left = !is_visible.left,
-            DockPanelLocation::Right => is_visible.right = !is_visible.right,
-            DockPanelLocation::Top => is_visible.top = !is_visible.top,
-            DockPanelLocation::Bottom => is_visible.bottom = !is_visible.bottom,
+            DockLocation::Left => is_visible.left = !is_visible.left,
+            DockLocation::Right => is_visible.right = !is_visible.right,
+            DockLocation::Top => is_visible.top = !is_visible.top,
+            DockLocation::Bottom => is_visible.bottom = !is_visible.bottom,
         }
     }
 }
@@ -192,17 +194,22 @@ fn draw_dock_panels(
         *texture_id = contexts.add_image(images.icon.clone_weak());
     }
 
-    for (panel_type, panel_data) in &params.panel_builders {
-        if (*panel_type == DockPanelLocation::Left && is_visible.left)
-            || (*panel_type == DockPanelLocation::Right && is_visible.right)
-            || (*panel_type == DockPanelLocation::Top && is_visible.top)
-            || (*panel_type == DockPanelLocation::Bottom && is_visible.bottom)
-        {
-            panel_builder(
+    let should_draw_panel = |location: &DockLocation| -> bool {
+        match location {
+            DockLocation::Left => is_visible.left,
+            DockLocation::Right => is_visible.right,
+            DockLocation::Top => is_visible.top,
+            DockLocation::Bottom => is_visible.bottom,
+        }
+    };
+
+    for (dock_location, dock_properties) in &params.panel_builders {
+        if should_draw_panel(dock_location) {
+            show_panel(
                 &mut contexts,
-                &panel_data.builder,
-                panel_type,
-                panel_type.label().to_string(),
+                &dock_properties.widget_closure,
+                dock_location,
+                dock_location.label().to_string(),
                 *texture_id,
                 &asset_server,
             );
@@ -212,22 +219,22 @@ fn draw_dock_panels(
 
 /* ------ Panel Utilitie Functions ------- */
 
-/// Returns an egui::Vec2 representing the size of the panel (to draw function)
+/// Shows a panel
 /// - contexts: &mut Context             // the egui context to build the panel in
 /// - widget_closure: &WidgetInsertClosure  // closure used to populate the panel
 /// - p_type: &DockPanelLocation            // the panel type
 /// - p_label: String               // a string for the panel LABEL to build
-fn panel_builder(
+fn show_panel(
     contexts: &mut EguiContexts,
     widget_closure: &WidgetInsertClosure,
-    p_location: &DockPanelLocation,
+    p_location: &DockLocation,
     p_label: String,
     texture_id: egui::TextureId,
     asset_server: &Res<AssetServer>,
-) -> egui::Vec2 {
+) {
     let ctx = contexts.ctx_mut();
-    let ui = match *p_location {
-        DockPanelLocation::Left => egui::SidePanel::left(p_label)
+    match *p_location {
+        DockLocation::Left => egui::SidePanel::left(p_label)
             .resizable(true)
             .show(ctx, |ui| {
                 ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
@@ -235,25 +242,21 @@ fn panel_builder(
                 let available_rect = ui.available_rect_before_wrap();
                 ui.allocate_rect(available_rect, egui::Sense::hover());
             }),
-        DockPanelLocation::Right => {
-            egui::SidePanel::right(p_label)
-                .resizable(true)
-                .show(ctx, |ui| {
-                    widget_closure(ui, &*asset_server);
-                    let available_rect = ui.available_rect_before_wrap();
-                    ui.allocate_rect(available_rect, egui::Sense::hover());
-                })
-        }
-        DockPanelLocation::Top => {
-            egui::TopBottomPanel::top(p_label)
-                .resizable(true)
-                .show(ctx, |ui| {
-                    widget_closure(ui, &*asset_server);
-                    let available_rect = ui.available_rect_before_wrap();
-                    ui.allocate_rect(available_rect, egui::Sense::hover());
-                })
-        }
-        DockPanelLocation::Bottom => {
+        DockLocation::Right => egui::SidePanel::right(p_label)
+            .resizable(true)
+            .show(ctx, |ui| {
+                widget_closure(ui, &*asset_server);
+                let available_rect = ui.available_rect_before_wrap();
+                ui.allocate_rect(available_rect, egui::Sense::hover());
+            }),
+        DockLocation::Top => egui::TopBottomPanel::top(p_label)
+            .resizable(true)
+            .show(ctx, |ui| {
+                widget_closure(ui, &*asset_server);
+                let available_rect = ui.available_rect_before_wrap();
+                ui.allocate_rect(available_rect, egui::Sense::hover());
+            }),
+        DockLocation::Bottom => {
             egui::TopBottomPanel::bottom(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
@@ -263,6 +266,4 @@ fn panel_builder(
                 })
         }
     };
-
-    ui.response.rect.size()
 }

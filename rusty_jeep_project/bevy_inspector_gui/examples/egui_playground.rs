@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
 mod dock_plugin;
-use dock_plugin::{DockPanelLocation, DockPanelProperties, DockPlugin};
+use dock_plugin::{DockClosure, DockLocation, DockPlugin};
 
 fn main() {
     let mut panel_builders = BTreeMap::new();
@@ -25,8 +25,8 @@ fn main() {
     let enum_value = Arc::new(Mutex::new(Enum::First));
 
     panel_builders.insert(
-        DockPanelLocation::Left,
-        DockPanelProperties::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockLocation::Left,
+        DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Left Corner of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
@@ -87,8 +87,8 @@ fn main() {
     );
 
     panel_builders.insert(
-        DockPanelLocation::Right,
-        DockPanelProperties::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockLocation::Right,
+        DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Right of the Playground");
 
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
@@ -163,8 +163,8 @@ fn main() {
         })),
     );
     panel_builders.insert(
-        DockPanelLocation::Top,
-        DockPanelProperties::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockLocation::Top,
+        DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Top of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
         })),
@@ -174,8 +174,8 @@ fn main() {
     let counter = Arc::new(Mutex::new(0));
 
     panel_builders.insert(
-        DockPanelLocation::Bottom,
-        DockPanelProperties::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockLocation::Bottom,
+        DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
             ui.label("Bottom of the Playground");
 
             let counter_clone = Arc::clone(&counter);
