@@ -15,6 +15,7 @@ fn main() {
     let text_input = Arc::new(Mutex::new(String::from("Enter Text Here")));
     let slider_value = Arc::new(Mutex::new(100.0));
 
+
     #[derive(PartialEq)]
     enum Enum {
         First,
@@ -24,6 +25,7 @@ fn main() {
 
     let enum_value = Arc::new(Mutex::new(Enum::First));
 
+    let slider_value_clone_1 = Arc::clone(&slider_value);
     panel_builders.insert(
         DockLocation::Left,
         DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
@@ -52,7 +54,7 @@ fn main() {
 
             // slider
             ui.separator();
-            let slider_value_clone = Arc::clone(&slider_value);
+            let slider_value_clone = Arc::clone(&slider_value_clone_1);
             let mut slider_value_lock = slider_value_clone.lock().unwrap();
             ui.add(egui::Slider::new(&mut *slider_value_lock, 0.001..=100.0).text("slider"));
 
@@ -146,19 +148,6 @@ fn main() {
                     // before hiding
                     ui.label("Clicked");
                 }
-                /*
-                const draggable_button: egui::Button = egui::Button::new("Square").sense(Sense::drag());
-
-                if draggable_button.drag_started() {
-                    ui.label("Drag Started");
-                }
-                if draggable_button.dragging() {
-                    ui.label("Dragging");
-                }
-                else {
-                    ui.label("Drag Released");
-                }
-                */
             }
         })),
     );
@@ -172,7 +161,7 @@ fn main() {
 
     // gets moved to PanelType::Bottom ... @audit : Explain what's happening here lol
     let counter = Arc::new(Mutex::new(0));
-
+    let slider_value_clone_2 = Arc::clone(&slider_value);
     panel_builders.insert(
         DockLocation::Bottom,
         DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
@@ -180,7 +169,7 @@ fn main() {
 
             let counter_clone = Arc::clone(&counter);
             let mut counter_lock = counter_clone.lock().unwrap();
-            ui_counter(&mut *ui, &mut *counter_lock);
+            ui_counter_widget(&mut *ui, &mut *counter_lock);
 
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
             // Create a "canvas" for drawing on that's 100% x 300 px
@@ -192,15 +181,20 @@ fn main() {
                 response.rect,
             );
 
+            let slider_value_clone = Arc::clone(&slider_value_clone_2);
+            let slider_value_lock = slider_value_clone.lock().unwrap();
+            let y_offset = *slider_value_lock;
+
             // Create an absolute point
             let point = Pos2::ZERO;
             // Make the absolute point relative to the canvas container
             let point_in_screen = to_screen.transform_pos(point);
             // e.g. x: 330.0, y: 245.0
+            ui.allocate_space(Vec2::new(0.0, 20.0 + y_offset));
             ui.label(format!("{:?}", point_in_screen));
 
             // Absolutely place Ui relative to the container
-            let position = Pos2::new(10.0, 10.0);
+            let position = Pos2::new(10.0, 10.0 + y_offset);
 
             let _animation_clip_button = ui.put(
                 Rect {
@@ -221,7 +215,7 @@ fn main() {
         .run();
 }
 
-fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
+fn ui_counter_widget(ui: &mut egui::Ui, counter: &mut i32) {
     // Put the  buttons and label on the same row
     ui.horizontal(|ui| {
         if ui.button("-").clicked() {

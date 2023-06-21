@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::bevy_egui::{egui, EguiContexts, EguiPlugin};
 use std::collections::BTreeMap;
+use std::fmt;
 use std::sync::Arc;
 
 /// WidgetInsertClosure Type Aliasing Complex Traits
@@ -22,15 +23,15 @@ use std::sync::Arc;
 /// `'static` lifetime, meaning it can live for the entire duration of the
 /// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
-pub type WidgetInsertClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
+pub type WidgetClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
 
-/// PanelBuildTree Type Aliasing
+/// PanelTree Type Aliasing
 /// - `BTreeMap`: Container for key-value pairs that is :
 ///    - Ordered by key, useful for UI elements where dock draw order matters
 ///    - Fast for lookups
 ///    - Insertion is slower when compared to HashMap
 /// -  `<DockLocation, DockClosure>`: keys and values
-pub type PanelBuildTree = BTreeMap<DockLocation, DockClosure>;
+pub type DockTree = BTreeMap<DockLocation, DockClosure>;
 
 /// DockLocation Enum for the possible location docking panels
 /// - Left
@@ -45,24 +46,24 @@ pub enum DockLocation {
     Bottom,
 }
 
-impl DockLocation {
-    fn label(&self) -> &str {
+impl fmt::Display for DockLocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DockLocation::Left => "Left Panel",
-            DockLocation::Right => "Right Panel",
-            DockLocation::Top => "Top Panel",
-            DockLocation::Bottom => "Bottom Panel",
+            DockLocation::Left => write!(f, "Left Panel"),
+            DockLocation::Right => write!(f, "Right Panel"),
+            DockLocation::Top => write!(f, "Top Panel"),
+            DockLocation::Bottom => write!(f, "Bottom Panel"),
         }
     }
 }
 
 #[derive(Clone)]
 pub struct DockClosure {
-    widget_closure: WidgetInsertClosure,
+    widget_closure: WidgetClosure,
 }
 
 impl DockClosure {
-    pub fn new(closure: WidgetInsertClosure) -> Self {
+    pub fn new(closure: WidgetClosure) -> Self {
         DockClosure {
             widget_closure: closure,
         }
@@ -111,38 +112,36 @@ impl FromWorld for Images {
 
 // PanelBuilderHash is a closure to build a panel
 pub struct DockPlugin {
-    panels: PanelBuildTree,
+    dock_tree: DockTree,
 }
 
 impl DockPlugin {
-    pub fn new(panels: PanelBuildTree) -> Self {
-        DockPlugin { panels }
+    pub fn new(dock_tree: DockTree) -> Self {
+        DockPlugin { dock_tree }
     }
 }
 
 impl Plugin for DockPlugin {
     fn build(&self, app: &mut App) {
-        let panels = self.panels.clone();
+        let dock_tree = self.dock_tree.clone();
 
         app.add_plugin(EguiPlugin)
             .insert_resource(IsVisible::default())
-            .insert_resource(DrawDockParams {
-                panel_builders: panels,
-            })
-            .add_system(toggle_dock)
-            .add_system(draw_dock_panels);
+            .insert_resource(DrawDockParams { dock_tree })
+            .add_system(toggle_docks)
+            .add_system(draw_docking_panels);
     }
 }
 
 #[derive(Resource)]
 struct DrawDockParams {
-    panel_builders: PanelBuildTree,
+    dock_tree: DockTree,
 }
 
 impl Default for DrawDockParams {
     fn default() -> Self {
         Self {
-            panel_builders: BTreeMap::new(),
+            dock_tree: BTreeMap::new(),
         }
     }
 }
@@ -153,7 +152,7 @@ impl Default for DrawDockParams {
 ///
 /// - is_visible: ResMut<IsVisible>     // is visible
 /// - key_input: Res<Input<KeyCode>>    // key input
-fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
+fn toggle_docks(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>) {
     let panel_type = if key_input.just_released(KeyCode::Left) {
         Some(DockLocation::Left)
     } else if key_input.just_released(KeyCode::Right) {
@@ -180,7 +179,7 @@ fn toggle_dock(mut is_visible: ResMut<IsVisible>, key_input: Res<Input<KeyCode>>
 /// - contexts: EguiContexts            // egui context
 /// - is_visible: Res<IsVisible>        // is visible
 /// - params: Res<DrawDockParams>       // draw dock params
-fn draw_dock_panels(
+fn draw_docking_panels(
     mut contexts: EguiContexts,
     is_visible: Res<IsVisible>,
     params: Res<DrawDockParams>,
@@ -194,7 +193,7 @@ fn draw_dock_panels(
         *texture_id = contexts.add_image(images.icon.clone_weak());
     }
 
-    let should_draw_panel = |location: &DockLocation| -> bool {
+    let should_show_panel = |location: &DockLocation| -> bool {
         match location {
             DockLocation::Left => is_visible.left,
             DockLocation::Right => is_visible.right,
@@ -203,13 +202,13 @@ fn draw_dock_panels(
         }
     };
 
-    for (dock_location, dock_properties) in &params.panel_builders {
-        if should_draw_panel(dock_location) {
+    for (dock_location, dock_properties) in &params.dock_tree {
+        if should_show_panel(dock_location) {
             show_panel(
                 &mut contexts,
                 &dock_properties.widget_closure,
                 dock_location,
-                dock_location.label().to_string(),
+                dock_location.to_string(),
                 *texture_id,
                 &asset_server,
             );
@@ -226,7 +225,7 @@ fn draw_dock_panels(
 /// - p_label: String               // a string for the panel LABEL to build
 fn show_panel(
     contexts: &mut EguiContexts,
-    widget_closure: &WidgetInsertClosure,
+    widget_closure: &WidgetClosure,
     p_location: &DockLocation,
     p_label: String,
     texture_id: egui::TextureId,
