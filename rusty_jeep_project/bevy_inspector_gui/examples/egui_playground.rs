@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_inspector_egui::egui::emath::RectTransform;
-use bevy_inspector_egui::egui::{self, Pos2, Rect, Sense, Vec2};
+use bevy_inspector_egui::egui::{self, Color32, Pos2, Rect, Sense, Shape, Stroke, Vec2};
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
@@ -14,7 +14,6 @@ fn main() {
     // Arc<Mutex<String>> allows edit, Arc<Mustex<&str>> does not
     let text_input = Arc::new(Mutex::new(String::from("Enter Text Here")));
     let slider_value = Arc::new(Mutex::new(100.0));
-
 
     #[derive(PartialEq)]
     enum Enum {
@@ -156,6 +155,37 @@ fn main() {
         DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Top of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
+
+            // Allocate space for a custom painter with a specified size and
+            // hover sensing
+            let (response, painter) =
+                ui.allocate_painter(Vec2::new(ui.available_width(), 200.0), Sense::hover());
+
+            // Create a transformation that maps points from the source rect to
+            // the target rect
+            let to_screen = RectTransform::from_to(
+                // source rect
+                Rect::from_min_size(Pos2::ZERO, response.rect.size()),
+                // target rect ... allocated painter space
+                response.rect,
+            );
+
+            // Define two points for the line segment
+            let first_point = Pos2 { x: 0.0, y: 0.0 };
+            let second_point = Pos2 { x: 300.0, y: 300.0 };
+
+            // Convert points to screen co-ordinate wrt to painter space
+            let first_point_screen = to_screen.transform_pos(first_point);
+            let second_point_screen = to_screen.transform_pos(second_point);
+
+            // Pain the line using the transformed points
+            painter.add(Shape::LineSegment {
+                points: [first_point_screen, second_point_screen],
+                stroke: Stroke {
+                    width: 10.0,
+                    color: Color32::BLUE,
+                },
+            });
         })),
     );
 
