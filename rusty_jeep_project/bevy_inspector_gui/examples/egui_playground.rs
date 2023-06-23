@@ -156,35 +156,12 @@ fn main() {
             ui.label("Top of the Playground");
             let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
-            // Allocate space for a custom painter with a specified size and
-            // hover sensing
-            let (response, painter) =
-                ui.allocate_painter(Vec2::new(ui.available_width(), 200.0), Sense::hover());
-
-            // Create a transformation that maps points from the source rect to
-            // the target rect
-            let to_screen = RectTransform::from_to(
-                // source rect
-                Rect::from_min_size(Pos2::ZERO, response.rect.size()),
-                // target rect ... allocated painter space
-                response.rect,
-            );
-
-            // Define two points for the line segment
-            let first_point = Pos2 { x: 0.0, y: 0.0 };
-            let second_point = Pos2 { x: 300.0, y: 300.0 };
-
-            // Convert points to screen co-ordinate wrt to painter space
-            let first_point_screen = to_screen.transform_pos(first_point);
-            let second_point_screen = to_screen.transform_pos(second_point);
-
-            // Pain the line using the transformed points
-            painter.add(Shape::LineSegment {
-                points: [first_point_screen, second_point_screen],
-                stroke: Stroke {
-                    width: 10.0,
-                    color: Color32::BLUE,
-                },
+            let origin = Pos2::ZERO;
+            let rect_bound = Vec2 { x: 100.0, y: 100.0 };
+            ui.horizontal(|ui| {
+                ui_painter_rect(ui, origin, rect_bound, Color32::RED);
+                ui_painter_rect(ui, origin, rect_bound, Color32::BLUE);
+                ui_painter_rect(ui, origin, rect_bound * 2.0, Color32::YELLOW);
             });
         })),
     );
@@ -243,6 +220,39 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(dock_plugin)
         .run();
+}
+
+fn ui_painter_rect(ui: &mut egui::Ui, origin: Pos2, rect_bound: Vec2, color: Color32) {
+    // Allocate space for a custom painter with a specified size and
+    // hover sensing
+    let (response, painter) =
+        ui.allocate_painter(Vec2::new(rect_bound.x, rect_bound.y), Sense::hover());
+
+    // Create a transformation that maps points from the source rect to
+    // the target rect
+    let to_screen = RectTransform::from_to(
+        // source rect
+        Rect::from_min_size(origin, response.rect.size()),
+        // target rect ... allocated painter space
+        response.rect,
+    );
+
+    // Define two points for the line segment
+    let first_point = Pos2 { x: 0.0, y: 0.0 };
+    let second_point = Pos2 { x: 300.0, y: 300.0 };
+
+    // Convert points to screen co-ordinate wrt to painter space
+    let first_point_screen = to_screen.transform_pos(first_point);
+    let second_point_screen = to_screen.transform_pos(second_point);
+
+    // Pain the line using the transformed points
+    painter.add(Shape::LineSegment {
+        points: [first_point_screen, second_point_screen],
+        stroke: Stroke {
+            width: 10.0,
+            color: color,
+        },
+    });
 }
 
 fn ui_counter_widget(ui: &mut egui::Ui, counter: &mut i32) {
