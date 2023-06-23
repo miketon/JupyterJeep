@@ -15,7 +15,25 @@ fn main() {
         DockLocation::Left,
         DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
             ui.label("Left Panel");
-            ui_counter_widget(ui);
+            ui.horizontal(|ui| {
+                ui.allocate_space(Vec2::new(20.0, 0.0));
+                ui_triangle_mesh(ui, 6.0);
+            });
+            ui.horizontal(|ui| {
+                ui_triangle_mesh(ui, 6.0);
+                ui_triangle_mesh(ui, 6.0);
+            });
+            ui.vertical(|ui| {
+                ui.allocate_space(Vec2::new(0.0, 5.0));
+                ui.separator();
+                ui.horizontal(|ui| {
+                    ui.allocate_space(Vec2::new(10.0, 0.0));
+                    ui_counter_widget(ui);
+                    ui.separator();
+                    ui.label("--");
+                });
+                ui.separator();
+            });
         })),
     );
     panel_tree.insert(
@@ -35,10 +53,13 @@ fn main() {
 
 fn ui_animator_widget(ui: &mut egui::Ui) {
     ui.label("Animator");
-    let (response, painter) = ui.allocate_painter(Vec2 { x: 200.0, y: 200.0 }, Sense::hover());
+}
+
+fn ui_triangle_mesh(ui: &mut egui::Ui, scale: f32) {
+    let (response, painter) = ui.allocate_painter(Vec2 { x: 50.0, y: 50.0 }, Sense::hover());
 
     let to_screen = RectTransform::from_to(
-        Rect::from_min_size(Pos2::ZERO, 2.0 * response.rect.size()),
+        Rect::from_min_size(Pos2::ZERO, scale * response.rect.size()),
         response.rect,
     );
     let v1 = to_screen.transform_pos(Pos2 { x: 200.0, y: 100.0 });
