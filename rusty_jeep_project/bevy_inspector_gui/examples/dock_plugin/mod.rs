@@ -23,7 +23,7 @@ use std::sync::Arc;
 /// `'static` lifetime, meaning it can live for the entire duration of the
 /// program. This is required because trait objects have a default lifetime
 /// bound of `'static` when used with smart pointers like `Arc`.
-pub type WidgetClosure = Arc<dyn Fn(&mut egui::Ui, &AssetServer) + Send + Sync + 'static>;
+pub type WidgetClosure = Arc<dyn Fn(&mut egui::Ui) + Send + Sync + 'static>;
 
 /// PanelTree Type Aliasing
 /// - `BTreeMap`: Container for key-value pairs that is :
@@ -186,7 +186,6 @@ fn draw_docking_panels(
     mut texture_id: Local<egui::TextureId>,
     mut is_initialized: Local<bool>,
     images: Local<Images>,
-    asset_server: Res<AssetServer>,
 ) {
     if !*is_initialized {
         *is_initialized = true;
@@ -210,7 +209,6 @@ fn draw_docking_panels(
                 dock_location,
                 dock_location.to_string(),
                 *texture_id,
-                &asset_server,
             );
         }
     }
@@ -229,7 +227,6 @@ fn show_panel(
     p_location: &DockLocation,
     p_label: String,
     texture_id: egui::TextureId,
-    asset_server: &Res<AssetServer>,
 ) {
     let ctx = contexts.ctx_mut();
     match *p_location {
@@ -237,21 +234,21 @@ fn show_panel(
             .resizable(true)
             .show(ctx, |ui| {
                 ui.add(egui::widgets::Image::new(texture_id, [64.0, 64.0]));
-                widget_closure(ui, &*asset_server);
+                widget_closure(ui);
                 let available_rect = ui.available_rect_before_wrap();
                 ui.allocate_rect(available_rect, egui::Sense::hover());
             }),
         DockLocation::Right => egui::SidePanel::right(p_label)
             .resizable(true)
             .show(ctx, |ui| {
-                widget_closure(ui, &*asset_server);
+                widget_closure(ui);
                 let available_rect = ui.available_rect_before_wrap();
                 ui.allocate_rect(available_rect, egui::Sense::hover());
             }),
         DockLocation::Top => egui::TopBottomPanel::top(p_label)
             .resizable(true)
             .show(ctx, |ui| {
-                widget_closure(ui, &*asset_server);
+                widget_closure(ui);
                 let available_rect = ui.available_rect_before_wrap();
                 ui.allocate_rect(available_rect, egui::Sense::hover());
             }),
@@ -259,7 +256,7 @@ fn show_panel(
             egui::TopBottomPanel::bottom(p_label)
                 .resizable(true)
                 .show(ctx, |ui| {
-                    widget_closure(ui, &*asset_server);
+                    widget_closure(ui);
                     let available_rect = ui.available_rect_before_wrap();
                     ui.allocate_rect(available_rect, egui::Sense::hover());
                 })

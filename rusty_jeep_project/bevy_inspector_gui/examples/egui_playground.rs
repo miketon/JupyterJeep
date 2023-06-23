@@ -27,9 +27,8 @@ fn main() {
     let slider_value_clone_1 = Arc::clone(&slider_value);
     panel_builders.insert(
         DockLocation::Left,
-        DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockClosure::new(Arc::new(move |ui: &mut egui::Ui| {
             ui.label("Left Corner of the Playground");
-            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
             // checkbox
             ui.separator();
@@ -89,12 +88,8 @@ fn main() {
 
     panel_builders.insert(
         DockLocation::Right,
-        DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockClosure::new(Arc::new(|ui: &mut egui::Ui| {
             ui.label("Right of the Playground");
-
-            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
-            // let texture_id = TextureId::from(image_handle);
-            // ui.image(texture_id, [100.0, 100.0]);
             ui.separator();
             let is_collapsed = ui.collapsing("Scratchpad", |ui| {
                 ui.code(
@@ -152,9 +147,8 @@ fn main() {
     );
     panel_builders.insert(
         DockLocation::Top,
-        DockClosure::new(Arc::new(|ui: &mut egui::Ui, asset_server| {
+        DockClosure::new(Arc::new(|ui: &mut egui::Ui| {
             ui.label("Top of the Playground");
-            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
 
             let origin = Pos2::ZERO;
             let rect_bound = Vec2 { x: 100.0, y: 100.0 };
@@ -171,14 +165,13 @@ fn main() {
     let slider_value_clone_2 = Arc::clone(&slider_value);
     panel_builders.insert(
         DockLocation::Bottom,
-        DockClosure::new(Arc::new(move |ui: &mut egui::Ui, asset_server| {
+        DockClosure::new(Arc::new(move |ui: &mut egui::Ui| {
             ui.label("Bottom of the Playground");
 
             let counter_clone = Arc::clone(&counter);
             let mut counter_lock = counter_clone.lock().unwrap();
             ui_counter_widget(&mut *ui, &mut *counter_lock);
 
-            let _image_handle: Handle<Image> = asset_server.load("icon_inverted.png");
             // Create a "canvas" for drawing on that's 100% x 300 px
             let (response, _painter) =
                 ui.allocate_painter(Vec2::new(ui.available_width(), 100.0), Sense::hover());
