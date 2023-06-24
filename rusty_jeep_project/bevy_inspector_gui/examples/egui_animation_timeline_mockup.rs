@@ -3,8 +3,9 @@ use bevy_inspector_egui::bevy_egui::egui::epaint::{
     Mesh, RectShape, Rounding, Stroke, Vertex, WHITE_UV,
 };
 use bevy_inspector_egui::bevy_egui::egui::{
-    self, vec2, Color32, Painter, Pos2, Rect, Sense, Shape,
+    self, vec2, Color32, Painter, Pos2, Rect, Sense, Shape, Vec2,
 };
+
 use bevy_inspector_egui::egui::emath::RectTransform;
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -43,7 +44,7 @@ fn main() {
         DockLocation::Bottom,
         DockClosure::new(Arc::new(|ui: &mut egui::Ui| {
             ui.label("Bottom Panel");
-            ui_animator_widget(ui);
+            animator_timeline_panel(ui);
         })),
     );
 
@@ -54,25 +55,19 @@ fn main() {
         .run();
 }
 
-fn ui_animator_widget(ui: &mut egui::Ui) {
-    ui.label("Animator");
+fn animator_timeline_panel(ui: &mut egui::Ui) {
+    ui.label("Animation Timeline");
+    let timeline_width = ui.available_width();
     // Draw squares representation the animations
-    let (response, painter) =
-        ui.allocate_painter(vec2(ui.available_width(), 200.0), Sense::hover());
-
-    let to_screen = RectTransform::from_to(
-        Rect::from_min_size(Pos2::ZERO, response.rect.size()),
-        response.rect,
-    );
+    let (painter, to_screen) = allocate_painter(ui, vec2(timeline_width, 100.0));
+    draw_animator_ticks(&painter, &to_screen, timeline_width);
 
     let key_min = to_screen.transform_pos(Pos2::ZERO);
     let key_max = to_screen.transform_pos(Pos2 { x: 200.0, y: 100.0 });
     draw_key_frame(&painter, key_min, key_max);
-    let timeline_length = ui.available_width();
-    ui_animator_timeline(&painter, &to_screen, timeline_length);
 }
 
-fn ui_animator_timeline(painter: &Painter, to_screen: &RectTransform, timeline_length: f32) {
+fn draw_animator_ticks(painter: &Painter, to_screen: &RectTransform, timeline_length: f32) {
     let timeline_line_gap = 20.0;
     let timeline_num_lines: i32 = (timeline_length / timeline_line_gap).round() as i32;
 
@@ -96,7 +91,7 @@ fn draw_line(painter: &Painter, first_point: Pos2, second_point: Pos2) {
         points: [first_point, second_point],
         stroke: Stroke {
             width: 1.0,
-            color: Color32::GRAY,
+            color: Color32::DARK_GRAY,
         },
     });
 }
@@ -169,4 +164,13 @@ fn ui_counter_widget(ui: &mut egui::Ui) {
             println!("Increase counter");
         }
     });
+}
+
+fn allocate_painter(ui: &mut egui::Ui, size: Vec2) -> (Painter, RectTransform) {
+    let (response, painter) = ui.allocate_painter(size, Sense::hover());
+    let to_screen = RectTransform::from_to(
+        Rect::from_min_size(Pos2::ZERO, response.rect.size()),
+        response.rect,
+    );
+    (painter, to_screen)
 }
