@@ -3,18 +3,22 @@ use bevy_inspector_egui::bevy_egui::egui::epaint::{
     Mesh, RectShape, Rounding, Stroke, Vertex, WHITE_UV,
 };
 use bevy_inspector_egui::bevy_egui::egui::{
-    self, vec2, Color32, Painter, Pos2, Rect, Sense, Shape, Vec2,
+    self, pos2, vec2, Color32, Painter, Pos2, Rect, Sense, Shape, Vec2,
 };
 
 use bevy_inspector_egui::egui::emath::RectTransform;
 use std::collections::BTreeMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 mod dock_plugin;
 use dock_plugin::{DockClosure, DockLocation, DockPlugin};
 
+mod debug_text_plugin;
+use debug_text_plugin::DebugTextPlugin;
+
 fn main() {
     let mut panel_tree = BTreeMap::new();
+    let debug_text = Arc::new(Mutex::new(String::from("Debug Me Yoooo")));
     panel_tree.insert(
         DockLocation::Left,
         DockClosure::new(Arc::new(|ui: &mut egui::Ui| {
@@ -42,16 +46,21 @@ fn main() {
     );
     panel_tree.insert(
         DockLocation::Bottom,
-        DockClosure::new(Arc::new(|ui: &mut egui::Ui| {
+        DockClosure::new(Arc::new(move |ui: &mut egui::Ui| {
             ui.label("Bottom Panel");
+            let debug_text_clone = Arc::clone(&debug_text);
+            let debug_text_lock = debug_text_clone.lock().unwrap();
+            ui.label(&*debug_text_lock);
             animator_timeline_panel(ui);
         })),
     );
 
     let dock_plugin = DockPlugin::new(panel_tree);
+    let debug_text_plugin = DebugTextPlugin::new();
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(dock_plugin)
+        .add_plugin(debug_text_plugin)
         .run();
 }
 
@@ -65,6 +74,19 @@ fn animator_timeline_panel(ui: &mut egui::Ui) {
     let key_min = to_screen.transform_pos(Pos2::ZERO);
     let key_max = to_screen.transform_pos(Pos2 { x: 200.0, y: 100.0 });
     draw_key_frame(&painter, key_min, key_max);
+    draw_clip_button(ui, &to_screen);
+}
+
+fn draw_clip_button(ui: &mut egui::Ui, to_screen: &RectTransform) {
+    // Drag and Drop
+    let _animation_clip_button = ui.put(
+        Rect {
+            min: to_screen.transform_pos(pos2(100.0, 100.0)),
+            max: to_screen.transform_pos(pos2(350.0, 200.0)),
+        },
+        egui::Button::new("Square").sense(Sense::drag()),
+    );
+    ui.label("Drag and Drop");
 }
 
 fn draw_animator_ticks(painter: &Painter, to_screen: &RectTransform, timeline_length: f32) {
