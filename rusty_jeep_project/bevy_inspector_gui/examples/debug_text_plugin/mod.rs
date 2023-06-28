@@ -38,7 +38,7 @@ impl Plugin for DebugTextPlugin {
             messages: Vec::new(),
         })
         .add_startup_system(setup)
-        .add_system(update_debug_text)
+        // .add_system(update_debug_text)
         .add_system(some_system);
     }
 }
@@ -67,6 +67,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+/*
 fn update_debug_text(mut query: Query<&mut Text>, debug_text: Res<DebugText>) {
     for mut text in query.iter_mut() {
         text.sections[0].value = "What's up?".to_string();
@@ -79,6 +80,7 @@ fn update_debug_text(mut query: Query<&mut Text>, debug_text: Res<DebugText>) {
         */
     }
 }
+*/
 
 fn some_system(mut debug_text: ResMut<DebugText>) {
     debug_text.add_debug_message("Hello Yall".to_string());
