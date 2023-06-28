@@ -22,7 +22,7 @@ struct TimeLineState {
     // Where did user start dragging, used to calculate distance dragged
     drag_start: Pos2, // @note : has to be type... can't be pos2() function
     // Position where the clip is released
-    position_release: Pos2,
+    position: Pos2,
     // Delta between drag_start and drag_end
     drag_delta: f32,
 }
@@ -32,7 +32,7 @@ impl Default for TimeLineState {
         Self {
             is_dragging: false,
             drag_start: pos2(0.0, 0.0),
-            position_release: pos2(100.0, 100.0),
+            position: pos2(100.0, 100.0),
             drag_delta: 0.0,
         }
     }
@@ -97,13 +97,19 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     let key_max = to_screen.transform_pos(Pos2 { x: 200.0, y: 100.0 });
     draw_key_frame(&painter, key_min, key_max);
     // draw_clip_button(ui, &to_screen);
-    let timeline_state_clone = timeline_state.clone();
-    let timeline_offset = timeline_state_clone.lock().unwrap().position_release.x;
+    let mut timeline_state = match timeline_state.lock() {
+        Ok(unlocked) => unlocked,
+        Err(e) => {
+            eprint!("Failed to lock timeline state {:?}", e);
+            return;
+        }
+    };
+
     let y_ss = to_screen.transform_pos(pos2(0.0, 0.0));
     let animation_clip_button = ui.put(
         Rect {
-            min: pos2(timeline_offset, y_ss.y + 10.0),
-            max: pos2(timeline_offset + 300.0, y_ss.y + 90.0),
+            min: pos2(timeline_state.position.x, y_ss.y + 10.0),
+            max: pos2(timeline_state.position.x + 300.0, y_ss.y + 90.0),
         },
         egui::Button::new("Square").sense(Sense::drag()),
     );
@@ -113,26 +119,29 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     if animation_clip_button.drag_started() {
         let drag_start = animation_clip_button.interact_pointer_pos();
         match drag_start {
-            Some(pos) => {
+            Some(start_pos) => {
                 debug_text_update.push_str("Drag Started");
-                timeline_state.lock().unwrap().drag_start = pos;
-                timeline_state.lock().unwrap().is_dragging = true;
+                timeline_state.drag_start = start_pos;
+                timeline_state.is_dragging = true;
                 // reset drag delta on drag start
-                timeline_state.lock().unwrap().drag_delta = 0.0;
+                timeline_state.drag_delta = 0.0;
             }
             None => {}
         }
     }
 
-    if timeline_state.lock().unwrap().is_dragging {
+    if timeline_state.is_dragging {
         let drag_delta = animation_clip_button.interact_pointer_pos();
         match drag_delta {
-            Some(delta) => {
+            Some(delta_pos) => {
                 debug_text_update.push_str("Is Dragging");
                 // Calculate the difference between the last stored position
+                let drag_delta = delta_pos.x - timeline_state.drag_start.x;
                 // Update the clip position in state
+                timeline_state.position.x = drag_delta + timeline_state.position.x;
                 // Update the last stored position the mouse's current position
                 // Since we are updating each tick, this makes the drag seamless
+                timeline_state.drag_start.x = delta_pos.x;
             }
             None => {}
         }
@@ -141,24 +150,23 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     if animation_clip_button.drag_released() {
         let drag_released = animation_clip_button.interact_pointer_pos();
         match drag_released {
-            Some(pos) => {
+            Some(end_pos) => {
                 debug_text_update.push_str("Drag Released");
-                timeline_state.lock().unwrap().is_dragging = false;
+                timeline_state.is_dragging = false;
                 // we only care about the hoziontal delta along a SINGLE clip for
                 // now, not handling multiple clips yet
-                let drag_delta = pos.x - timeline_state.lock().unwrap().drag_start.x;
-                timeline_state.lock().unwrap().drag_delta = drag_delta;
-                // timeline_state.lock().unwrap().position_release = pos2(pos.x + drag_delta, pos.y);
-                timeline_state.lock().unwrap().position_release = pos;
+                let drag_delta = end_pos.x - timeline_state.drag_start.x;
+                timeline_state.drag_delta = drag_delta;
+                timeline_state.position = end_pos;
             }
             None => {}
         }
         debug_text_update.push_str("Drag Released");
         // On release, reset the drag start
-        timeline_state.lock().unwrap().drag_start = pos2(0.0, 0.0);
+        timeline_state.drag_start = pos2(0.0, 0.0);
     }
 
-    debug_text_update.push_str(format!("{:?}", timeline_state.lock().unwrap()).as_str());
+    debug_text_update.push_str(format!("{:?}", timeline_state).as_str());
 
     // Time line scrubber
     if response.hovered() {
