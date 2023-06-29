@@ -23,8 +23,6 @@ struct TimeLineState {
     drag_start: Pos2, // @note : has to be type... can't be pos2() function
     // Position where the clip is released
     position: Pos2,
-    // Delta between drag_start and drag_end
-    drag_delta: f32,
 }
 
 impl Default for TimeLineState {
@@ -32,8 +30,7 @@ impl Default for TimeLineState {
         Self {
             is_dragging: false,
             drag_start: pos2(0.0, 0.0),
-            position: pos2(100.0, 100.0),
-            drag_delta: 0.0,
+            position: pos2(0.0, 0.0),
         }
     }
 }
@@ -66,19 +63,21 @@ fn main() {
         })),
     );
 
-    let time_line_state = Arc::new(Mutex::new(TimeLineState::default()));
+    let timeline_state = Arc::new(Mutex::new(TimeLineState::default()));
+
     panel_tree.insert(
         DockLocation::Bottom,
         DockClosure::new(Arc::new(move |ui: &mut egui::Ui| {
             // access ResMut<TimeLineState> here ..how?
             ui.label("Bottom Panel");
-            let time_line_state_clone = time_line_state.clone();
-            animator_timeline_panel(ui, time_line_state_clone.clone());
+            let timeline_state_clone = timeline_state.clone();
+            animator_timeline_panel(ui, timeline_state_clone);
         })),
     );
 
     let dock_plugin = DockPlugin::new(panel_tree);
     let debug_text_plugin = DebugTextPlugin::new();
+
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(dock_plugin)
@@ -86,16 +85,21 @@ fn main() {
         .run();
 }
 
+/// Draw an Animator TimeLine Panel
+/// @param ui
+/// @param timeline_state
 fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLineState>>) {
+    const TIMELINE_HEIGHT: f32 = 200.0;
+    let timeline_width: f32 = ui.available_width();
     ui.label("Animation Timeline");
-    let timeline_width = ui.available_width();
     // Draw squares representation the animations
-    let (painter, to_screen, response) = allocate_painter(ui, vec2(timeline_width, 200.0));
+    let (painter, to_screen, response) =
+        allocate_painter(ui, vec2(timeline_width, TIMELINE_HEIGHT));
     draw_animator_ticks(&painter, &to_screen, timeline_width);
 
     let key_min = to_screen.transform_pos(Pos2::ZERO);
     let key_max = to_screen.transform_pos(Pos2 { x: 200.0, y: 100.0 });
-    draw_key_frame(&painter, key_min, key_max);
+    draw_key_frame(&painter, &key_min, &key_max);
     // draw_clip_button(ui, &to_screen);
     let mut timeline_state = match timeline_state.lock() {
         Ok(unlocked) => unlocked,
@@ -106,10 +110,11 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     };
 
     let y_ss = to_screen.transform_pos(pos2(0.0, 0.0));
+    let x_ss = to_screen.transform_pos(timeline_state.position);
     let animation_clip_button = ui.put(
         Rect {
-            min: pos2(timeline_state.position.x, y_ss.y + 10.0),
-            max: pos2(timeline_state.position.x + 300.0, y_ss.y + 90.0),
+            min: pos2(x_ss.x, y_ss.y + 10.0),
+            max: pos2(x_ss.x + 300.0, y_ss.y + 90.0),
         },
         egui::Button::new("Square").sense(Sense::drag()),
     );
@@ -123,8 +128,8 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
                 debug_text_update.push_str("Drag Started");
                 timeline_state.drag_start = start_pos;
                 timeline_state.is_dragging = true;
-                // reset drag delta on drag start
-                timeline_state.drag_delta = 0.0;
+                // // reset drag delta on drag start
+                // timeline_state.drag_delta = 0.0;
             }
             None => {}
         }
@@ -148,22 +153,10 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     }
 
     if animation_clip_button.drag_released() {
-        let drag_released = animation_clip_button.interact_pointer_pos();
-        match drag_released {
-            Some(end_pos) => {
-                debug_text_update.push_str("Drag Released");
-                timeline_state.is_dragging = false;
-                // we only care about the hoziontal delta along a SINGLE clip for
-                // now, not handling multiple clips yet
-                let drag_delta = end_pos.x - timeline_state.drag_start.x;
-                timeline_state.drag_delta = drag_delta;
-                timeline_state.position = end_pos;
-            }
-            None => {}
-        }
         debug_text_update.push_str("Drag Released");
         // On release, reset the drag start
         timeline_state.drag_start = pos2(0.0, 0.0);
+        timeline_state.is_dragging = false;
     }
 
     debug_text_update.push_str(format!("{:?}", timeline_state).as_str());
@@ -178,7 +171,7 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
                 let relative_pos = to_screen.transform_pos(Pos2::new(pos.x, 0.0));
                 let first_point = pos2(pos.x, relative_pos.y);
                 let second_point = pos2(pos.x, relative_pos.y + 100.0);
-                draw_line(&painter, first_point, second_point, Color32::WHITE);
+                draw_line(&painter, &first_point, &second_point, Color32::WHITE);
                 ui.separator();
                 ui.label(format!("Hovered {:?}", pos));
             }
@@ -192,40 +185,57 @@ fn animator_timeline_panel(ui: &mut egui::Ui, timeline_state: Arc<Mutex<TimeLine
     });
 }
 
+/// Loop to draw vertical animation ticks
+/// @param painter - the painter to draw with
+/// @param to_screen - the transform to screen space
+/// @param timeline_length - the length of the timeline
 fn draw_animator_ticks(painter: &Painter, to_screen: &RectTransform, timeline_length: f32) {
     let timeline_line_gap = 20.0;
     let timeline_num_lines: i32 = (timeline_length / timeline_line_gap).round() as i32;
 
-    // loop over the number of lines we need
+    // Loop over the number of lines we need
     for index in 0..timeline_num_lines {
-        // then we scale using the gap length
+        // Then we scale using the gap length
         let x = (index as f32) * timeline_line_gap;
 
-        // Create our 2 points for the timelin segment
-        // And transform it to screen space
+        // Create two points for the timeline segment in SCREEN SPACE
         let first_point = to_screen.transform_pos(Pos2 { x, y: 0.0 });
         let second_point = to_screen.transform_pos(Pos2 { x, y: 100.0 });
 
         // Draw a vertical line
-        draw_line(&painter, first_point, second_point, Color32::DARK_GRAY);
+        draw_line(&painter, &first_point, &second_point, Color32::DARK_GRAY);
     }
 }
 
-fn draw_line(painter: &Painter, first_point: Pos2, second_point: Pos2, color: Color32) {
+/// Draw a line segment
+///
+/// # Arguments
+/// * `painter` - The painter to draw the line on.
+/// * `first_point` - The first point of the line segment.
+/// * `second_point` - The second point of the line segment.
+/// * `color` - The color of the line segment.
+///
+/// # Note
+/// Pos2 is passed as a reference to be more efficient than copying.
+fn draw_line(painter: &Painter, first_point: &Pos2, second_point: &Pos2, color: Color32) {
     painter.add(Shape::LineSegment {
-        points: [first_point, second_point],
+        points: [*first_point, *second_point],
         stroke: Stroke {
             width: 1.0,
-            color: color,
+            color,
         },
     });
 }
 
-fn draw_key_frame(painter: &Painter, key_min: Pos2, key_max: Pos2) {
+/// draw a key frame
+/// @param painter - the painter to draw the key frame on
+/// @param key_min - the min point of the key frame
+/// @param key_max - the max point of the key frame
+fn draw_key_frame(painter: &Painter, key_min: &Pos2, key_max: &Pos2) {
     painter.add(Shape::Rect(RectShape {
         rect: Rect {
-            min: key_min,
-            max: key_max,
+            min: *key_min,
+            max: *key_max,
         },
         rounding: Rounding {
             nw: 0.0,
@@ -241,6 +251,9 @@ fn draw_key_frame(painter: &Painter, key_min: Pos2, key_max: Pos2) {
     }));
 }
 
+/// draw a triangle mesh - throwaway function for testing
+/// @param painter - the painter to draw the triangle mesh on
+/// @param v1 - the first vertex of the triangle mesh
 fn ui_triangle_mesh(ui: &mut egui::Ui, scale: f32) {
     let (response, painter) = ui.allocate_painter(vec2(50.0, 50.0), Sense::hover());
 
@@ -279,6 +292,8 @@ fn ui_triangle_mesh(ui: &mut egui::Ui, scale: f32) {
     painter.add(Shape::Mesh(mesh));
 }
 
+/// draw a counter widget - throwaway function for testing
+/// @param ui - the ui to draw the counter widget on
 fn ui_counter_widget(ui: &mut egui::Ui) {
     ui.horizontal(|ui| {
         if ui.button("-").clicked() {
@@ -291,6 +306,12 @@ fn ui_counter_widget(ui: &mut egui::Ui) {
     });
 }
 
+/// allocate a painter
+/// @param ui - the ui to allocate the painter on
+/// @param size - the size of the painter
+/// @return painter - the painter
+/// @return to_screen - the rect transform to screen space
+/// @return response - the response of the painter
 fn allocate_painter(ui: &mut egui::Ui, size: Vec2) -> (Painter, RectTransform, Response) {
     let (response, painter) = ui.allocate_painter(size, Sense::hover());
     let to_screen = RectTransform::from_to(
