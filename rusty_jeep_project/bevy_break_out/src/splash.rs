@@ -1,5 +1,5 @@
-use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
 use crate::game_state::GameState;
+use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
@@ -48,7 +48,7 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             });
             // parent.spawn(Text2dBundle {
             //     text: Text::from_section(
-            //         "Splash Screen Grimace", 
+            //         "Splash Screen Grimace",
             //         TextStyle {
             //             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
             //             font_size: 60.0,

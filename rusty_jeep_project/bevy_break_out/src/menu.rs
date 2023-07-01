@@ -1,5 +1,5 @@
-use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
 use crate::game_state::GameState;
+use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
@@ -14,9 +14,9 @@ impl Plugin for MenuPlugin {
         app
             // On entering the state spawn everything needed for this screen
             .add_system(menu_setup.in_schedule(OnEnter(GameState::Menu)));
-            // While in this state, run the countdown system
-            // On exiting the state, despawn everything spawned for this sreen
-            // .add_system(on_exit_menu);
+        // While in this state, run the countdown system
+        // On exiting the state, despawn everything spawned for this sreen
+        // .add_system(on_exit_menu);
     }
 }
 
