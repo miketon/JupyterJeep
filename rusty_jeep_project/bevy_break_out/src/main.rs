@@ -1,16 +1,12 @@
+mod game_state;
 mod splash;
+mod menu;
 
+use crate::game_state::GameState;
 use crate::splash::SplashPlugin;
+use crate::menu::MenuPlugin;
 use bevy::prelude::*;
 use bevy_editor_pls::prelude::*;
-
-#[derive(Debug, Clone, Default, Copy, PartialEq, Eq, Hash, States)]
-pub enum GameState {
-    Splash,
-    #[default] // marks splash as the default state
-    Menu,
-    Game,
-}
 
 fn main() {
     App::new()
@@ -18,6 +14,7 @@ fn main() {
         .add_state::<GameState>()
         .add_plugin(EditorPlugin::default())
         .add_plugin(SplashPlugin)
+        .add_plugin(MenuPlugin)
         .add_startup_system(setup_scene)
         .run();
 }

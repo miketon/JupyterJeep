@@ -1,4 +1,5 @@
 use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
+use crate::game_state::GameState;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
@@ -12,7 +13,7 @@ impl Plugin for SplashPlugin {
         // the GameState::Splash state
         app
             // On entering the state spawn everything needed for this screen
-            .add_startup_system(splash_setup);
+            .add_system(splash_setup.in_schedule(OnEnter(GameState::Splash)));
         // While in this state, run the countdown system
         // On exiting the state, despawn everything spawned for this sreen
         // .add_system(on_exit_splash);
