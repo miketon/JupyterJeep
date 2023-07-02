@@ -1,9 +1,13 @@
 use crate::game_state::GameState;
-use bevy::prelude::*; // crate:: is the equivalent of use super:: in a module?
+use bevy::prelude::*;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
 struct OnSplashScreen;
+
+// Resource 'Timer' to countdown the time left on the splash screen
+#[derive(Resource, Deref, DerefMut)]
+struct SplashTimer(Timer);
 
 pub struct SplashPlugin;
 
@@ -13,17 +17,20 @@ impl Plugin for SplashPlugin {
         // the GameState::Splash state
         app
             // On entering the state spawn everything needed for this screen
-            .add_system(splash_setup.in_schedule(OnEnter(GameState::Splash)));
-        // While in this state, run the countdown system
-        // On exiting the state, despawn everything spawned for this sreen
-        // .add_system(on_exit_splash);
+            .add_system(splash_setup.in_schedule(OnEnter(GameState::Splash)))
+            // While in this state, run the countdown system
+            .add_system(countdown.in_set(OnUpdate(GameState::Splash)))
+            // On exiting the state, despawn everything spawned for this sreen
+            .add_system(on_exit_splash.in_schedule(OnExit(GameState::Splash)));
     }
 }
 
 fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     println!("Splash screen setup");
+    // insert the timer as a resource
+    commands.insert_resource(SplashTimer(Timer::from_seconds(1.0, TimerMode::Once)));
+    // spawn ui
     let icon: Handle<Image> = asset_server.load("icon.png");
-    // display the logo
     commands
         .spawn((
             NodeBundle {
@@ -46,16 +53,14 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 image: UiImage::new(icon),
                 ..default()
             });
-            // parent.spawn(Text2dBundle {
-            //     text: Text::from_section(
-            //         "Splash Screen Grimace",
-            //         TextStyle {
-            //             font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-            //             font_size: 60.0,
-            //             color: Color::WHITE,
-            //         },
-            //     ),
-            // });
+            parent.spawn(TextBundle::from_section(
+                "Splash Screen",
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 60.0,
+                    color: Color::WHITE,
+                },
+            ));
         });
 }
 
@@ -63,5 +68,16 @@ fn on_exit_splash(mut commands: Commands, to_despawn: Query<Entity, With<OnSplas
     println!("on_exit_splash");
     for entity in to_despawn.iter() {
         commands.entity(entity).despawn_recursive();
+    }
+}
+
+/// Tick the timer and change the state when finished
+fn countdown(
+    mut next_state: ResMut<NextState<GameState>>,
+    time: Res<Time>,
+    mut timer: ResMut<SplashTimer>,
+) {
+    if timer.tick(time.delta()).finished() {
+        next_state.set(GameState::Menu);
     }
 }

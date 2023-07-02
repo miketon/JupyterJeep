@@ -1,0 +1,8 @@
+use bevy::prelude::*;
+// - `crate::` is used to refer to the root of the current crate as opposed to
+// - `super::` which refers to the parent module
+// @note : In this case, `crate::` is used to access the `GameState` enum from
+// `game_state` module in game_state.rs (which is in the same directory as this)
+// In the original example/game_menu.rs all code was in one monolithic file, so
+// `super::` was used to refer to the parent module
+use crate::game_state::GameState;
