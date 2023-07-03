@@ -19,11 +19,13 @@ impl Plugin for SplashPlugin {
         // the GameState::Splash state
         app
             // On entering the state spawn everything needed for this screen
-            .add_system(splash_setup.in_schedule(OnEnter(GameState::Splash)))
             // While in this state, run the countdown system
-            // .add_system(countdown.in_set(OnUpdate(GameState::Splash)))
             // On exiting the state, despawn everything spawned for this sreen
-            .add_system(on_exit_splash.in_schedule(OnExit(GameState::Splash)));
+            .add_systems((
+                splash_setup.in_schedule(OnEnter(GameState::Splash)),
+                countdown.in_set(OnUpdate(GameState::Splash)),
+                on_exit_splash.in_schedule(OnExit(GameState::Splash)),
+            ));
     }
 }
 

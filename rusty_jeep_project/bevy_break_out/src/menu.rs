@@ -9,6 +9,13 @@ use crate::bundles::{BDImage, BDSection};
 use crate::bundles::{BDNodeRoot, BDNodeVertical};
 use crate::game_state::GameState;
 
+#[derive(Debug, Eq, PartialEq, States, Default, Hash, Clone)]
+enum MenuState {
+    #[default]
+    Main,
+    SettingsDisplay,
+}
+
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
 struct OnMenuScreen;
@@ -19,11 +26,15 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         // As this plugin is managing the menu screen, it will focus on
         // the GameState::Menu state
-        app
+        app.add_state::<MenuState>()
+            // Entering Root Menu Screen
             // On entering the state spawn everything needed for this screen
-            .add_system(menu_setup.in_schedule(OnEnter(GameState::Menu)))
             // On exiting the state, despawn everything spawned for this sreen
-            .add_system(on_exit_menu.in_schedule(OnExit(GameState::Menu)));
+            .add_systems((
+                menu_setup.in_schedule(OnEnter(GameState::Menu)),
+                on_exit_menu::<OnMenuScreen>.in_schedule(OnExit(GameState::Menu)),
+            ));
+            // Entering Sub Menu Screens
     }
 }
 
@@ -53,7 +64,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 /// Teardown the menu screen
-fn on_exit_menu(mut commands: Commands, to_despawn: Query<Entity, With<OnMenuScreen>>) {
+fn on_exit_menu<T: Component>(mut commands: Commands, to_despawn: Query<Entity, With<T>>) {
     println!("on_exit_menu");
     for entity in to_despawn.iter() {
         commands.entity(entity).despawn_recursive();
