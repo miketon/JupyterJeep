@@ -5,6 +5,8 @@ use bevy::prelude::*;
 // `game_state` module in game_state.rs (which is in the same directory as this)
 // In the original example/game_menu.rs all code was in one monolithic file, so
 // `super::` was used to refer to the parent module
+use crate::bundles::IconAsset;
+use crate::bundles::MenuTextAsset;
 use crate::game_state::GameState;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
@@ -30,6 +32,7 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     println!("Menu screen setup");
     // Load the icon image
     let icon: Handle<Image> = asset_server.load("icon_inverted.png");
+    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     // Display the logo
     commands
         .spawn((
@@ -45,22 +48,10 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             OnMenuScreen,
         ))
         .with_children(|parent| {
-            parent.spawn(ImageBundle {
-                style: Style {
-                    size: Size::new(Val::Px(64.0), Val::Auto),
-                    ..default()
-                },
-                image: UiImage::new(icon),
-                ..default()
-            });
-            parent.spawn(TextBundle::from_section(
-                "Menu Screen",
-                TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 60.0,
-                    color: Color::WHITE,
-                },
-            ));
+            let icon_asset = IconAsset::new(&icon);
+            let menu_text_asset = MenuTextAsset::new("Menu Screen Asset", &font);
+            parent.spawn(icon_asset);
+            parent.spawn(menu_text_asset);
         });
 }
 

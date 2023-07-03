@@ -1,3 +1,5 @@
+use crate::bundles::IconAsset;
+use crate::bundles::MenuTextAsset;
 use crate::game_state::GameState;
 use bevy::prelude::*;
 
@@ -31,6 +33,8 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.insert_resource(SplashTimer(Timer::from_seconds(1.0, TimerMode::Once)));
     // spawn ui
     let icon: Handle<Image> = asset_server.load("icon.png");
+    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
+
     commands
         .spawn((
             NodeBundle {
@@ -45,22 +49,14 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             OnSplashScreen,
         ))
         .with_children(|parent| {
-            parent.spawn(ImageBundle {
-                style: Style {
-                    size: Size::new(Val::Px(64.0), Val::Auto),
-                    ..default()
-                },
-                image: UiImage::new(icon),
-                ..default()
-            });
-            parent.spawn(TextBundle::from_section(
-                "Splash Screen",
-                TextStyle {
-                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                    font_size: 60.0,
-                    color: Color::WHITE,
-                },
-            ));
+            let icon_asset = IconAsset::new(&icon);
+            let menu_text_asset = MenuTextAsset::new("Splash Screen Asset", &font);
+            parent.spawn(icon_asset);
+            parent.spawn(menu_text_asset);
+        })
+        .with_children(|parent| {
+            let splash_text_child = MenuTextAsset::new("Splash Screen Child", &font);
+            parent.spawn(splash_text_child);
         });
 }
 
