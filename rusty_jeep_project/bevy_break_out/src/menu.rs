@@ -5,8 +5,8 @@ use bevy::prelude::*;
 // `game_state` module in game_state.rs (which is in the same directory as this)
 // In the original example/game_menu.rs all code was in one monolithic file, so
 // `super::` was used to refer to the parent module
-use crate::bundles::IconAsset;
-use crate::bundles::MenuTextAsset;
+use crate::bundles::{BDImage, BDSection};
+use crate::bundles::{BDNodeRoot, BDNodeVertical};
 use crate::game_state::GameState;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
@@ -33,25 +33,22 @@ fn menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Load the icon image
     let icon: Handle<Image> = asset_server.load("icon_inverted.png");
     let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
+    let root_node = BDNodeRoot::new();
     // Display the logo
     commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                    ..default()
-                },
-                ..default()
-            },
-            OnMenuScreen,
-        ))
+        .spawn((root_node, OnMenuScreen))
         .with_children(|parent| {
-            let icon_asset = IconAsset::new(&icon);
-            let menu_text_asset = MenuTextAsset::new("Menu Screen Asset", &font);
+            let icon_asset = BDImage::new(&icon);
             parent.spawn(icon_asset);
-            parent.spawn(menu_text_asset);
+            let vertical_layout = BDNodeVertical::new();
+            parent.spawn(vertical_layout).with_children(|parent| {
+                let menu_text_asset = BDSection::new("Menu Screen Asset", &font);
+                let menu_text_dooby = BDSection::new("Dooby", &font);
+                parent.spawn(TextBundle::from_sections([
+                    menu_text_asset,
+                    menu_text_dooby,
+                ]));
+            });
         });
 }
 
