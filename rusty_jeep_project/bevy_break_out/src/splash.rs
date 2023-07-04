@@ -23,6 +23,9 @@ impl Plugin for SplashPlugin {
             // On exiting the state, despawn everything spawned for this sreen
             .add_systems((
                 splash_setup.in_schedule(OnEnter(GameState::Splash)),
+                // @note
+                // - in_set() is used to run the system repeatedly
+                // - in_schedule() is used to run the system once
                 countdown.in_set(OnUpdate(GameState::Splash)),
                 on_exit_splash.in_schedule(OnExit(GameState::Splash)),
             ));
