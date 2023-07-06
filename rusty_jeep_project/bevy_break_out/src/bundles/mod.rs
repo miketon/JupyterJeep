@@ -45,6 +45,43 @@ impl BDText {
     }
 }
 
+pub struct BButton {}
+
+impl BButton {
+    pub fn new(label: &str, font: &Handle<Font>) -> (ButtonBundle, TextBundle) {
+        const BUTTON_WIDTH: f32 = 256.0;
+        const BUTTON_HEIGHT: f32 = 64.0;
+        const BUTTON_MARGIN: f32 = 20.0;
+        const BUTTON_FONT_SIZE: f32 = 32.0;
+        const BUTTON_TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+        const BUTTON_NORMAL_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
+        // Common style for all button on the screen
+        let button_style = Style {
+            size: Size::new(Val::Px(BUTTON_WIDTH), Val::Px(BUTTON_HEIGHT)),
+            margin: UiRect::all(Val::Px(BUTTON_MARGIN)),
+            justify_content: JustifyContent::Center,
+            align_items: AlignItems::Center,
+            ..default()
+        };
+
+        let button_text_style = TextStyle {
+            font: font.clone(),
+            font_size: BUTTON_FONT_SIZE,
+            color: BUTTON_TEXT_COLOR,
+        };
+
+        let button_bundle = ButtonBundle {
+            style: button_style.clone(),
+            background_color: BUTTON_NORMAL_COLOR.into(),
+            ..default()
+        };
+
+        let text_bundle = TextBundle::from_section(label, button_text_style);
+
+        (button_bundle, text_bundle)
+    }
+}
+
 pub struct BDNodeVertical {}
 
 impl BDNodeVertical {
