@@ -1,5 +1,5 @@
-use crate::bundles::{BDImage, BDSection, BDText};
-use crate::bundles::{BDNodeRoot, BDNodeVertical};
+use crate::bundles::{BdImage, BdSection, BdText};
+use crate::bundles::{BdNodeRoot, BdNodeVertical};
 use crate::game_state::GameState;
 use bevy::prelude::*;
 
@@ -41,16 +41,16 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
     // Spawn ui
     commands
-        .spawn((BDNodeRoot::new(), OnSplashScreen))
+        .spawn((BdNodeRoot::new(), OnSplashScreen))
         .with_children(|parent| {
-            parent.spawn(BDImage::new(&icon));
-            let mut vertical_layout = BDNodeVertical::new();
+            parent.spawn(BdImage::new(&icon));
+            let mut vertical_layout = BdNodeVertical::new();
             // @note : consider passing in color on new so this can be immutable
             vertical_layout.background_color = Color::BLACK.into();
             parent.spawn(vertical_layout).with_children(|parent| {
-                let text_bundle = BDText::new(vec![BDSection::new("Splash Screen Asset", &font)]);
+                let text_bundle = BdText::new(vec![BdSection::new("Splash Screen Asset", &font)]);
                 parent.spawn(text_bundle);
-                let text_bundle2 = BDText::new(vec![BDSection::new("Dooby Child", &font)]);
+                let text_bundle2 = BdText::new(vec![BdSection::new("Dooby Child", &font)]);
                 parent.spawn(text_bundle2);
             });
         });

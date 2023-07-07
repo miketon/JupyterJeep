@@ -5,8 +5,8 @@ use bevy::prelude::*;
 // `game_state` module in game_state.rs (which is in the same directory as this)
 // In the original example/game_menu.rs all code was in one monolithic file, so
 // `super::` was used to refer to the parent module
-use crate::bundles::{BButton, BDImage, BDSection, BDText};
-use crate::bundles::{BDNodeRoot, BDNodeVertical};
+use crate::bundles::{BdButton, BdImage, BdSection, BdText};
+use crate::bundles::{BdNodeRoot, BdNodeVertical};
 use crate::game_state::GameState;
 
 #[derive(Debug, Eq, PartialEq, States, Default, Hash, Clone)]
@@ -71,30 +71,22 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Display the logo
     commands
-        .spawn((BDNodeRoot::new(), OnMainScreen))
+        .spawn((BdNodeRoot::new(), OnMainScreen))
         .with_children(|parent| {
-            let icon_asset = BDImage::new(&icon);
+            let icon_asset = BdImage::new(&icon);
             parent.spawn(icon_asset);
-            let vertical_layout = BDNodeVertical::new();
+            let vertical_layout = BdNodeVertical::new();
             parent
                 .spawn(vertical_layout)
                 .with_children(|parent| {
-                    let menu_text_dooby = BDSection::new("Main Dooby", &font);
+                    let menu_text_dooby = BdSection::new("Main Dooby", &font);
                     parent.spawn(TextBundle::from_sections([menu_text_dooby]));
                 })
                 .with_children(|parent| {
-                    let (button, button_text) = BButton::new("Game", &font);
-                    parent
-                        .spawn((button, ButtonAction::BackToMainMenu))
-                        .with_children(|parent| {
-                            parent.spawn(button_text);
-                        });
-                    let (button, button_text) = BButton::new("Settings", &font);
-                    parent
-                        .spawn((button, ButtonAction::BackToSettings))
-                        .with_children(|parent| {
-                            parent.spawn(button_text);
-                        });
+                    let button = BdButton::new(ButtonAction::BackToMainMenu, "Game", &font);
+                    button.spawn(parent);
+                    let button = BdButton::new(ButtonAction::BackToSettings, "Settings", &font);
+                    button.spawn(parent);
                 });
         });
 }
@@ -106,25 +98,17 @@ fn settings_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
 
     commands
-        .spawn((BDNodeRoot::new(), OnSettingsScreen))
+        .spawn((BdNodeRoot::new(), OnSettingsScreen))
         .with_children(|parent| {
-            let icon_asset = BDImage::new(&icon);
+            let icon_asset = BdImage::new(&icon);
             parent.spawn(icon_asset);
-            parent.spawn(BDNodeVertical::new()).with_children(|parent| {
-                let settings_menu_text = BDSection::new("Settings", &font);
-                parent.spawn(BDText::new(vec![settings_menu_text]));
-                let (button, button_text) = BButton::new("Back To Main Menu", &font);
-                parent
-                    .spawn((button, ButtonAction::BackToMainMenu))
-                    .with_children(|parent| {
-                        parent.spawn(button_text);
-                    });
-                let (button, button_text) = BButton::new("Ditto To Eleven", &font);
-                parent
-                    .spawn((button, ButtonAction::BackToSettings))
-                    .with_children(|parent| {
-                        parent.spawn(button_text);
-                    });
+            parent.spawn(BdNodeVertical::new()).with_children(|parent| {
+                let settings_menu_text = BdSection::new("Settings", &font);
+                parent.spawn(BdText::new(vec![settings_menu_text]));
+                let button = BdButton::new(ButtonAction::BackToMainMenu, "Back To Main Menu", &font);
+                button.spawn(parent);
+                let button = BdButton::new(ButtonAction::BackToSettings, "Ditto To Eleven", &font);
+                button.spawn(parent);
             });
         });
 }

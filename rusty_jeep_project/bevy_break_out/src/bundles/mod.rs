@@ -4,9 +4,9 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 const FONT_SIZE: f32 = 64.0;
 const ICON_SIZE: f32 = 64.0;
 const UI_RECT_MARGIN: f32 = 50.0;
-pub struct BDImage {}
+pub struct BdImage {}
 
-impl BDImage {
+impl BdImage {
     pub fn new(icon: &Handle<Image>) -> ImageBundle {
         let style = Style {
             size: Size::new(Val::Px(ICON_SIZE), Val::Auto),
@@ -20,9 +20,9 @@ impl BDImage {
     }
 }
 
-pub struct BDSection {}
+pub struct BdSection {}
 
-impl BDSection {
+impl BdSection {
     pub fn new(message: &str, font: &Handle<Font>) -> TextSection {
         let style = TextStyle {
             font: font.clone(),
@@ -33,9 +33,9 @@ impl BDSection {
     }
 }
 
-pub struct BDText {}
+pub struct BdText {}
 
-impl BDText {
+impl BdText {
     pub fn new(sections: Vec<TextSection>) -> TextBundle {
         let style = Style {
             margin: UiRect::all(Val::Px(UI_RECT_MARGIN)),
@@ -45,10 +45,15 @@ impl BDText {
     }
 }
 
-pub struct BButton {}
+#[derive(Default, Bundle)]
+pub struct BdButton<T: Send + Sync + Component + 'static> {
+    button_bundle: ButtonBundle,
+    text_bundle: TextBundle,
+    button_action: T,
+}
 
-impl BButton {
-    pub fn new(label: &str, font: &Handle<Font>) -> (ButtonBundle, TextBundle) {
+impl<T: Send + Sync + Component + 'static> BdButton<T> {
+    pub fn new(button_action: T, label: &str, font: &Handle<Font>) -> Self {
         const BUTTON_WIDTH: f32 = 256.0;
         const BUTTON_HEIGHT: f32 = 64.0;
         const BUTTON_MARGIN: f32 = 20.0;
@@ -78,13 +83,25 @@ impl BButton {
 
         let text_bundle = TextBundle::from_section(label, button_text_style);
 
-        (button_bundle, text_bundle)
+        BdButton {
+            button_bundle,
+            text_bundle,
+            button_action,
+        }
+    }
+
+    pub fn spawn(self, parent: &mut ChildBuilder) {
+        parent
+            .spawn((self.button_bundle, self.button_action))
+            .with_children(|parent| {
+                parent.spawn(self.text_bundle);
+            });
     }
 }
 
-pub struct BDNodeVertical {}
+pub struct BdNodeVertical {}
 
-impl BDNodeVertical {
+impl BdNodeVertical {
     pub fn new() -> NodeBundle {
         NodeBundle {
             style: Style {
@@ -97,9 +114,9 @@ impl BDNodeVertical {
     }
 }
 
-pub struct BDNodeRoot {}
+pub struct BdNodeRoot {}
 
-impl BDNodeRoot {
+impl BdNodeRoot {
     pub fn new() -> NodeBundle {
         NodeBundle {
             style: Style {
