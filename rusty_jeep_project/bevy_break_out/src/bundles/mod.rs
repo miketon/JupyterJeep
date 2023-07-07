@@ -4,6 +4,41 @@ const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 const FONT_SIZE: f32 = 64.0;
 const ICON_SIZE: f32 = 64.0;
 const UI_RECT_MARGIN: f32 = 50.0;
+
+pub struct BdButtonStyle {
+    pub width: f32,
+    pub height: f32,
+    pub margin: f32,
+    pub font_size: f32,
+    pub text_color: Color,
+    pub background_color: Color,
+}
+
+impl Default for BdButtonStyle {
+    fn default() -> Self {
+        BdButtonStyle {
+            width: 256.0,
+            height: 64.0,
+            margin: 20.0,
+            font_size: 32.0,
+            text_color: TEXT_COLOR,
+            background_color: Color::rgb(0.15, 0.15, 0.15),
+        }
+    }
+}
+
+pub fn button_style() -> Style {
+    let button_style = BdButtonStyle::default();
+
+    Style {
+        size: Size::new(Val::Px(button_style.width), Val::Px(button_style.height)),
+        margin: UiRect::all(Val::Px(button_style.margin)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    }
+}
+
 pub struct BdImage {}
 
 impl BdImage {
@@ -54,30 +89,18 @@ pub struct BdButton<T: Send + Sync + Component + 'static> {
 
 impl<T: Send + Sync + Component + 'static> BdButton<T> {
     pub fn new(button_action: T, label: &str, font: &Handle<Font>) -> Self {
-        const BUTTON_WIDTH: f32 = 256.0;
-        const BUTTON_HEIGHT: f32 = 64.0;
-        const BUTTON_MARGIN: f32 = 20.0;
-        const BUTTON_FONT_SIZE: f32 = 32.0;
-        const BUTTON_TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-        const BUTTON_NORMAL_COLOR: Color = Color::rgb(0.15, 0.15, 0.15);
         // Common style for all button on the screen
-        let button_style = Style {
-            size: Size::new(Val::Px(BUTTON_WIDTH), Val::Px(BUTTON_HEIGHT)),
-            margin: UiRect::all(Val::Px(BUTTON_MARGIN)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
-            ..default()
-        };
+        let button_style = button_style();
 
         let button_text_style = TextStyle {
             font: font.clone(),
-            font_size: BUTTON_FONT_SIZE,
-            color: BUTTON_TEXT_COLOR,
+            font_size: BdButtonStyle::default().font_size,
+            color: BdButtonStyle::default().text_color,
         };
 
         let button_bundle = ButtonBundle {
             style: button_style.clone(),
-            background_color: BUTTON_NORMAL_COLOR.into(),
+            background_color: BdButtonStyle::default().background_color.into(),
             ..default()
         };
 

@@ -105,7 +105,8 @@ fn settings_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             parent.spawn(BdNodeVertical::new()).with_children(|parent| {
                 let settings_menu_text = BdSection::new("Settings", &font);
                 parent.spawn(BdText::new(vec![settings_menu_text]));
-                let button = BdButton::new(ButtonAction::BackToMainMenu, "Back To Main Menu", &font);
+                let button =
+                    BdButton::new(ButtonAction::BackToMainMenu, "Back To Main Menu", &font);
                 button.spawn(parent);
                 let button = BdButton::new(ButtonAction::BackToSettings, "Ditto To Eleven", &font);
                 button.spawn(parent);
