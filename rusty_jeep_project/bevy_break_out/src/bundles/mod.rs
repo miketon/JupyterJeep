@@ -1,48 +1,5 @@
+use crate::configs::{button::*, colors::*, sizes::*};
 use bevy::prelude::*;
-
-const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const FONT_SIZE: f32 = 64.0;
-const ICON_SIZE: f32 = 64.0;
-const UI_RECT_MARGIN: f32 = 50.0;
-
-pub const NORMAL_BUTTON: Color = Color::rgb(0.15, 0.15, 0.15);
-pub const HOVERED_BUTTON: Color = Color::rgb(0.25, 0.25, 0.25);
-pub const HOVERED_PRESSED_BUTTON: Color = Color::rgb(0.25, 0.65, 0.25);
-pub const PRESSED_BUTTON: Color = Color::rgb(0.35, 0.75, 0.35);
-
-pub struct BdButtonStyle {
-    pub width: f32,
-    pub height: f32,
-    pub margin: f32,
-    pub font_size: f32,
-    pub text_color: Color,
-    pub background_color: Color,
-}
-
-impl Default for BdButtonStyle {
-    fn default() -> Self {
-        BdButtonStyle {
-            width: 256.0,
-            height: 64.0,
-            margin: 20.0,
-            font_size: 32.0,
-            text_color: TEXT_COLOR,
-            background_color: Color::rgb(0.15, 0.15, 0.15),
-        }
-    }
-}
-
-pub fn button_style() -> Style {
-    let button_style = BdButtonStyle::default();
-
-    Style {
-        size: Size::new(Val::Px(button_style.width), Val::Px(button_style.height)),
-        margin: UiRect::all(Val::Px(button_style.margin)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    }
-}
 
 pub struct BdImage {}
 
@@ -95,16 +52,16 @@ pub struct BdButton<T: Send + Sync + Component + 'static> {
 impl<T: Send + Sync + Component + 'static> BdButton<T> {
     pub fn new(button_action: T, label: &str, font: &Handle<Font>) -> Self {
         // Common style for all button on the screen
-        let button_style = button_style();
+        let button_style = DEFAULT_BUTTON_STYLE;
 
         let button_text_style = TextStyle {
             font: font.clone(),
-            font_size: BdButtonStyle::default().font_size,
-            color: BdButtonStyle::default().text_color,
+            font_size: DEFAULT_BUTTON_STYLE.font_size,
+            color: DEFAULT_BUTTON_STYLE.text_color,
         };
 
         let button_bundle = ButtonBundle {
-            style: button_style.clone(),
+            style: button_style.into(),
             background_color: BdButtonStyle::default().background_color.into(),
             ..default()
         };

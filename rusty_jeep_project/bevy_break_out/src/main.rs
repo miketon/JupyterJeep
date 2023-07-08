@@ -4,6 +4,9 @@ mod splash;
 // why so I need to import this here when it's not directly used in this file?
 // - but is used in splash.rs and menu.rs
 mod bundles;
+// @note : lol forgot note above and fumbled aroudn AGAIN with forgetting to
+// import this here lol
+mod configs;
 
 use crate::game_state::GameState;
 use crate::menu::MenuPlugin;

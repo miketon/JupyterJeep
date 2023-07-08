@@ -8,7 +8,7 @@ use bevy::prelude::*;
 // `super::` was used to refer to the parent module
 use crate::bundles::{BdButton, BdImage, BdSection, BdText};
 use crate::bundles::{BdNodeRoot, BdNodeVertical};
-use crate::bundles::{HOVERED_BUTTON, HOVERED_PRESSED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON};
+use crate::configs::colors::*;
 use crate::game_state::GameState;
 
 #[derive(Debug, Eq, PartialEq, States, Default, Hash, Clone)]
