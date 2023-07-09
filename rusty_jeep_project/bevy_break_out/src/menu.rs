@@ -22,6 +22,7 @@ enum MenuState {
 #[derive(Component)]
 enum ButtonAction {
     Play,
+    SplashScreen,
     BackToMainMenu,
     BackToSettings,
     Quit,
@@ -81,13 +82,13 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     // Display the logo
     commands
+        // must add OnMainScreen at root so we can despawn everything recursively
         .spawn((BdNodeRoot::new(), OnMainScreen))
         .with_children(|parent| {
             let icon_asset = BdImage::new(&icon);
             parent.spawn(icon_asset);
-            let vertical_layout = BdNodeVertical::new();
             parent
-                .spawn(vertical_layout)
+                .spawn(BdNodeVertical::new())
                 .with_children(|parent| {
                     let menu_text_dooby = BdSection::new("Main Dooby", &font);
                     parent.spawn(TextBundle::from_sections([menu_text_dooby]));
@@ -98,6 +99,9 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     let settings_button =
                         BdButton::new(ButtonAction::BackToSettings, "Settings", &font);
                     settings_button.spawn(parent);
+                    let splash_screen_button =
+                        BdButton::new(ButtonAction::SplashScreen, "Spash Screen", &font);
+                    splash_screen_button.spawn(parent);
                     let quit_button = BdButton::new(ButtonAction::Quit, "Quit", &font);
                     quit_button.spawn(parent);
                 });
@@ -150,6 +154,9 @@ fn menu_action(
                     app_exit_events.send(AppExit);
                 }
                 ButtonAction::Play => {
+                    game_state.set(GameState::Game);
+                }
+                ButtonAction::SplashScreen => {
                     game_state.set(GameState::Splash);
                 }
                 ButtonAction::BackToMainMenu => {

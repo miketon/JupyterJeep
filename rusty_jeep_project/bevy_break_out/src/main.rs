@@ -1,3 +1,4 @@
+mod game;
 mod game_state;
 mod menu;
 mod splash;
@@ -8,6 +9,7 @@ mod bundles;
 // import this here lol
 mod configs;
 
+use crate::game::GamePlugin;
 use crate::game_state::GameState;
 use crate::menu::MenuPlugin;
 use crate::splash::SplashPlugin;
@@ -21,6 +23,7 @@ fn main() {
         .add_plugin(EditorPlugin::default())
         .add_plugin(SplashPlugin)
         .add_plugin(MenuPlugin)
+        .add_plugin(GamePlugin)
         .add_startup_system(setup_scene)
         .add_system(input_system)
         .run();
@@ -39,7 +42,8 @@ fn input_system(
         let next = match state.0 {
             GameState::Menu => GameState::Splash,
             GameState::Splash => GameState::Menu,
-            _ => GameState::Menu,
+            GameState::Game => GameState::Menu,
+            // _ => GameState::Menu,
         };
         next_state.set(next);
     }
