@@ -1,8 +1,11 @@
-use crate::configs::{colors::*, sizes::*};
-use bevy::prelude::*;
-
 pub use button_bundle::BdButton;
 pub use button_system::on_button_interact;
+
+pub use image_bundle::BdImage;
+
+pub use text_bundle::{BdSection, BdText};
+
+pub use node_bundle::{BdNodeRoot, BdNodeVertical};
 
 mod button_bundle {
     use crate::configs::button::*;
@@ -77,79 +80,93 @@ mod button_system {
         }
     }
 }
-pub struct BdImage {}
 
-impl BdImage {
-    // @note : No, you cannot use AsRef<Handle<Image>> because Handle<Image> is
-    // a Bevy-specific type that does not implement the AsRef trait.
-    pub fn new(icon: &Handle<Image>) -> ImageBundle {
-        let style = Style {
-            size: Size::new(Val::Px(ICON_SIZE), Val::Auto),
-            ..default()
-        };
-        ImageBundle {
-            style,
-            image: UiImage::new(icon.clone()),
-            ..default()
+mod image_bundle {
+    use crate::configs::sizes::*;
+    use bevy::prelude::*;
+
+    pub struct BdImage {}
+
+    impl BdImage {
+        // @note : No, you cannot use AsRef<Handle<Image>> because Handle<Image> is
+        // a Bevy-specific type that does not implement the AsRef trait.
+        pub fn new(icon: &Handle<Image>) -> ImageBundle {
+            let style = Style {
+                size: Size::new(Val::Px(ICON_SIZE), Val::Auto),
+                ..default()
+            };
+            ImageBundle {
+                style,
+                image: UiImage::new(icon.clone()),
+                ..default()
+            }
         }
     }
 }
 
-pub struct BdSection {}
+mod text_bundle {
+    use crate::configs::{colors::*, sizes::*};
+    use bevy::prelude::*;
 
-impl BdSection {
-    // @note : No, you cannot use AsRef<Handle<Image>> because Handle<Font> is
-    // a Bevy-specific type that does not implement the AsRef trait.
-    pub fn new(message: &str, font: &Handle<Font>) -> TextSection {
-        let style = TextStyle {
-            font: font.clone(),
-            font_size: FONT_SIZE,
-            color: TEXT_COLOR,
-        };
-        TextSection::new(message.to_string(), style)
+    pub struct BdSection {}
+
+    impl BdSection {
+        // @note : No, you cannot use AsRef<Handle<Image>> because Handle<Font> is
+        // a Bevy-specific type that does not implement the AsRef trait.
+        pub fn new(message: &str, font: &Handle<Font>) -> TextSection {
+            let style = TextStyle {
+                font: font.clone(),
+                font_size: FONT_SIZE,
+                color: TEXT_COLOR,
+            };
+            TextSection::new(message.to_string(), style)
+        }
     }
-}
 
-pub struct BdText {}
+    pub struct BdText {}
 
-impl BdText {
-    pub fn new(sections: Vec<TextSection>) -> TextBundle {
-        let style = Style {
-            margin: UiRect::all(Val::Px(UI_RECT_MARGIN)),
-            ..default()
-        };
-        TextBundle::from_sections(sections).with_style(style)
-    }
-}
-
-pub struct BdNodeVertical {}
-
-impl BdNodeVertical {
-    pub fn new() -> NodeBundle {
-        NodeBundle {
-            style: Style {
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Center,
+    impl BdText {
+        pub fn new(sections: Vec<TextSection>) -> TextBundle {
+            let style = Style {
+                margin: UiRect::all(Val::Px(UI_RECT_MARGIN)),
                 ..default()
-            },
-            ..default()
+            };
+            TextBundle::from_sections(sections).with_style(style)
         }
     }
 }
 
-pub struct BdNodeRoot {}
+mod node_bundle {
+    use bevy::prelude::*;
+    pub struct BdNodeVertical {}
 
-impl BdNodeRoot {
-    pub fn new() -> NodeBundle {
-        NodeBundle {
-            style: Style {
-                size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
-                // center children
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
+    impl BdNodeVertical {
+        pub fn new() -> NodeBundle {
+            NodeBundle {
+                style: Style {
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
                 ..default()
-            },
-            ..default()
+            }
+        }
+    }
+
+    pub struct BdNodeRoot {}
+
+    impl BdNodeRoot {
+        pub fn new() -> NodeBundle {
+            NodeBundle {
+                style: Style {
+                    size: Size::new(Val::Percent(100.0), Val::Percent(100.0)),
+                    // center children
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            }
         }
     }
 }
