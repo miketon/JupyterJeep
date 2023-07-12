@@ -5,6 +5,10 @@ use crate::{
 use bevy::prelude::*;
 use bevy::sprite::*;
 
+// Rate limit projectile firing
+#[derive(Resource)]
+struct ReloadTimer(Timer);
+
 #[derive(Component)]
 enum ButtonAction {
     Pause,
@@ -32,14 +36,16 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems((
-            // game_setup.in_schedule(OnEnter(GameState::Game)),
-            spawn_player.in_schedule(OnEnter(GameState::Game)),
-            update_player.in_set(OnUpdate(GameState::Game)),
-            spawn_projectile.in_set(OnUpdate(GameState::Game)),
-            update_projectile.in_set(OnUpdate(GameState::Game)),
-            on_exit_game::<GameObject>.in_schedule(OnExit(GameState::Game)),
-        ));
+        app.insert_resource(ReloadTimer(Timer::from_seconds(0.3, TimerMode::Once)))
+            .add_systems((
+                // game_setup.in_schedule(OnEnter(GameState::Game)),
+                spawn_player.in_schedule(OnEnter(GameState::Game)),
+                update_player.in_set(OnUpdate(GameState::Game)),
+                spawn_projectile.in_set(OnUpdate(GameState::Game)),
+                update_projectile.in_set(OnUpdate(GameState::Game)),
+                despawn_projectile.in_set(OnUpdate(GameState::Game)),
+                on_exit_game::<GameObject>.in_schedule(OnExit(GameState::Game)),
+            ));
     }
 }
 
@@ -65,8 +71,21 @@ fn update_player(
 
 fn update_projectile(mut query: Query<&mut Transform, With<Projectile>>) {
     for mut transform in query.iter_mut() {
-        let new_pos = transform.translation + Vec3::Y * 100.0 * TIME_STEP;
+        let new_pos = transform.translation + Vec3::Y * 200.0 * TIME_STEP;
         transform.translation = new_pos;
+    }
+}
+
+fn despawn_projectile(
+    mut commands: Commands,
+    // @audit : why do we need to query Entity here?
+    // Wouldn't it be enough to query Transform?
+    mut query: Query<(Entity, &Transform), With<Projectile>>,
+) {
+    for (entity, transform) in query.iter_mut() {
+        if transform.translation.y > 200.0 {
+            commands.entity(entity).despawn();
+        }
     }
 }
 
@@ -91,16 +110,26 @@ fn spawn_player(mut commands: Commands) {
 }
 
 fn spawn_projectile(
+    time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
+    mut reload_timer: ResMut<ReloadTimer>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut query: Query<&Transform, With<Player>>,
 ) {
     let player_pos = query.single_mut().translation;
-    if keyboard_input.just_pressed(KeyCode::Space) {
-        println!("[MOUSE] Pressed Left");
-        // Spawn projectile on left
+    if keyboard_input.pressed(KeyCode::Space) {
+        // Have we reloaded? Check if rate limit timer has expired
+        // We have to "tick" the timer manually to update with the latest time
+        if !reload_timer.0.tick(time.delta()).finished() {
+            // Early exit because we haven't reloaded yet
+            return;
+        } else {
+            // Reset the timer and then ...
+            reload_timer.0.reset();
+        } // Proceed to fire projectile
+          // Spawn projectile on left
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::default().into()).into(),
