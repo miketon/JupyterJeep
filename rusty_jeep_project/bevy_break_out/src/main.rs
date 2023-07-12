@@ -34,11 +34,11 @@ fn setup_scene(mut commands: Commands) {
 }
 
 fn input_system(
-    keyboard_input: Res<Input<KeyCode>>,
+    mouse_button_click: Res<Input<MouseButton>>,
     mut next_state: ResMut<NextState<GameState>>,
     state: Res<State<GameState>>,
 ) {
-    if keyboard_input.just_pressed(KeyCode::Space) {
+    if mouse_button_click.just_pressed(MouseButton::Right) {
         let next = match state.0 {
             GameState::Menu => GameState::Splash,
             GameState::Splash => GameState::Menu,
