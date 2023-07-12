@@ -6,9 +6,9 @@ use bevy::prelude::*;
 // `game_state` module in game_state.rs (which is in the same directory as this)
 // In the original example/game_menu.rs all code was in one monolithic file, so
 // `super::` was used to refer to the parent module
+use crate::bundles::on_button_interact;
 use crate::bundles::{BdButton, BdImage, BdSection, BdText};
 use crate::bundles::{BdNodeRoot, BdNodeVertical};
-use crate::configs::colors::*;
 use crate::game_state::GameState;
 
 #[derive(Debug, Eq, PartialEq, States, Default, Hash, Clone)]
@@ -27,10 +27,6 @@ enum ButtonAction {
     BackToSettings,
     Quit,
 }
-
-// Tag component to mark which setting is currently selected
-#[derive(Component)]
-struct SelectedOption;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
 #[derive(Component)]
@@ -63,7 +59,7 @@ impl Plugin for MenuPlugin {
             ))
             // Listen for inputs
             .add_systems(
-                (keyboard_input, menu_action, button_system).in_set(OnUpdate(GameState::Menu)),
+                (keyboard_input, menu_action, on_button_interact).in_set(OnUpdate(GameState::Menu)),
             );
     }
 }
@@ -184,21 +180,5 @@ fn keyboard_input(
             MenuState::Disabled => MenuState::Main,
         };
         menu_state.set(next);
-    }
-}
-
-fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
-        (Changed<Interaction>, With<Button>),
-    >,
-) {
-    for (interaction, mut color, selected) in &mut interaction_query {
-        *color = match (*interaction, selected) {
-            (Interaction::Clicked, _) | (Interaction::None, Some(_)) => PRESSED_BUTTON.into(),
-            (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
-            (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
-            (Interaction::None, None) => NORMAL_BUTTON.into(),
-        }
     }
 }
