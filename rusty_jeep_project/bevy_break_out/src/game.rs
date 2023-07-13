@@ -24,7 +24,9 @@ struct Projectile;
 
 // The Player Object
 #[derive(Component)]
-struct Player;
+struct Player {
+    pub speed: f32,
+}
 
 // The Enemy Object
 #[derive(Component)]
@@ -56,24 +58,26 @@ impl Plugin for GamePlugin {
     }
 }
 
-const TIME_STEP: f32 = 1.0 / 60.0;
-const PLAYER_SPEED: f32 = 100.0;
-
 fn update_player(
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Player>>,
+    mut query: Query<(&mut Transform, &Player), With<Player>>,
+    time: Res<Time>,
 ) {
-    let mut paddle_transform = query.single_mut();
-    let mut direction = 0.0;
-    if keyboard_input.pressed(KeyCode::A) {
-        direction -= 1.0;
+    match query.single_mut() {
+        (mut transform, player) => {
+            let mut direction = Vec2::ZERO;
+            if keyboard_input.pressed(KeyCode::A) {
+                direction.x -= 1.0;
+            }
+            if keyboard_input.pressed(KeyCode::D) {
+                direction.x += 1.0;
+            }
+            // Calculate the new horizontal pad position based on key input
+            let next_pos_x = transform.translation.x
+                + direction.normalize_or_zero() * player.speed * time.delta_seconds();
+            transform.translation.x = next_pos_x.x;
+        }
     }
-    if keyboard_input.pressed(KeyCode::S) {
-        direction += 1.0;
-    }
-    // Calculate the new horizontal pad position based on key input
-    let next_pos_x = paddle_transform.translation.x + direction * PLAYER_SPEED * TIME_STEP;
-    paddle_transform.translation.x = next_pos_x;
 }
 
 fn update_projectile(
@@ -82,9 +86,10 @@ fn update_projectile(
         &mut Transform,
         With<Projectile>,
     >,
+    time: Res<Time>,
 ) {
     for mut transform in query.iter_mut() {
-        let new_pos = transform.translation + Vec3::Y * 200.0 * TIME_STEP;
+        let new_pos = transform.translation + Vec3::Y * 200.0 * time.delta_seconds();
         transform.translation = new_pos;
     }
 }
@@ -135,7 +140,7 @@ fn despawn_projectile(
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
-        Player,
+        Player { speed: 100.0 },
         Collider,
         GameObject,
         SpriteBundle {
