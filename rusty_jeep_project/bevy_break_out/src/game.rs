@@ -3,6 +3,7 @@ use crate::{
     GameState,
 };
 use bevy::prelude::*;
+use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::*;
 
 // Rate limit projectile firing
@@ -25,6 +26,10 @@ struct Projectile;
 #[derive(Component)]
 struct Player;
 
+// The Enemy Object
+#[derive(Component)]
+struct Enemy;
+
 // Token signifying an object is collidable
 #[derive(Component)]
 struct Collider;
@@ -40,9 +45,11 @@ impl Plugin for GamePlugin {
             .add_systems((
                 // game_setup.in_schedule(OnEnter(GameState::Game)),
                 spawn_player.in_schedule(OnEnter(GameState::Game)),
+                spawn_enemy.in_schedule(OnEnter(GameState::Game)),
                 update_player.in_set(OnUpdate(GameState::Game)),
                 spawn_projectile.in_set(OnUpdate(GameState::Game)),
                 update_projectile.in_set(OnUpdate(GameState::Game)),
+                update_collision.in_set(OnUpdate(GameState::Game)),
                 despawn_projectile.in_set(OnUpdate(GameState::Game)),
                 on_exit_game::<GameObject>.in_schedule(OnExit(GameState::Game)),
             ));
@@ -69,10 +76,47 @@ fn update_player(
     paddle_transform.translation.x = next_pos_x;
 }
 
-fn update_projectile(mut query: Query<&mut Transform, With<Projectile>>) {
+fn update_projectile(
+    mut query: Query<
+        // &mut Transform because we will update the position
+        &mut Transform,
+        With<Projectile>,
+    >,
+) {
     for mut transform in query.iter_mut() {
         let new_pos = transform.translation + Vec3::Y * 200.0 * TIME_STEP;
         transform.translation = new_pos;
+    }
+}
+
+fn update_collision(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &Transform), With<Projectile>>,
+    enemy_query: Query<(Entity, &Transform, Option<&Enemy>), With<Collider>>,
+) {
+    // Loop through all projectiles
+    for (projectile_entity, projectile_xform) in projectile_query.iter() {
+        // Loop through all collidable enemies
+        // @audit : 2 loops, is there a way to flatten this?
+        for (collider_entity, collider_xform, enemy_check) in enemy_query.iter() {
+            // On collision
+            let collision = collide(
+                projectile_xform.translation,
+                projectile_xform.scale.truncate(),
+                collider_xform.translation,
+                collider_xform.scale.truncate(),
+            );
+
+            if let Some(collision) = collision {
+                if enemy_check.is_some() {
+                    // If it's an enemy, destroy it
+                    commands.entity(collider_entity).despawn();
+                    // Projectile ... should that disappear too? or should it
+                    // cut through?
+                    commands.entity(projectile_entity).despawn();
+                }
+            }
+        }
     }
 }
 
@@ -91,9 +135,9 @@ fn despawn_projectile(
 
 fn spawn_player(mut commands: Commands) {
     commands.spawn((
-        GameObject,
         Player,
         Collider,
+        GameObject,
         SpriteBundle {
             transform: Transform {
                 translation: Vec3::Y * -100.0,
@@ -109,14 +153,37 @@ fn spawn_player(mut commands: Commands) {
     ));
 }
 
-fn spawn_projectile(
-    time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut reload_timer: ResMut<ReloadTimer>,
+fn spawn_enemy(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    commands.spawn((
+        Enemy,
+        Collider,
+        GameObject,
+        MaterialMesh2dBundle {
+            mesh: meshes.add(shape::Circle::default().into()).into(),
+            material: materials.add(ColorMaterial::from(Color::YELLOW)),
+            transform: Transform::from_translation(Vec3 {
+                x: 0.0,
+                y: 150.0,
+                z: 0.0,
+            })
+            .with_scale(Vec3::ONE * 40.0),
+            ..default()
+        },
+    ));
+}
+
+fn spawn_projectile(
+    mut commands: Commands,
     mut query: Query<&Transform, With<Player>>,
+    keyboard_input: Res<Input<KeyCode>>,
+    time: Res<Time>,
+    mut reload_timer: ResMut<ReloadTimer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     let player_pos = query.single_mut().translation;
     if keyboard_input.pressed(KeyCode::Space) {
@@ -131,6 +198,8 @@ fn spawn_projectile(
         } // Proceed to fire projectile
           // Spawn projectile on left
         commands.spawn((
+            Projectile,
+            GameObject,
             MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::default().into()).into(),
                 material: materials.add(ColorMaterial::from(Color::rgb(0.7, 0.3, 0.3))),
@@ -142,8 +211,6 @@ fn spawn_projectile(
                 .with_scale(Vec3::ONE * 20.0),
                 ..default()
             },
-            GameObject,
-            Projectile,
         ));
     }
 }
