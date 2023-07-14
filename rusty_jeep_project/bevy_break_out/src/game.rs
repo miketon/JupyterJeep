@@ -36,6 +36,14 @@ struct Enemy;
 #[derive(Component)]
 struct Collider;
 
+// ⭐ Projectile has been fired
+#[derive(Default)]
+struct ProjectileEvent;
+
+// Sounds
+#[derive(Resource, Default)]
+struct ProjectileSound(Handle<AudioSource>);
+
 const PADDLE_SIZE: Vec3 = Vec3::new(120.0, 20.0, 0.0);
 const PADDLE_COLOR: Color = Color::rgb(0.3, 0.3, 0.7);
 
@@ -50,11 +58,14 @@ impl Plugin for GamePlugin {
                 spawn_enemy.in_schedule(OnEnter(GameState::Game)),
                 update_player.in_set(OnUpdate(GameState::Game)),
                 spawn_projectile.in_set(OnUpdate(GameState::Game)),
+                play_projectile_sound.in_set(OnUpdate(GameState::Game)),
                 update_projectile.in_set(OnUpdate(GameState::Game)),
                 update_collision.in_set(OnUpdate(GameState::Game)),
                 despawn_projectile.in_set(OnUpdate(GameState::Game)),
                 on_exit_game::<GameObject>.in_schedule(OnExit(GameState::Game)),
-            ));
+            ))
+            // add event sytems here
+            .add_event::<ProjectileEvent>();
     }
 }
 
@@ -112,7 +123,7 @@ fn update_collision(
                 collider_xform.scale.truncate(),
             );
 
-            if let Some(collision) = collision {
+            if let Some(_) = collision {
                 if enemy_check.is_some() {
                     // If it's an enemy, destroy it
                     commands.entity(collider_entity).despawn();
@@ -138,7 +149,7 @@ fn despawn_projectile(
     }
 }
 
-fn spawn_player(mut commands: Commands) {
+fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn((
         Player { speed: 100.0 },
         Collider,
@@ -156,6 +167,10 @@ fn spawn_player(mut commands: Commands) {
             ..default()
         },
     ));
+
+    // load sound effects
+    let projectile_sound = asset_server.load("sfx_jump.mp3");
+    commands.insert_resource(ProjectileSound(projectile_sound));
 }
 
 fn spawn_enemy(
@@ -189,6 +204,7 @@ fn spawn_projectile(
     mut reload_timer: ResMut<ReloadTimer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut projectile_events: EventWriter<ProjectileEvent>,
 ) {
     let player_pos = query.single_mut().translation;
     if keyboard_input.pressed(KeyCode::Space) {
@@ -200,6 +216,8 @@ fn spawn_projectile(
         } else {
             // Reset the timer and then ...
             reload_timer.0.reset();
+            // ⭐ Fire off projectile event
+            projectile_events.send_default();
         } // Proceed to fire projectile
           // Spawn projectile on left
         commands.spawn((
@@ -236,6 +254,20 @@ fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 main_menu_button.spawn(parent);
             });
         });
+}
+
+fn play_projectile_sound(
+    mut projectile_events: EventReader<ProjectileEvent>,
+    audio: Res<Audio>,
+    sound: Res<ProjectileSound>,
+) {
+    // Check for events
+    if !projectile_events.is_empty() {
+        // Play sound queued and clear all events
+        projectile_events.clear();
+        println!("PEW!");
+        audio.play(sound.0.clone());
+    }
 }
 
 fn on_exit_game<T: Component>(mut commands: Commands, to_despawn: Query<Entity, With<T>>) {
