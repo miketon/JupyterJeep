@@ -6,10 +6,10 @@ use bevy::prelude::*;
 // `game_state` module in game_state.rs (which is in the same directory as this)
 // In the original example/game_menu.rs all code was in one monolithic file, so
 // `super::` was used to refer to the parent module
+use crate::app_state::AppState;
 use crate::bundles::on_button_interact;
 use crate::bundles::{BdButton, BdImage, BdSection, BdText};
 use crate::bundles::{BdNodeRoot, BdNodeVertical};
-use crate::game_state::GameState;
 
 #[derive(Debug, Eq, PartialEq, States, Default, Hash, Clone)]
 enum MenuState {
@@ -46,9 +46,9 @@ impl Plugin for MenuPlugin {
             // On entering the state spawn everything needed for this screen
             // On exiting the state, despawn everything spawned for this sreen
             .add_systems((
-                menu_on_enter.in_schedule(OnEnter(GameState::Menu)),
-                on_exit_menu::<OnMainScreen>.in_schedule(OnExit(GameState::Menu)),
-                on_exit_menu::<OnSettingsScreen>.in_schedule(OnExit(GameState::Menu)),
+                menu_on_enter.in_schedule(OnEnter(AppState::Menu)),
+                on_exit_menu::<OnMainScreen>.in_schedule(OnExit(AppState::Menu)),
+                on_exit_menu::<OnSettingsScreen>.in_schedule(OnExit(AppState::Menu)),
             ))
             // Entering Sub Menu Screens
             .add_systems((
@@ -59,7 +59,7 @@ impl Plugin for MenuPlugin {
             ))
             // Listen for inputs
             .add_systems(
-                (keyboard_input, menu_action, on_button_interact).in_set(OnUpdate(GameState::Menu)),
+                (keyboard_input, menu_action, on_button_interact).in_set(OnUpdate(AppState::Menu)),
             );
     }
 }
@@ -140,7 +140,7 @@ fn menu_action(
     interaction_query: Query<(&Interaction, &ButtonAction), (Changed<Interaction>, With<Button>)>,
     mut app_exit_events: EventWriter<AppExit>,
     mut menu_state: ResMut<NextState<MenuState>>,
-    mut game_state: ResMut<NextState<GameState>>,
+    mut game_state: ResMut<NextState<AppState>>,
 ) {
     for (interaction, button_action) in &interaction_query {
         if *interaction == Interaction::Clicked {
@@ -150,10 +150,10 @@ fn menu_action(
                     app_exit_events.send(AppExit);
                 }
                 ButtonAction::Play => {
-                    game_state.set(GameState::Game);
+                    game_state.set(AppState::Game);
                 }
                 ButtonAction::SplashScreen => {
-                    game_state.set(GameState::Splash);
+                    game_state.set(AppState::Splash);
                 }
                 ButtonAction::BackToMainMenu => {
                     menu_state.set(MenuState::Main);

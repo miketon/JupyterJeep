@@ -1,5 +1,5 @@
+mod app_state;
 mod game;
-mod game_state;
 mod menu;
 mod splash;
 // why so I need to import this here when it's not directly used in this file?
@@ -9,8 +9,8 @@ mod bundles;
 // import this here lol
 mod configs;
 
+use crate::app_state::AppState;
 use crate::game::GamePlugin;
-use crate::game_state::GameState;
 use crate::menu::MenuPlugin;
 use crate::splash::SplashPlugin;
 use bevy::prelude::*;
@@ -19,7 +19,7 @@ use bevy_editor_pls::prelude::*;
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_state::<GameState>()
+        .add_state::<AppState>()
         .add_plugin(EditorPlugin::default())
         .add_plugin(SplashPlugin)
         .add_plugin(MenuPlugin)
@@ -35,14 +35,14 @@ fn setup_scene(mut commands: Commands) {
 
 fn input_system(
     mouse_button_click: Res<Input<MouseButton>>,
-    mut next_state: ResMut<NextState<GameState>>,
-    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<AppState>>,
+    state: Res<State<AppState>>,
 ) {
     if mouse_button_click.just_pressed(MouseButton::Right) {
         let next = match state.0 {
-            GameState::Menu => GameState::Splash,
-            GameState::Splash => GameState::Menu,
-            GameState::Game => GameState::Menu,
+            AppState::Menu => AppState::Splash,
+            AppState::Splash => AppState::Menu,
+            AppState::Game => AppState::Menu,
             // _ => GameState::Menu,
         };
         next_state.set(next);

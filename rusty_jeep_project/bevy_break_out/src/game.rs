@@ -1,10 +1,15 @@
 use crate::{
     bundles::{BdButton, BdNodeRoot, BdNodeVertical},
-    GameState,
+    AppState,
 };
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::*;
+
+#[derive(Default, Debug, Resource)]
+pub struct GameState {
+    pub score: u32,
+}
 
 // Rate limit projectile firing
 #[derive(Resource)]
@@ -52,17 +57,18 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ReloadTimer(Timer::from_seconds(0.3, TimerMode::Once)))
+            .insert_resource(GameState { score: 0 })
             .add_systems((
-                // game_setup.in_schedule(OnEnter(GameState::Game)),
-                spawn_player.in_schedule(OnEnter(GameState::Game)),
-                spawn_enemy.in_schedule(OnEnter(GameState::Game)),
-                update_player.in_set(OnUpdate(GameState::Game)),
-                spawn_projectile.in_set(OnUpdate(GameState::Game)),
-                play_projectile_sound.in_set(OnUpdate(GameState::Game)),
-                update_projectile.in_set(OnUpdate(GameState::Game)),
-                update_collision.in_set(OnUpdate(GameState::Game)),
-                despawn_projectile.in_set(OnUpdate(GameState::Game)),
-                on_exit_game::<GameObject>.in_schedule(OnExit(GameState::Game)),
+                // game_setup.in_schedule(OnEnter(AppState::Game)),
+                spawn_player.in_schedule(OnEnter(AppState::Game)),
+                spawn_enemy.in_schedule(OnEnter(AppState::Game)),
+                update_player.in_set(OnUpdate(AppState::Game)),
+                spawn_projectile.in_set(OnUpdate(AppState::Game)),
+                play_projectile_sound.in_set(OnUpdate(AppState::Game)),
+                update_projectile.in_set(OnUpdate(AppState::Game)),
+                update_collision.in_set(OnUpdate(AppState::Game)),
+                despawn_projectile.in_set(OnUpdate(AppState::Game)),
+                on_exit_game::<GameObject>.in_schedule(OnExit(AppState::Game)),
             ))
             // add event sytems here
             .add_event::<ProjectileEvent>();
@@ -107,6 +113,7 @@ fn update_projectile(
 
 fn update_collision(
     mut commands: Commands,
+    mut state: ResMut<GameState>,
     projectile_query: Query<(Entity, &Transform), With<Projectile>>,
     enemy_query: Query<(Entity, &Transform, Option<&Enemy>), With<Collider>>,
 ) {
@@ -127,6 +134,9 @@ fn update_collision(
                 if enemy_check.is_some() {
                     // If it's an enemy, destroy it
                     commands.entity(collider_entity).despawn();
+                    // Update score on successfully destroying an enemy
+                    state.score += 1;
+                    println!("Score: {}", state.score);
                     // Projectile ... should that disappear too? or should it
                     // cut through?
                     commands.entity(projectile_entity).despawn();

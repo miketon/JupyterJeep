@@ -1,6 +1,6 @@
+use crate::app_state::AppState;
 use crate::bundles::{BdImage, BdSection, BdText};
 use crate::bundles::{BdNodeRoot, BdNodeVertical};
-use crate::game_state::GameState;
 use bevy::prelude::*;
 
 // Tag component to mark entities spawned (and to be despawned) for this screen
@@ -22,12 +22,12 @@ impl Plugin for SplashPlugin {
             // While in this state, run the countdown system
             // On exiting the state, despawn everything spawned for this sreen
             .add_systems((
-                splash_setup.in_schedule(OnEnter(GameState::Splash)),
+                splash_setup.in_schedule(OnEnter(AppState::Splash)),
                 // @note
                 // - in_set() is used to run the system repeatedly
                 // - in_schedule() is used to run the system once
-                countdown.in_set(OnUpdate(GameState::Splash)),
-                on_exit_splash.in_schedule(OnExit(GameState::Splash)),
+                countdown.in_set(OnUpdate(AppState::Splash)),
+                on_exit_splash.in_schedule(OnExit(AppState::Splash)),
             ));
     }
 }
@@ -66,11 +66,11 @@ fn on_exit_splash(mut commands: Commands, to_despawn: Query<Entity, With<OnSplas
 
 /// Tick the timer and change the state when finished
 fn countdown(
-    mut next_state: ResMut<NextState<GameState>>,
+    mut next_state: ResMut<NextState<AppState>>,
     time: Res<Time>,
     mut timer: ResMut<SplashTimer>,
 ) {
     if timer.tick(time.delta()).finished() {
-        next_state.set(GameState::Menu);
+        next_state.set(AppState::Menu);
     }
 }
