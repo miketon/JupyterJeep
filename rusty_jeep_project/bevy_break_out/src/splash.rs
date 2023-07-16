@@ -27,7 +27,7 @@ impl Plugin for SplashPlugin {
                 // - in_set() is used to run the system repeatedly
                 // - in_schedule() is used to run the system once
                 countdown.in_set(OnUpdate(AppState::Splash)),
-                on_exit_splash.in_schedule(OnExit(AppState::Splash)),
+                AppState::on_exit_state::<OnSplashScreen>.in_schedule(OnExit(AppState::Splash)),
             ));
     }
 }
@@ -54,14 +54,6 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 parent.spawn(text_bundle2);
             });
         });
-}
-
-/// Teardown the menu on state exit
-fn on_exit_splash(mut commands: Commands, to_despawn: Query<Entity, With<OnSplashScreen>>) {
-    println!("on_exit_splash");
-    for entity in to_despawn.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
 }
 
 /// Tick the timer and change the state when finished

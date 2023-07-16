@@ -68,7 +68,7 @@ impl Plugin for GamePlugin {
                 update_projectile.in_set(OnUpdate(AppState::Game)),
                 update_collision.in_set(OnUpdate(AppState::Game)),
                 despawn_projectile.in_set(OnUpdate(AppState::Game)),
-                on_exit_game::<GameObject>.in_schedule(OnExit(AppState::Game)),
+                AppState::on_exit_state::<GameObject>.in_schedule(OnExit(AppState::Game)),
             ))
             // add event sytems here
             .add_event::<ProjectileEvent>();
@@ -277,12 +277,5 @@ fn play_projectile_sound(
         projectile_events.clear();
         println!("PEW!");
         audio.play(sound.0.clone());
-    }
-}
-
-fn on_exit_game<T: Component>(mut commands: Commands, to_despawn: Query<Entity, With<T>>) {
-    println!("On exit game");
-    for entity in to_despawn.iter() {
-        commands.entity(entity).despawn_recursive();
     }
 }

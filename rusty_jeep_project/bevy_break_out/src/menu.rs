@@ -48,15 +48,15 @@ impl Plugin for MenuPlugin {
             // On exiting the state, despawn everything spawned for this sreen
             .add_systems((
                 menu_on_enter.in_schedule(OnEnter(AppState::Menu)),
-                on_exit_menu::<OnMainScreen>.in_schedule(OnExit(AppState::Menu)),
-                on_exit_menu::<OnSettingsScreen>.in_schedule(OnExit(AppState::Menu)),
+                AppState::on_exit_state::<OnMainScreen>.in_schedule(OnExit(AppState::Menu)),
+                AppState::on_exit_state::<OnSettingsScreen>.in_schedule(OnExit(AppState::Menu)),
             ))
             // Entering Sub Menu Screens
             .add_systems((
                 main_menu_setup.in_schedule(OnEnter(MenuState::Main)),
                 settings_menu_setup.in_schedule(OnEnter(MenuState::Settings)),
-                on_exit_menu::<OnMainScreen>.in_schedule(OnEnter(MenuState::Settings)),
-                on_exit_menu::<OnSettingsScreen>.in_schedule(OnEnter(MenuState::Main)),
+                AppState::on_exit_state::<OnMainScreen>.in_schedule(OnEnter(MenuState::Settings)),
+                AppState::on_exit_state::<OnSettingsScreen>.in_schedule(OnEnter(MenuState::Main)),
             ))
             // Listen for inputs
             .add_systems(
@@ -128,14 +128,6 @@ fn settings_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 play_button.spawn(parent);
             });
         });
-}
-
-/// Teardown the menu screen
-fn on_exit_menu<T: Component>(mut commands: Commands, to_despawn: Query<Entity, With<T>>) {
-    println!("on_exit_menu");
-    for entity in to_despawn.iter() {
-        commands.entity(entity).despawn_recursive();
-    }
 }
 
 /// Handle Ui button actions
