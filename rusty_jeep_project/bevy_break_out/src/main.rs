@@ -1,4 +1,5 @@
 mod app_state;
+mod console_bevy_save;
 mod game;
 mod menu;
 mod splash;
@@ -10,6 +11,7 @@ mod bundles;
 mod configs;
 
 use crate::app_state::AppState;
+use crate::console_bevy_save::ConsoleBevySavePlugin;
 use crate::game::GamePlugin;
 use crate::menu::MenuPlugin;
 use crate::splash::SplashPlugin;
@@ -24,6 +26,7 @@ fn main() {
         .add_plugin(SplashPlugin)
         .add_plugin(MenuPlugin)
         .add_plugin(GamePlugin)
+        .add_plugin(ConsoleBevySavePlugin)
         .add_startup_system(setup_scene)
         .add_system(input_system)
         .run();
@@ -43,7 +46,7 @@ fn input_system(
             AppState::Menu => AppState::Splash,
             AppState::Splash => AppState::Menu,
             AppState::Game => AppState::Menu,
-            // _ => GameState::Menu,
+            AppState::Save => AppState::Menu,
         };
         next_state.set(next);
     }

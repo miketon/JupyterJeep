@@ -22,6 +22,7 @@ enum MenuState {
 #[derive(Component)]
 enum ButtonAction {
     Play,
+    Save,
     SplashScreen,
     BackToMainMenu,
     BackToSettings,
@@ -92,6 +93,8 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .with_children(|parent| {
                     let play_button = BdButton::new(ButtonAction::Play, "Play Game", &font);
                     play_button.spawn(parent);
+                    let save_button = BdButton::new(ButtonAction::Save, "Save Game", &font);
+                    save_button.spawn(parent);
                     let settings_button =
                         BdButton::new(ButtonAction::BackToSettings, "Settings", &font);
                     settings_button.spawn(parent);
@@ -151,6 +154,9 @@ fn menu_action(
                 }
                 ButtonAction::Play => {
                     game_state.set(AppState::Game);
+                }
+                ButtonAction::Save => {
+                    game_state.set(AppState::Save);
                 }
                 ButtonAction::SplashScreen => {
                     game_state.set(AppState::Splash);
