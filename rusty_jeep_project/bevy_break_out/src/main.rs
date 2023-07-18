@@ -1,6 +1,7 @@
 mod app_state;
 mod console_bevy_save;
 mod game;
+mod game_of_life;
 mod menu;
 mod splash;
 // why so I need to import this here when it's not directly used in this file?
@@ -13,6 +14,7 @@ mod configs;
 use crate::app_state::AppState;
 use crate::console_bevy_save::ConsoleBevySavePlugin;
 use crate::game::GamePlugin;
+use crate::game_of_life::GameOfLifePlugin;
 use crate::menu::MenuPlugin;
 use crate::splash::SplashPlugin;
 use bevy::prelude::*;
@@ -27,6 +29,7 @@ fn main() {
         .add_plugin(MenuPlugin)
         .add_plugin(GamePlugin)
         .add_plugin(ConsoleBevySavePlugin)
+        .add_plugin(GameOfLifePlugin)
         .add_startup_system(setup_scene)
         .add_system(input_system)
         .run();
@@ -47,6 +50,7 @@ fn input_system(
             AppState::Splash => AppState::Menu,
             AppState::Game => AppState::Menu,
             AppState::Save => AppState::Menu,
+            AppState::GameOfLife => AppState::Menu,
         };
         next_state.set(next);
     }

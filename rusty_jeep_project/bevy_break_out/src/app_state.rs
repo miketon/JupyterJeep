@@ -7,6 +7,7 @@ pub enum AppState {
     Menu,
     Game,
     Save,
+    GameOfLife,
 }
 
 impl AppState {
