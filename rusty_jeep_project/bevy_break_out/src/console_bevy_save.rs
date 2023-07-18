@@ -40,7 +40,7 @@ impl Plugin for ConsoleBevySavePlugin {
             .register_type::<Health>()
             .register_type::<ExtraLife>()
             // includes in world.save()/checkpoint()/load()
-            .register_saveable::<Health>() 
+            .register_saveable::<Health>()
             .register_saveable::<Player>()
             .register_saveable::<OnConsoleSaveScreen>()
             .register_saveable::<ExtraLife>()

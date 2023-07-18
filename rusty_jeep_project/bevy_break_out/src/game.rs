@@ -1,7 +1,4 @@
-use crate::{
-    bundles::{BdButton, BdNodeRoot, BdNodeVertical},
-    AppState,
-};
+use crate::AppState;
 use bevy::prelude::*;
 use bevy::sprite::collide_aabb::collide;
 use bevy::sprite::*;
@@ -14,12 +11,6 @@ pub struct GameState {
 // Rate limit projectile firing
 #[derive(Resource)]
 struct ReloadTimer(Timer);
-
-#[derive(Component)]
-enum ButtonAction {
-    Pause,
-    MainMenu,
-}
 
 #[derive(Component)]
 struct GameObject;
@@ -246,24 +237,6 @@ fn spawn_projectile(
             },
         ));
     }
-}
-
-// q: What is the difference between this and the menu version?
-// a: The menu version uses the `States` derive macro to create a state machine
-//    for the menu. This is not needed for the game as there is only one state
-fn game_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    println!("Game Setup");
-    let font: Handle<Font> = asset_server.load("fonts/FiraSans-Bold.ttf");
-    commands
-        .spawn((GameObject, BdNodeRoot::new()))
-        .with_children(|parent| {
-            parent.spawn(BdNodeVertical::new()).with_children(|parent| {
-                let pause_button = BdButton::new(ButtonAction::Pause, "Pause Game", &font);
-                pause_button.spawn(parent);
-                let main_menu_button = BdButton::new(ButtonAction::MainMenu, "Main Menu", &font);
-                main_menu_button.spawn(parent);
-            });
-        });
 }
 
 fn play_projectile_sound(
