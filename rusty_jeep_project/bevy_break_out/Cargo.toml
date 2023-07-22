@@ -9,6 +9,7 @@ edition = "2021"
 bevy = {version = "0.10", features = ["mp3"]}
 bevy_editor_pls = "0.4"
 bevy_save = "0.8.1"
+bevy_ecs_tilemap = "0.10.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
