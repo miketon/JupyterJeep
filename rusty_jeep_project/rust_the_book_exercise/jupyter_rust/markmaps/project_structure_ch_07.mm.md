@@ -67,7 +67,7 @@ markmap:
 
 ##### Defined **NameSpace**
 
-- **import** { -- /paths -- }
+- **use** { -- /paths -- }
   - The `use` keyword
     - brings path **address into scope**
     - **simplifies** item path **address**
