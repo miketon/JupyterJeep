@@ -1,44 +1,53 @@
 ---
 markmap:
    colorFreezeLevel: 2
-   maxWidth: 400
+   maxWidth: 500
 ---
 
 # Smart Pointers
 
 ## **[ HEAP ]**
 
-### **[ POINTER ]**
+### **-- POINTER --**
 
-#### **concept**
+#### | concept |
 
 - variable containing an **address** in memory
 - this address **points** at some **data**
-- **deref** a pointer follows to get **value**
+- **deref** a pointer to **follow** to it's **value**
+  - Rust **[ Borrow Rules ]**
+    - `coercion`
+      - **OK**::mutable   ref => immutable ref
+      - **NO**::immutable ref => mutable ref
 - smart pointer OWN data
   - references only BORROW
+    - @audit : Clarify what this means???
 
-#### **usage**
+#### | usage |
 
-- **allocate**
+- (1) **allocate**
   - fixed **size**
+    - independent of data it's pointing to
   - enables **[Indirection]** (recursion)
-- update **address**
+- (2) update **address**
   - **FLASH** transfer **[Ownership]**
   - Does **NOT** copy LARGE amounts of Data
-- **deallocate**
+- (2) **deallocate**
   - **[ Traits ]** implement
     - **memory** deallocation
       - `Deref` to behave like a **reference**
       - `Drop` to run **cleanup code when dropped**
+        - `drop()` called on closure/lifetime end
+        - `std::mem::drop`  forces drop!
+          - **WARNING** at risk of **double free**
 
-## **[ OWNERSHIP ]**
+## **[ LIFETIME ]**
 
-### **[ SINGLE ]**
+### **-- RAII --**
 
-#### [ lifetime ] **RAII**
+#### | SINGLE OWNER |
 
-##### `Box<T>`
+#### `Box<T>`
 
 -
 
@@ -48,61 +57,128 @@ markmap:
   ```
 
   1. allocate
-      - // **allocates** `5` to **heap**
-      - // **points** `b` to that heap **address**
+      - // **allocates 5** to **heap**
+      - // **points b** to that heap **address**
   2. function
-      - // **dereferences** `b` address
-      - // get `value` and print
+      - // **dereferences b** address
+      - // get **value** to **print**
   3. deallocate
-      - // on closure/block exit
+      - // on closure/block **exit**
 
-### **[ MULTI ]**
+### **-- REF COUNT --**
 
-#### [ lifetime ] **REF COUNT**
+#### | MULTIPLE OWNER |
 
 - Deallocate on **[ reference count ]** == 0
+  - because pointer is no longer in use
 - Allow multiple owners of the same data
+- Owner is **unknown  @compile time**
 - **Immutable** References **ONLY**
   - Interior Mutability via @runtime
 
-#### `Rc<T>`
+#### **[ IMMUTABLE ]**
 
-- `let a = Rc::new(5);` creates an Rc with a count of 1
-- `Rc::clone(&a)` increments the count  
-- When count reaches 0, the value is dropped
-- Implement Drop to decrement the count when dropped
+##### `Rc<T>`
 
-## **[ LIFETIME ] RAII**
+-
 
-### Reference Count
+  ```rust
+    let a = Rc::new(Cons(5, Rc::new(Cons(10, Rc::new(Nil)))));
+    let b = Cons(3, Rc::clone(&a));
+    let c = Cons(4, Rc::clone(&a));
+  ```
 
-#### **[ COMPILE ]**
+  1. let **a** : an Rc with count of **1**
+  2. let **b** clone(**&a**) increments the count of **a** to **2**
+  3. let **c** clone(**&a**) increments the count of **a** to **3**
+  4. When count reaches **0**, **a** is eligible to be **dropped**
 
-#### **[ RUNTIME ]**
+#### **[ INTERIOR MUT ]**
 
-## `RefCell<T>`
+##### Outer value stays **IMMUTABLE** while ...
 
-- Enforce the borrowing rules at runtime instead of compile-time
-- Allow mutating an inner value while the outer value is immutable  
-- Use Ref and RefMut smart pointers to get references
-- Panic at runtime if rules are violated
+- Mutating an **inner mutable type**
+- Uses **unsafe code** wrapped in a safe API
+- **[ BORROW ]** rules enforced **@runtime**
+  - **HARD** panic @runtime
+  - if rules are **VIOLATED**
 
-## `Interior Mutability`
+##### [SINGLE]
 
-- Pattern of mutating an immutable type by mutating an inner mutable type  
-- Uses unsafe code wrapped in a safe API
+- `RefCell<T>`
 
-## Combining `Rc<T>` and `RefCell<T>`
+  -
 
-- Allows shared ownership of mutable data
-- `RefCell<T>` enforces borrowing rules at runtime
+    ```rust
+      struct MockMessenger {
+        sent_messages: RefCell<Vec<String>>,
+      }
+    ```
 
-## Reference Cycles
+  -
 
-- Can cause memory leaks if counts never reach 0
-- Break cycles using `Weak<T>` instead of `Rc<T>` for one of the references
-- `Weak::upgrade()`gets an `Rc<T>` if it still exists  
+    ```rust
+      impl Messenger for MockMessenger {
+        fn send(&self, message: &str) {
+            self.sent_messages.borrow_mut()
+            .push(String::from(message));
+        }
+      }
+    ```
 
-## The Rustonomicon
+    1. **value ref** returned by
+        - `borrow()`
+          - **Ref**
+        - `borrow_mut()`
+          - **RefMut**
+
+##### [MULTIPLE]
+
+###### | single thread |
+
+- `RefCell<T>` + `Rc<T>`
+  - Allows shared ownership of mutable data
+  -
+
+    ```rust
+      let value = Rc::new(RefCell::new(5));
+
+      let a = Rc::new(Cons(Rc::clone(&value), Rc::new(Nil)));
+
+      let b = Cons(Rc::new(RefCell::new(3)), Rc::clone(&a));
+      let c = Cons(Rc::new(RefCell::new(4)), Rc::clone(&a));
+
+      *value.borrow_mut() += 10;
+    ```
+
+    1.
+        **value** = RefCell { value: 5 }
+    2.
+        **value** = RefCell { value: 15 }
+    3.
+        **a**  = Cons(RefCell { value: 15 }, Nil)
+    4.
+        **b**  = Cons(RefCell { value: 3 }, Cons(RefCell { value: 15 }, Nil))
+    5.
+        **c**  = Cons(RefCell { value: 4 }, Cons(RefCell { value: 15 }, Nil))
+
+###### | multi thread |
+
+- `ArcCell<T>` + `Mutex<T>`
+  - Thread safe shared ownership of mutable data
+  - @audit : add example when done with chapter
+
+#### **[ REF CYCLE ]**
+
+##### **[ WEAK ]** ref
+
+- **Fix** Memory Leak
+  - Root cause is STRONG **count never reach 0**
+  - **Break Cycle** by  
+    - using `Weak<T>` for parent node ref
+    - `Weak::upgrade()`gets an `Rc<T>` if it still exists
+    - child nodes can still use `Rc<T>`
+
+## [The Rustonomicon](https://doc.rust-lang.org/nomicon/index.html)
 
 - Has more info on implementing own smart pointers
