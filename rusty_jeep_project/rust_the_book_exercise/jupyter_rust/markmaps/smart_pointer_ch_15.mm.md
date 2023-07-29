@@ -10,18 +10,31 @@ markmap:
 
 ### **-- POINTER --**
 
-#### | concept |
+#### | explain |
 
-- variable containing an **address** in memory
-- this address **points** at some **data**
-- **deref** a pointer to **follow** to it's **value**
-  - Rust **[ Borrow Rules ]**
+- concept
+  - variable containing an **address** in memory
+  - this address **points** at some **data**
+  - **deref** a pointer to **follow** to it's **value**
     - `coercion`
       - **OK**::mutable   ref => immutable ref
       - **NO**::immutable ref => mutable ref
-- smart pointer OWN data
+- **[ Borrow Rules ]**
+  - **smart pointer OWN** data
+    - **resource manage**
+      - responsible for **clean up** when **out of scope**
+    - **control currency**
+      - managing **thread** access
+        - **Refcell** v **ArCell**
+        - reference v atomic
+    - **enforce variant**
+      - enforce condition on data
+      - allows **interior mutability**
+      - **check @runtime** v @compiletime
+    - **support complex structures**
+      - such as linked lists, **trees**, **graphs** ... etc
   - references only BORROW
-    - @audit : Clarify what this means???
+    - @audit : Clarify what this matters???
 
 #### | usage |
 
@@ -170,6 +183,27 @@ markmap:
 
 #### **[ REF CYCLE ]**
 
+##### [Memory Leak]
+
+-
+
+  ```rust
+    let a = Rc::new(Cons(5, RefCell::new(Rc::new(Nil))));
+    let b = Rc::new(Cons(10, RefCell::new(Rc::clone(&a))));
+
+    if let Some(link) = a.tail() {
+        *link.borrow_mut() = Rc::clone(&b);
+    }
+    // Uncommenting will overflow the stack
+    // println!("a next item = {:?}", a.tail());
+  ```
+
+  1. [LEAK] **'a'** tail from => **Nil** => **'b'**
+  2. **Rc::strong_count(&a)** == 2
+  3. **Rc::strong_count(&b)** == 2
+  4. because both **'a'** and **'b'** always **Rc::strong_count** > 0
+  5. `println!("a next item = {:?}", a.tail());` // will overflow
+
 ##### **[ WEAK ]** ref
 
 - **Fix** Memory Leak
@@ -178,6 +212,34 @@ markmap:
     - using `Weak<T>` for parent node ref
     - `Weak::upgrade()`gets an `Rc<T>` if it still exists
     - child nodes can still use `Rc<T>`
+
+-
+
+  ```rust
+    let leaf = Rc::new(Node {
+        value: 3,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    });
+
+    println!("leaf parent = {:?}", leaf.parent.borrow().upgrade());
+
+    let branch = Rc::new(Node {
+        value: 5,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![Rc::clone(&leaf)]),
+    });
+
+    *leaf.parent.borrow_mut() = Rc::downgrade(&branch);
+
+    println!("leaf parent = {:?}", leaf.parent.borrow().upgrade());
+  ```
+
+  1. // Leaf parent = None // w/ upgrade()
+  2. // Leaf parent = Some(Node { value: 5, parent: RefCell { value: (Weak) }, children: RefCell { value: [Node { value: 3, parent: RefCell { value: (Weak) }, children: RefCell { value: [] } }] } })
+  3. **leaf** is **RefCell::new(Weak::new())** to parent **branch**
+  4. so that when **branch** weak_count to **0**, branch still **exists**
+  5. only **Rc::strong_count == 0** is eligible for **dealloc**
 
 ## [The Rustonomicon](https://doc.rust-lang.org/nomicon/index.html)
 
