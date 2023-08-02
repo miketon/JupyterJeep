@@ -337,7 +337,7 @@ markmap:
 
 ###### State as Pattern
 
-- Trade-offs and advantages of the state pattern in Rust
+- **`struct`** || **`enums`** as **objects** with **`trait`** **methods**
 
 - | TRAIT |
   - **State**
@@ -358,7 +358,7 @@ markmap:
           - To support **Post::Draft** and **Post::PendingReview**
           - **Post::Published** needs to `override` empty **Post::content**
 
-- | STRUCT |
+- | STRUCT | or | ENUMS |
   - **Post**
 
     -
@@ -439,5 +439,7 @@ markmap:
 ###### State as Type
 
 - Encoding states and behaviors as types in Rust
+  - | type **swap via shadow** |
+    - **Post**::init > **Draft**::req_rev > **PendingReview**::approved > **Post**
 
 ## Summary
