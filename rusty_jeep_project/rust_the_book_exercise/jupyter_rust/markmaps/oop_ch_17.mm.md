@@ -34,8 +34,8 @@ markmap:
     - **State as Type**
       - ! invalid state **UNREPRESENTABLE** !
       - **@compile** time check
-      - **Post**::init > **Draft**::req_rev > **PendingReview**::approved > **Post**
-        - **shadow** obj instance **swap**
+      - | type **swap via shadow** |
+        - **Post**::init > **Draft**::req_rev > **PendingReview**::approved > **Post**
 
 ### | Encapsulation |
 
@@ -125,7 +125,9 @@ markmap:
 
 #### | RUST |
 
-##### Trait Objects
+##### Library : **Gui**
+
+###### Trait Objects
 
 - | DATA |
   - | src/mod.rs |
@@ -224,31 +226,38 @@ markmap:
           ```
 
           1. `dyn` Draw - **dynamically** dispatch each `impl` **Draw trait**
-              - Box<**Button**>
+              - **@compile guard**
+                - trait **method impl**
+                - @runtime trait **method call**
+              - | **Types w/Draw** |
+                - ONLY concerned with **messages the value responds to**
+                  - as opposed to the **value's concrete type**
+                - | FUTURE proofed | **Types*
+                  - Box<**Button**>
 
-                -  
+                    -  
 
-                  ```rust
-                    pub struct Button {
-                        pub width : u32,
-                        pub height : u32,
-                        pub label : String,
-                    }
-                  ```
-
-                -
-
-                  ```rust
-                    impl Draw for Button {
-                        fn draw(&self) {
-                            // ... draw button here
+                      ```rust
+                        pub struct Button {
+                          pub width : u32,
+                          pub height : u32,
+                          pub label : String,
                         }
-                    }
-                  ```
+                      ```
 
-              - Box<**SelectBox**> ...
-              - Box<**TextField**> ...
-              - Box<**Slider**> ...
+                    -
+
+                      ```rust
+                        impl Draw for Button {
+                          fn draw(&self) {
+                            // ... draw button here
+                          }
+                        }
+                      ```
+
+                    - Box<**SelectBox**> ...
+                    - Box<**TextField**> ...
+                    - Box<**Slider**> ...
           2. using Trait method lookup --| **table** |-- **@runtime**
 
         -
@@ -284,14 +293,150 @@ markmap:
             ```
 
             1. `Box<dyn Draw>` == **Duck Typing** Screen Components
+                - **Screen** just calls the **Component::draw()**
+                  - NO need to CHECK Type if Button, TextField ...etc
+                  - Just that it `impl` the **Draw trait methods**
 
-- -- limitations --
+      - -- trade offs --
+        - **dynamic dispatch**
+          - incurs **small @runtime cost**
+            - when compared to static dispatch
+        - **skips optimization potential** available to static compile
 
-##### State as Pattern
+##### Library : **Blog**
+
+###### | API |
+
+- **Unit Test**
+
+  -
+
+    ```rust
+
+      {
+
+        // returns Draft with empty string ""
+        let mut post = blog::Post::new();
+
+        // new Post is a Draft and should be an empty string
+        post.add_text("I battled a bee this week");
+        assert_eq!("", post.content());
+    
+        // Draft => PendingReview, post should still be empty
+        post.request_review();
+        assert_eq!("", post.content());
+
+        // PendingReview => Published, post content now 
+        // publically available to read
+        post.approve();
+        assert_eq!("I battled a bee this week", post.content());
+
+      }
+
+    ```
+
+###### State as Pattern
 
 - Trade-offs and advantages of the state pattern in Rust
 
-##### State as Type
+- | TRAIT |
+  - **State**
+
+    -
+
+      ```rust
+        trait State {
+          fn request_review(self: Box<Self>) -> Box<dyn State>;
+          fn approve(self: Box<Self>) -> Box<dyn State>;
+          fn content<'a>(&self, post: &'a Post) -> &a' str {
+            ""
+          }
+        }
+      ```
+
+      1. **State::content()** has a default `impl`
+          - To support **Post::Draft** and **Post::PendingReview**
+          - **Post::Published** needs to `override` empty **Post::content**
+
+- | STRUCT |
+  - **Post**
+
+    -
+
+      ```rust
+        pub struct Post {
+          state: Option<Box <dyn State>>,
+          content: String,
+        }
+      ```
+
+      1. `impl` Post
+
+          -
+
+            ```rust
+              impl Post {
+                pub fn new() -> Post {
+                  state: Some(Box::new(Draft {})),
+                  content: String::new(),
+                }
+
+                pub fn add_text(&mut self, text: &str) {
+                  self.content.push_str(text);
+                }
+
+                // Post::methods to control State::methods
+                // - Post is delegating to State
+                pub fn request_review(&mut self) {
+                  if let Some(s) = self.state.take() {
+                    self.state = Some(s.request_review())
+                  }
+                }
+
+                pub fn approve(&mut self) {
+                  if let Some(s) = self.state.take() {
+                    self.state = Some(s.approve())
+                  }
+                }
+
+                pub fn content(&mut self) {
+                  self.state.as_ref().unwrap().content(self)
+                }
+              }
+
+            ```
+
+  - **Draft**
+
+    -
+
+      ```rust
+        struct Draft {}
+      ```
+
+      1. `impl` State for Draft
+
+  - **PendingReview**
+
+    -
+
+      ```rust
+        struct PendingReview {}
+      ```
+
+      1. `impl` State for PendingReview
+
+  - **Published**
+
+    -
+
+      ```rust
+        struct Published {}
+      ```
+
+      1. `impl` State for Published
+
+###### State as Type
 
 - Encoding states and behaviors as types in Rust
 
