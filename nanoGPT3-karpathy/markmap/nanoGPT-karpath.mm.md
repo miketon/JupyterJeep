@@ -126,10 +126,10 @@ markmap:
 - `n = int(0.9 * len(data))`
   - // Let's split up the data into train and validation sets
 - | **sets** |
-  - ==[ train_data ]==
+  - ==[ train_data ]== 💾
     - data[:n]
       - // first 90% of the data is training data
-  - ==[ val_data ]==
+  - ==[ val_data ]== 💡
     - data[n:]
       - // the rest is for validation
 
@@ -212,15 +212,69 @@ markmap:
           --[58]-- t
     - --[data.dtype]-- torch.int64
 
-##### | Block Size |
+##### LANGUAGE MODEL
 
-- ==[ block_size = 8 ]==
-  - `8` is a good **default**
-  - `train_data[:block_size+1]`
+- **[ train_data ]** 💾
+  - ==[ batch_size = 8 ]== 🪺
+    - // number of independent sequences processed in parallel
+  - ==[ block_size = 8 ]== 🥚
+    - // maximum character context length for prediction
+      - // given that we can't load the entire data set into memory
+    - `8` is a good **default**
+      - // training on **shorter sequences** yield
+        - more memory and **compute efficient**
+        - smaller composable tokens more likely to **generalize**
+        - may **miss** on deeper correlation though
 
-- | Attention |
-  - CURRENT BLOCK
-  - NEXT CHARACTER
+  - -- sliced --
+    - LLM is essentially built on the
+    **block_size** relationships between
+      - **CURRENT** BLOCK
+        - ==[ input ]== => current **[ `8` characters ]**
+      - **NEXT** CHARACTER
+        - ==[ target ]== => next **[ `1` character ]**
+    - `train_data[:block_size+1]`
+      - tensor([18, 47, 56, 57, 58,  1, 15, 47, 58])
+      - `+1` because we need to predict the next character
+
+  - -- predicting --
+    - the next character in a sequence
+      - even across `batches`
+    - **[ sliding window ]**
+      - `x_0`
+        - train_data[:block_size]
+        - // first **block_size** 🥚 from **train_data** 💾
+
+          -
+
+            ```sh
+              -- torch.Size([8]) -- 
+              -- [x_0] -- batch => (train_data[:block_size])
+              tensor([18, 47, 56, 57, 58,  1, 15, 47])
+                 0  1  2  3  4  5  6  7
+              0 18 47 56 57 58  1 15 47
+              0  F  i  r  s  t     C  i
+            ```
+
+      - `x_1`
+        - x_1 = train_data[block_size :block_size*2]
+        - // next **block_size** 🥚 from **train_data** 💾
+
+          -
+
+            ```sh
+              -- [x_1] -- batch => (train_data[block_size :block_size*2])
+              tensor([58, 47, 64, 43, 52, 10,  0, 14])
+                 0  1  2  3  4  5  6  7
+              0 58 47 64 43 52 10  0 14
+              0  t  i  z  e  n  : \n  B
+            ```
+
+      -
+
+        ```python
+          for t in range(block_size):
+        ```
 
 ### Train
 
