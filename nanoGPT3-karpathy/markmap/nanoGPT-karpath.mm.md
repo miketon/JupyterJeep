@@ -12,36 +12,31 @@ markmap:
 
 #### `import`
 
--
-
-  ```python
+- ```python
     import sys
     from pathlib import Path
 
-    # @note 🧠 : In Jupyter cell use `Path.cwd().parent` to get the parent directory 
+    # @note 🧠 : In Jupyter cell use `Path.cwd().parent` 
+    # to get the parent directory 
     # of the current working directory
     parent_directory = str(Path.cwd().parent)
     if parent_directory not in sys.path:
         sys.path.append(parent_directory)
 
     from utils.dataframe.util_dataframe_table import UtilDataFrameTable as df_table
-   ```
+  ```
 
 ### ==[ Gathered ]== **Data**
 
 #### `wget`
 
--
-
-  ```sh
+- ```sh
     !wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt
   ```
 
 #### ==[ chars ]==
 
--
-
-  ```python
+- ```python
     chars = sorted(
       # Build an unordered collection of unique elements
       # ALL duplicate characters are removed from 'text' 
@@ -55,9 +50,7 @@ markmap:
       - `open`
         - // read it to inspect it
 
-        -
-
-          ```python
+        - ```python
             with open("input.txt", "r", encoding="utf-8") as f:
               text = f.read()
           ```
@@ -65,9 +58,7 @@ markmap:
       - `len`
         - // print length of `text`
 
-        -
-
-          ```python
+        - ```python
             print(f"length of dataset in characters : {len(text)}")
           ```
 
@@ -87,9 +78,7 @@ markmap:
       - !$&',-.3:;?ABCDEFGHIJKLMNOPQRST
         UVWXYZabcdefghijklmnopqrstuvwxyz
 
-        -
-
-          ```sh
+        - ```sh
               0 1 2 3 4 5 6 7 8 9 10 11
             0 0 \n 1  2 ! 3 $ 4 & 5 '
             1 6 , 7 - 8 . 9 3 10 : 11 ;
@@ -158,9 +147,7 @@ markmap:
 
 ##### ==[ Encode ]==
 
--
-
-  ```python
+- ```python
     # Encoder : takes a string (list of characters) and 
     # returns a list of integers
     encode = lambda s: [stoi[c] for c in s]
@@ -177,12 +164,12 @@ markmap:
           - ⛔ --[ERROR]-- ⛔
             - // **Shakespeare** text does **NOT** have
             **ANY** numerical characters **other than 3**
+            - // FOR REALS, check the [characters] 💬 table BRO!
+              - --[09]-- 3 😤
 
 ##### ==[ Decode ]==
 
--
-
-  ```python
+- ```python
     # Decoder :takes a list of integers and outputs a 
     # string (list of characters)
     decode = lambda l: "".join([itos[i] for i in l])
@@ -245,9 +232,7 @@ markmap:
         - train_data[:block_size]
         - // first **block_size** 🥚 from **train_data** 💾
 
-          -
-
-            ```sh
+          - ```sh
               -- torch.Size([8]) -- 
               -- [x_0] -- batch => (train_data[:block_size])
               tensor([18, 47, 56, 57, 58,  1, 15, 47])
@@ -260,9 +245,7 @@ markmap:
         - x_1 = train_data[block_size :block_size*2]
         - // next **block_size** 🥚 from **train_data** 💾
 
-          -
-
-            ```sh
+          - ```sh
               -- [x_1] -- batch => (train_data[block_size :block_size*2])
               tensor([58, 47, 64, 43, 52, 10,  0, 14])
                  0  1  2  3  4  5  6  7
@@ -270,11 +253,17 @@ markmap:
               0  t  i  z  e  n  : \n  B
             ```
 
-      -
-
-        ```python
+      - ```python
           for t in range(block_size):
         ```
+
+        - ```python
+              context = x_0[: t + 1] 
+          ```
+
+        - ```python
+              target = y[t]
+          ```
 
 ### Train
 
