@@ -110,18 +110,18 @@ markmap:
                   Bee3
                 ```
 
-  2. --[vocab size]-- 📖
+  2. --[vocab size]-- 🏷️
       - ==[ 65 ]==
 
 ## Model
 
 ### Data
 
-#### | Split |
+#### **[ Sets ]**
 
 - `n = int(0.9 * len(data))`
   - // Let's split up the data into train and validation sets
-- | **sets** |
+- --[ split ]--
   - ==[ train_data ]== 💾
     - data[:n]
       - // first 90% of the data is training data
@@ -136,20 +136,20 @@ markmap:
 ###### `chars`
 
 - | TRADE-OFFS |
-  - -- character -- 💬
+  - 💬 -- character --
     - id table
-      - ⛛
+      - ⛛ (chars)
     - vocabulary
       - 🔺
   - -- subword --
     - id table
-      - 🔺
+      - 🔺 (tokens)
     - vocabulary
       - ⛛
 
 ###### `ints`
 
-- vocab size 📖
+- 🏷️ vocab size
   - ==[ 65 ]==
 
 ##### ==[ Encode ]==
@@ -211,13 +211,14 @@ markmap:
     - // let's encode the entire shakespeare text
     dataset and store it in a torch.Tensor
   - `data = torch.tensor(encode(text), dtype=torch.int64)`
-    - --[data.shape]-- torch.Size([1115394])
-      - 0..5
+    - --[data.shape]-- torch.Size([1115394]) 📖
+      - 0 .. 5
         - --[18]-- F
           --[47]-- i
           --[56]-- r
           --[57]-- s
           --[58]-- t
+          - 1,115,394 📖
     - --[data.dtype]-- torch.int64
 
 ##### LANGUAGE MODEL
@@ -238,7 +239,7 @@ markmap:
           - may **miss** on deeper correlation though
 
   - -- methods --
-    - `def`
+    - def ==[ get_batch() ]== 🧮
 
       - ```python
           get_batch(split) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -250,29 +251,90 @@ markmap:
                data = train_data if split == "train" else val_data
             ```
 
-        - ==[   ix ]==
+            - 💾 train_data
+            - 💡 val_data
 
-          - ```python
-               ix = torch.randint(len(data) - block_size - 1, (batch_size,))
-            ```
+        - | 1D Tensor |
+          - // dimension
+            - **batch_size**[4] 🪺  of random integers
+          - ==[   ix ]==
 
-        - ==[    x ]==
+            - ```python
+                ix = torch.randint(len(data) - block_size - 1, (batch_size,))
+              ```
 
-          - ```python
-               x = torch.stack([data[i : i + block_size] for i in ix])
-            ```
+              - **random offset**
+                - // Prevents Model from MEMORIZING character POSITION
+                  so we can GENERALIZE to ONLY neighboring characters
+                  - // generate random offset for each sequence in the batch ...
+                  - // - DO NOT EXCEED unit BATCH SIZE
+        - | 2D Tensors |
+          - // dimension
+            - **block_size**[8] 🥚 --characters-- long
+            - **batch_size**[4] 🪺 --input-- sequences
+          - ==[    x ]==
 
-        - ==[    y ]==
+            - ```python
+                x = torch.stack([data[i : i + block_size] for i in ix])
+              ```
 
-          - ```python
-               y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
-            ```
+          - ==[    y ]==
 
-        - ==[ return ]==
+            - ```python
+                y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
+              ```
 
-          - ```python
-               return x, y
-            ```
+          - ==[ return ]==
+
+            - ```python
+                return x, y
+              ```
+
+              - ==[ x ]== 📥
+                - --[inputs]--
+                - xb.shape : torch.Size([4, 8])
+
+                  - ```sh
+                      tensor([[53, 59,  6,  1, 58, 56, 47, 40],
+                              [49, 43, 43, 54,  1, 47, 58,  1],
+                              [13, 52, 45, 43, 50, 53,  8,  0],
+                              [ 1, 39,  1, 46, 53, 59, 57, 43]])
+                    ```
+
+                    - ```sh
+                          0  1  2  3  4  5  6  7 
+                        0 53 59  6  1 58 56 47 40
+                        -  o  u  ,     t  r  i  b
+                        1 49 43 43 54  1 47 58  1
+                        -  k  e  e  p     i  t 
+                        2 13 52 45 43 50 53  8  0
+                        -  A  n  g  e  l  o  . \n
+                        3  1 39  1 46 53 59 57 43
+                        -     a     h  o  u  s  e 
+                      ```
+
+              - ==[ yb ]== 🎯
+                - --[targets]--
+                - yb.shape : torch.Size([4, 8])
+
+                  - ```sh
+                      tensor([[59,  6,  1, 58, 56, 47, 40, 59],
+                              [43, 43, 54,  1, 47, 58,  1, 58],
+                              [52, 45, 43, 50, 53,  8,  0, 26],
+                              [39,  1, 46, 53, 59, 57, 43,  0]])
+                    ```
+
+                    - ```sh
+                          0  1  2  3  4  5  6  7 
+                        0 59  6  1 58 56 47 40 59
+                        -  u  ,     t  r  i  b  u
+                        1 43 43 54  1 47 58  1 58
+                        -  e  e  p     i  t     t
+                        2 52 45 43 50 53  8  0 26
+                        -  n  g  e  l  o  . \n  N
+                        3 39  1 46 53 59 57 43  0
+                        -  a     h  o  u  s  e \n 
+                      ```
 
   - -- sliced --
     - LLM is essentially built on the
