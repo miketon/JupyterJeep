@@ -1,7 +1,7 @@
 ---
 markmap:
    colorFreezeLevel: 2
-   maxWidth: 500
+   maxWidth: 0
 ---
 
 # NanoGPT
@@ -45,9 +45,9 @@ markmap:
     )
   ```
 
-  1. --[smoke test]--
+  - --[smoke test]--
 
-      - `open`
+    1. `open`
         - // read it to inspect it
 
         - ```python
@@ -55,19 +55,28 @@ markmap:
               text = f.read()
           ```
 
-      - `len`
+    2. `len`
         - // print length of `text`
 
         - ```python
             print(f"length of dataset in characters : {len(text)}")
           ```
 
-      - `print`
+    3. `print`
         - // print first 100 characters
 
-        -
+          - ```sh
+              First Citizen:
+              Before we proceed any further, hear me speak.
 
-          ```python
+              All:
+              Speak, speak.
+
+              First Citizen:
+              You
+            ```
+
+        - ```python
             print(text[:100])
           ```
 
@@ -93,15 +102,13 @@ markmap:
             10 60 v 61 w 62 x 63 y 64 z 0 0
           ```
 
-          - 1. `input_phrase = "Bee3"`
-          - 2. `print(encode(input_phrase))`
+          - `input_phrase` = "Bee3"
+          - `print(encode(input_phrase))`
 
-                -
-
-                  ```sh
-                    [14, 43, 43, 9]
-                    Bee3
-                  ```
+              - ```sh
+                  [14, 43, 43, 9]
+                  Bee3
+                ```
 
   2. --[vocab size]-- 📖
       - ==[ 65 ]==
@@ -153,19 +160,26 @@ markmap:
     encode = lambda s: [stoi[c] for c in s]
   ```
 
-  1. encode
-      - ✅
-        - **input_phrase** = `"Bee3"`
-        - encode(**input_phrase**)
-          - [14, 43, 43, 9]
-      - ❌
-        - **input_phrase** = `"Bee7"`
-        - encode(**input_phrase**)
-          - ⛔ --[ERROR]-- ⛔
-            - // **Shakespeare** text does **NOT** have
+  - ` stoi `
+
+    - ```python
+        stoi = {ch: i for i, ch in enumerate(chars)}
+      ```
+
+      - // string to integer
+
+    - ✅
+      - **input_phrase** = `"Bee3"`
+      - encode(**input_phrase**)
+        - [14, 43, 43, 9]
+    - ❌
+      - **input_phrase** = `"Bee7"`
+      - encode(**input_phrase**)
+        - ⛔ --[ERROR]-- ⛔
+          - // **Shakespeare** text does **NOT** have
             **ANY** numerical characters **other than 3**
-            - // FOR REALS, check the [characters] 💬 table BRO!
-              - --[09]-- 3 😤
+          - // FOR REALS, check the [characters] 💬 table BRO!
+            - --[09]-- 3 😤
 
 ##### ==[ Decode ]==
 
@@ -175,11 +189,18 @@ markmap:
     decode = lambda l: "".join([itos[i] for i in l])
   ```
 
-  1. decode
-      - ✅
-        - **output_phrase** = `[14, 43, 43, 9]`
-        - decode(**output_phrase**)
-          - "Bee3"
+  - ` itos `
+
+    - ```python
+        itos = {i: ch for i, ch in enumerate(chars)}
+      ```
+
+      - // integer to string
+
+    - ✅
+      - **output_phrase** = `[14, 43, 43, 9]`
+      - decode(**output_phrase**)
+        - "Bee3"
 
 #### | Tensor |
 
@@ -202,16 +223,56 @@ markmap:
 ##### LANGUAGE MODEL
 
 - **[ train_data ]** 💾
-  - ==[ batch_size = 8 ]== 🪺
-    - // number of independent sequences processed in parallel
-  - ==[ block_size = 8 ]== 🥚
-    - // maximum character context length for prediction
-      - // given that we can't load the entire data set into memory
-    - `8` is a good **default**
-      - // training on **shorter sequences** yield
-        - more memory and **compute efficient**
-        - smaller composable tokens more likely to **generalize**
-        - may **miss** on deeper correlation though
+  - -- consts --
+    - **torch.manual_seed(`1337`)**
+      - // inlined to 'leet' to ensure reproducibility of the results
+    - ==[ batch_size = 4 ]== 🪺
+      - // number of independent sequences processed in parallel
+    - ==[ block_size = 8 ]== 🥚
+      - // maximum character context length for prediction
+        - // given that we can't load the entire data set into memory
+      - `8` is a good **default**
+        - // training on **shorter sequences** yield
+          - more memory and **compute efficient**
+          - smaller composable tokens more likely to **generalize**
+          - may **miss** on deeper correlation though
+
+  - -- methods --
+    - `def`
+
+      - ```python
+          get_batch(split) -> Tuple[torch.Tensor, torch.Tensor]:
+        ```
+
+        - ==[ data ]==
+
+          - ```python
+               data = train_data if split == "train" else val_data
+            ```
+
+        - ==[   ix ]==
+
+          - ```python
+               ix = torch.randint(len(data) - block_size - 1, (batch_size,))
+            ```
+
+        - ==[    x ]==
+
+          - ```python
+               x = torch.stack([data[i : i + block_size] for i in ix])
+            ```
+
+        - ==[    y ]==
+
+          - ```python
+               y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
+            ```
+
+        - ==[ return ]==
+
+          - ```python
+               return x, y
+            ```
 
   - -- sliced --
     - LLM is essentially built on the
@@ -242,7 +303,7 @@ markmap:
             ```
 
       - `x_1`
-        - x_1 = train_data[block_size :block_size*2]
+        - train_data[block_size :block_size*2]
         - // next **block_size** 🥚 from **train_data** 💾
 
           - ```sh
@@ -261,9 +322,32 @@ markmap:
               context = x_0[: t + 1] 
           ```
 
+          - The **context** is created by taking the characters from
+          BEGINNING of **x** up to and INCLUDING the character at
+          position **t**
+
         - ```python
               target = y[t]
           ```
+
+          - The corresponding **target** character for the current
+            **context** is the character at position **t** in the
+            output sequence **y**
+
+        - | output |
+
+          - ```sh
+               @t   context | x_0 | target | y[t] |
+              ----  -------         ------
+              [ 0]     18     [F]     47     [i]    => tensor([18]) the target is 47
+              [ 1]     47     [i]     56     [r]    => tensor([18, 47]) the target is 56
+              [ 2]     56     [r]     57     [s]    => tensor([18, 47, 56]) the target is 57
+              [ 3]     57     [s]     58     [t]    => tensor([18, 47, 56, 57]) the target is 58
+              [ 4]     58     [t]      1     [ ]    => tensor([18, 47, 56, 57, 58]) the target is 1
+              [ 5]      1     [ ]     15     [C]    => tensor([18, 47, 56, 57, 58,  1]) the target is 15
+              [ 6]     15     [C]     47     [i]    => tensor([18, 47, 56, 57, 58,  1, 15]) the target is 47
+              [ 7]     47     [i]     58     [t]    => tensor([18, 47, 56, 57, 58,  1, 15, 47]) the target is 58
+            ```
 
 ### Train
 
