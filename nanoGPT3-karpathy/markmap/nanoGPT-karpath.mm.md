@@ -224,9 +224,7 @@ markmap:
 ##### LANGUAGE MODEL
 
 - **[ train_data ]** 💾
-  - -- consts --
-    - **torch.manual_seed(`1337`)**
-      - // inlined to 'leet' to ensure reproducibility of the results
+  - -- global --
     - ==[ batch_size = 4 ]== 🪺
       - // number of independent sequences processed in parallel
     - ==[ block_size = 8 ]== 🥚
@@ -410,6 +408,79 @@ markmap:
               [ 6]     15     [C]     47     [i]    => tensor([18, 47, 56, 57, 58,  1, 15]) the target is 47
               [ 7]     47     [i]     58     [t]    => tensor([18, 47, 56, 57, 58,  1, 15, 47]) the target is 58
             ```
+
+##### TRAINING
+
+###### INIT
+
+- **nn.Module**
+  - -- imports --
+    - torch.manual_seed(1337)
+      - // set the seed for generating random numbers
+      - // we are manually setting to `1337` for reproducibility
+  - -- class --
+    - ==[ BigramLanguageModel 🧠 ]==(nn.Module):
+      - `def`
+        - **`__init__`** (self, vocab_size):
+        - **`forward`** (self, idx, targets=None):
+          - `return` logits, loss
+        - **`generate`** (self, idx, max_new_tokens):
+          - `return` idx
+
+###### STEP
+
+- batch_size = 32
+  - // @audit increased from `8`?
+
+- ```python
+    for steps in range(100000):
+  ```
+
+  - ```python
+       xb, yb = get_batch("train")
+    ```
+
+  - ```python
+      logits, loss = m(xb, yb)
+    ```
+
+  - ```python
+      optimizer.zero_grad(set_to_none=True)
+    ```
+
+  - ```python
+      loss.backward()
+    ```
+
+  - ```python
+      optimizer.step()
+    ```
+
+###### POST
+
+- ```python
+    idx = torch.zeros((1, 1), dtype=torch.long)
+  ```
+
+  - -- print --
+
+    - ```python
+        print(decode(m.generate(idx, max_new_tokens=300)[0].tolist()))
+      ```
+
+      - ```sh
+          Ofows ht IUS:
+          S:
+
+          ING flvenje ssutefr,
+          M:
+          War cl igagimous pray whars:
+          Panalit I It aithit terised the. by fonau buaror VOubed spo mng as chathab llll:
+          Ware,
+
+          ee her,
+          Thooured aly y hind Idimashat-owhrees s, share hathure Anfaneof f s llon!
+        ```
 
 ### Train
 
