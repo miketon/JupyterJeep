@@ -110,7 +110,7 @@ markmap:
                   Bee3
                 ```
 
-  2. --[vocab size]-- 🏷️
+  2. --[vocab_size]-- 🏷️
       - ==[ 65 ]==
 
 ## Model
@@ -149,7 +149,7 @@ markmap:
 
 ###### `ints`
 
-- 🏷️ vocab size
+- 🏷️ ==[ vocab_size ]==
   - ==[ 65 ]==
 
 ##### ==[ Encode ]==
@@ -288,7 +288,7 @@ markmap:
                 return x, y
               ```
 
-              - ==[ x ]== 📥
+              - ==[ xb ]== 📥
                 - --[inputs]--
                 - xb.shape : torch.Size([4, 8])
 
@@ -409,12 +409,19 @@ markmap:
               [ 7]     47     [i]     58     [t]    => tensor([18, 47, 56, 57, 58,  1, 15, 47]) the target is 58
             ```
 
+            - | mask | ==[ @audit ]== ...explain this more
+              - tri 📐
+
 ##### TRAINING
 
 ###### INIT
 
 - **nn.Module**
   - -- imports --
+    - import torch
+    - import torch.nn as nn
+    - from torch.nn import functional as F
+      - ==[ @audit ]== : what is the purpose of `F`???
     - torch.manual_seed(1337)
       - // set the seed for generating random numbers
       - // we are manually setting to `1337` for reproducibility
@@ -426,6 +433,77 @@ markmap:
           - `return` logits, loss
         - **`generate`** (self, idx, max_new_tokens):
           - `return` idx
+  - -- main --
+    - m = BigramLanguageModel(65)
+      - ==[ m ]==
+        - `m.forward(xb, yb)`
+          - // pytorch allows us to call a model like a function
+          - // - this is the same as calling m.forward(xb, yb)
+            - xb = 📥 inputs
+            - yb = 🎯 targets
+      - **65** == 🏷️ **vocab_size**
+    - logits, loss = m( 📥 xb, 🎯 yb)
+      - ==[ logits ]==
+        - logits.shape : torch.Size([32, 65]
+          - **-- measure prediction --**
+          - used to **measure** the model's prediction
+          - | EXAMPLE |
+            - -- graph --
+              - classify [inputs] [3 batches] => [classes] [5]
+              - here is [batch size of 3] and a [vocabulary size of 5]
+                - **row**
+                  - data point in batch [3]
+                - **column**
+                  - [5] class to assign to
+
+            - ```python
+                tensor([[ 0.3134, -0.1676,  0.3773, -0.0824, -0.2973],
+                        [-0.0856,  0.0987,  0.1772,  0.0565, -0.2135],
+                        [ 0.0624,  0.0895,  0.0927, -0.0507, -0.1921]])
+              ```
+
+              - | RAW + **UNBOUNDED** |
+                - values have no **min/max**
+                - and can be positive or negative
+
+            - ```python
+                tensor([[0.2175, 0.1338, 0.2301, 0.1450, 0.2736],
+                        [0.1823, 0.2194, 0.2372, 0.2109, 0.1502],
+                        [0.2108, 0.2171, 0.2182, 0.1882, 0.1657]])
+              ```
+
+              - | **NORMALIZED** SOFTMAX |
+                - `F.softmax(logits, dim=1)`
+                - **convert to probabilities** via softmax
+                  - all values **between 0 and 1**
+                  - all **rows sum to 1.0**
+
+      - ==[ loss ]==
+        - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
+          - **-- update weight --**
+          - **NllLossBackward0** (backpropagation)
+          - used to update model's **weight** during training
+  - | PRE-TRAIN |
+    - -- generate tensor --
+      - `idx = torch.zeros((1, 1), dtype=torch.long)`
+        - creates a 2D tensor full of zeros with shape (1, 1)
+          - **idx** is used as the **initial sequence of tokens** to
+          feed into the model for generating new tokens.
+        - (token indices) tensor is of:
+          - **shape (1, 1)**
+            - because it is **intended to hold a sequence of tokens**
+          - **type long**
+            - because it is **intended to hold integer** values
+    - -- print tensor --
+      - `print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))`
+
+      - ```sh
+          SKIcLT;AcELMoTbvZv C?nq-QE33:CJqkOKH-q;:la!oiywkHjgChzbQ?u!3bLIgwevmyFJGUGp
+          wnYWmnxKWWev-tDqXErVKLgJ
+        ```
+
+        - // output is random garbage because 
+        we haven't trained the model yet
 
 ###### STEP
 
