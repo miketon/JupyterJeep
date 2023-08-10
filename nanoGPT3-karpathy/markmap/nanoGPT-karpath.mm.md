@@ -228,8 +228,10 @@ markmap:
     - ==[ batch_size = 4 ]== 🪺
       - // number of independent sequences processed in parallel
     - ==[ block_size = 8 ]== 🥚
-      - // maximum character context length for prediction
-        - // given that we can't load the entire data set into memory
+      - // **maximum character** context **length**
+       for prediction processing
+        - // given that we can't load the
+         entire data set into memory
       - `8` is a good **default**
         - // training on **shorter sequences** yield
           - more memory and **compute efficient**
@@ -429,13 +431,53 @@ markmap:
     - ==[ BigramLanguageModel 🧠 ]==(nn.Module):
       - `def`
         - **`__init__`** (self, vocab_size):
+          - **vocab_size** is the size of the vocabulary the model will work with
+
+          - ```python
+              super().__init__()
+              self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+            ```
+
+            - ==[ token_embedding_table ]==
+              - -- args --
+                - **num_embeddings**
+                - **embedding_dim**
+                  - **vocab_size** per embedding
+              - -- side effect --
+                - creates **embedding layer**
+                - simple **lookup table** used to **map** :
+                  - each **token in the vocabulary**
+                  - to a **vector representation**
+
         - **`forward`** (self, idx, targets=None):
+
+          - ```python
+              logits = self.token_embedding_table(idx)  # (B,T,C)
+              if targets == None:
+                loss = None
+              else:
+                B, T, C = logits.shape
+                logits = logits.view(B * T, C)
+                targets = targets.view(B * T)
+                loss = F.cross_entropy(logits, targets)
+            ```
+
           - `return` logits, loss
         - **`generate`** (self, idx, max_new_tokens):
+
+          - ```python
+              for _ in range(max_new_tokens):
+                logits, loss = self(idx)
+                logits = logits[:, -1, :]  # becomes (B, C)
+                probs = F.softmax(logits, dim=1)  # (B, C)
+                idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
+                idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
+            ```
+
           - `return` idx
   - -- main --
     - m = BigramLanguageModel(65)
-      - ==[ m ]==
+      - 🧠 ==[ m ]==
         - `m.forward(xb, yb)`
           - // pytorch allows us to call a model like a function
           - // - this is the same as calling m.forward(xb, yb)
@@ -443,11 +485,11 @@ markmap:
             - yb = 🎯 targets
       - **65** == 🏷️ **vocab_size**
     - logits, loss = m( 📥 xb, 🎯 yb)
-      - ==[ logits ]==
+      - ==[ logits ]== 🧮
         - logits.shape : torch.Size([32, 65]
           - **-- measure prediction --**
           - used to **measure** the model's prediction
-          - | EXAMPLE |
+          - | EXAMPLE | **gpt 🤖**
             - -- graph --
               - classify [inputs] [3 batches] => [classes] [5]
               - here is [batch size of 3] and a [vocabulary size of 5]
@@ -478,22 +520,47 @@ markmap:
                   - all values **between 0 and 1**
                   - all **rows sum to 1.0**
 
-      - ==[ loss ]==
+      - ==[ loss ]== ⚖️
         - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
           - **-- update weight --**
           - **NllLossBackward0** (backpropagation)
           - used to update model's **weight** during training
   - | PRE-TRAIN |
     - -- generate tensor --
-      - `idx = torch.zeros((1, 1), dtype=torch.long)`
-        - creates a 2D tensor full of zeros with shape (1, 1)
-          - **idx** is used as the **initial sequence of tokens** to
-          feed into the model for generating new tokens.
-        - (token indices) tensor is of:
-          - **shape (1, 1)**
-            - because it is **intended to hold a sequence of tokens**
-          - **type long**
-            - because it is **intended to hold integer** values
+      - ==[ idx ]== 🎚️
+        - | EXAMPLE | **gpt 🤖**
+          - **['the', 'cat', 'sat', 'on', 'mat']**
+            - // language model that works with
+            a [ vocabulary ] of [ 5 ] words
+          - **idx** = torch.tensor([[0, 1]])
+            - // **idx** representing "The cat"
+            - // **2D tensor** with **shape (1, 2)**
+              - [1] == batch_size (one row)
+              - [2] == sequence length, "The" + "cat" == [ 2 tokens ]
+          - **-- generate --**
+            - idx = torch.tensor([[0, 1, 2, 3, 4]])
+              - // After generation, idx might
+              - // representing "The cat sat on mat"
+              - // **2d tensor** updated to **shape (1, 5)**
+                - (1, 2) "The cat"
+                - (1, 5) "The cat sat on a mat"
+        - **(B,T)** array of indices in the current context
+          - **B** is the 🪺 **batch_size**
+            - **[8]** in this context
+          - **T** is the **length** of **each sequence**
+            - not same as 🥚 **block_size**
+              - T is the current sequence length of the context during
+              generation, and it can change as new tokens are generated
+              - 🛑 @audit : I don't understand this lol
+        - `idx = torch.zeros((1, 1), dtype=torch.long)`
+          - creates a 2D tensor full of zeros with shape (1, 1)
+            - **idx** is used as the **initial sequence of tokens** to
+            feed into the model for generating new tokens.
+          - (token indices) tensor is of:
+            - **shape (1, 1)**
+              - because it is **intended to hold a sequence of tokens**
+            - **type long**
+              - because it is **intended to hold integer** values
     - -- print tensor --
       - `print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))`
 
@@ -502,13 +569,13 @@ markmap:
           wnYWmnxKWWev-tDqXErVKLgJ
         ```
 
-        - // output is random garbage because 
+        - // output is random garbage because
         we haven't trained the model yet
 
 ###### STEP
 
-- batch_size = 32
-  - // @audit increased from `8`?
+- **batch_size** = 32
+  - // @audit increased from `4`?
 
 - ```python
     for steps in range(100000):
