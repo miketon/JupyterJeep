@@ -450,6 +450,8 @@ markmap:
                   - to a **vector representation**
 
         - **`forward`** (self, idx, targets=None):
+          - // forward() method defines how input is
+          passed through the layers of the network
 
           - ```python
               logits = self.token_embedding_table(idx)  # (B,T,C)
@@ -461,6 +463,52 @@ markmap:
                 targets = targets.view(B * T)
                 loss = F.cross_entropy(logits, targets)
             ```
+
+            - 🧮 **logits**.shape
+              - | EXAMPLE |
+                - // from xb.shape -- 📥 inputs
+
+                - ```python
+                  tensor([
+                          [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
+                          [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
+                          [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
+                          [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
+                        ])
+                  ```
+
+              - 🪺 ==[ B ]==
+                - 🪺 **batch_size**
+                  - num_rows = [ 4 ]
+                    - 4 **sentences** (per batch)
+              - 🥚 ==[ T ]==
+                - 🥚 **block_size**
+                  - num_cols = [8]
+                    - 8 **words** (sequence length per sentences)
+              - 🏷️ ==[ C ]==
+                - 🏷️ **vocab_size**
+                  - num_ids = [65]
+                    - 65 **unique ids** (vocabulary)
+            - 🧮 **logits**
+              - // reshaping from **3D** to **2D** tensor
+                - results in a single row of :
+                  - logits (raw scores)
+                    - **32 words** (4 * 8)
+                  - per **token id**
+                    - 65
+                - This reshaping is done because
+                **F.cross_entropy** expects
+                  - 🧮 logits (📥 input) @audit ... input v logit
+                    - **2D** tensor
+                  - 🎯 loss (targets)
+                    - **1D** tensor
+                - // Does NOT help GENERALIZE learning even though it removes batch (sentences) and unfolds to purely words (blocks) @mike
+              - logits.view( B * T, C)
+                - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
+                - ( **4 * 8** , 65 ) = ( **32***  65 )
+            - **targets**
+              - //
+              - targets.view(B * T)
 
           - `return` logits, loss
         - **`generate`** (self, idx, max_new_tokens):
