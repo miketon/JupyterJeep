@@ -62,14 +62,15 @@ fn on_enter_game_of_life(world: &mut World) {
         system.run((), world);
         // Applies any changes that have been buffered during run to the world
         system.apply_buffers(world);
-    } else {
-        info!("Loaded");
-        // let mut system = IntoSystem::into_system(startup);
-        let mut system = IntoSystem::into_system(finish_setup);
-        system.initialize(world);
-        system.run((), world);
-        system.apply_buffers(world);
     }
+    // else {
+    info!("Loaded");
+    // let mut system = IntoSystem::into_system(startup);
+    let mut system = IntoSystem::into_system(finish_setup);
+    system.initialize(world);
+    system.run((), world);
+    system.apply_buffers(world);
+    // }
 }
 
 fn on_exit_game_of_life(world: &mut World) {
@@ -123,10 +124,25 @@ fn finish_setup(
     info!("[GOL] Finish Setup");
     commands.spawn((GameOfLife, Camera2dBundle::default()));
 
-    let tilemap_entity = tile_storage_query.single();
     let texture_handle: Handle<Image> = asset_server.load("icon.png");
 
-    commands
-        .entity(tilemap_entity)
-        .insert((TilemapTexture::Single(texture_handle), LastUpdate(0.0)));
+    // @audit : IS EMPTY, TRACK HOW COME
+    let is_empty = tile_storage_query.is_empty();
+    println!("is tile_map empty: {}", is_empty);
+    let tilemap_result = tile_storage_query.single();
+    /*
+    if let Ok(tilemap_entity) = tile_storage_query.single() {
+        commands
+            .entity(tilemap_entity)
+            .insert((TilemapTexture::Single(texture_handle), LastUpdate(0.0)));
+    } else {
+        // You can add additional error handling here.
+        println!("No Entity found or more than one Entity found");
+    }
+     */
+    /*
+       commands
+           .entity(tilemap_entity)
+           .insert((TilemapTexture::Single(texture_handle), LastUpdate(0.0)));
+    */
 }
