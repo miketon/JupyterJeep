@@ -430,7 +430,7 @@ markmap:
   - -- class --
     - ==[ BigramLanguageModel 🧠 ]==(nn.Module):
       - `def`
-        - **`__init__`** (self, vocab_size):
+        - 🔰 **`__init__`** (self, vocab_size):
           - **vocab_size** is the size of the vocabulary the model will work with
 
           - ```python
@@ -445,11 +445,58 @@ markmap:
                   - **vocab_size** per embedding
               - -- side effect --
                 - creates **embedding layer**
-                - simple **lookup table** used to **map** :
-                  - each **token in the vocabulary**
-                  - to a **vector representation**
+                  - a **lookup table** for each **vocab token** and **idx** 👁️‍🗨️
+                - 👁️‍🗨️ **==[ idx ]==**
+                  - index to **token** in the vocabulary
+                    - where each type of toy are : 
+                      - car
+                      - doll
+                      - dice ...etc
+                  - and it's **vector representation**
+                    - a special sticker that descibes the toy
+                      - color,
+                      - size,
+                      - how often we play with it ...etc
+                  - | EXAMPLE | **gpt 🤖**
+                    - **[ embedding ]**
+                      - -- vocab + **idx** 👁️‍🗨️ --
+                        - idx = id + uid.vector
 
-        - **`forward`** (self, idx, targets=None):
+                        - ```sh
+                            vocab  id  uid.vector
+                            -----  --  -----------
+                            King    0  [1.0,  0.7]
+                            Queen   1  [1.0, -0.5]
+                            Man     2  [0.0,  0.5]
+                            Woman   3  [0.0, -0.5] 
+                          ```
+
+                      - -- graph --
+                        - When our computer sees the word "King"
+                          - in addition to the letters K, I, N, G.
+                          - it ALSO sees the point [1, 0.5] ...
+
+                        - ```sh
+                            King  (1,  0.7)      x 
+                            Man   (0,  0.5)     x
+
+                            Queen (1, -0.5)  x
+                            Woman (0, -0.5)  x
+                          ```
+
+                          - Looking at these
+                          points on a graph :
+                            - -- horizontal --
+                              - "King" and "Queen" match
+                              - "Man" and "Woman" match
+                            - -- vertical --
+                              - "King" and "Man" aligned **approximately**
+                              - "Queen" and "Woman" aligned **exactly**
+                            - -- ߷ 🧠 ߷ --
+                              - ✅  -- Queens are ONLY FEMALE
+                              - ✅  -- Kings aren't exclusively MALE
+
+        - ⏩ **`forward`** (self, idx 👁️‍🗨️, targets=None):
           - // forward() method defines how input is
           passed through the layers of the network
 
@@ -464,54 +511,65 @@ markmap:
                 loss = F.cross_entropy(logits, targets)
             ```
 
-            - 🧮 **logits**.shape
-              - | EXAMPLE |
-                - // from xb.shape -- 📥 inputs
+            - 🧮 **==[ logits ]==**
+              - **logits** = self.token_embedding_table(idx)
+                - // (B, T, C)
+              - logits.**shape**
+                - // manually unpacking B, T, C channels
+                - | EXAMPLE |
+                  - // from xb.shape -- 📥 inputs
 
-                - ```python
-                  tensor([
-                          [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
-                          [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
-                          [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
-                          [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
-                        ])
-                  ```
+                  - ```python
+                    tensor([
+                            [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
+                            [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
+                            [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
+                            [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
+                          ])
+                    ```
 
-              - 🪺 ==[ B ]==
-                - 🪺 **batch_size**
-                  - num_rows = [ 4 ]
-                    - 4 **sentences** (per batch)
-              - 🥚 ==[ T ]==
-                - 🥚 **block_size**
-                  - num_cols = [8]
-                    - 8 **words** (sequence length per sentences)
-              - 🏷️ ==[ C ]==
-                - 🏷️ **vocab_size**
-                  - num_ids = [65]
-                    - 65 **unique ids** (vocabulary)
-            - 🧮 **logits**
-              - // reshaping from **3D** to **2D** tensor
-                - results in a single row of :
-                  - logits (raw scores)
-                    - **32 words** (4 * 8)
-                  - per **token id**
-                    - 65
-                - This reshaping is done because
-                **F.cross_entropy** expects
-                  - 🧮 logits (📥 input) @audit ... input v logit
-                    - **2D** tensor
-                  - 🎯 loss (targets)
-                    - **1D** tensor
-                - // Does NOT help GENERALIZE learning even though it removes batch (sentences) and unfolds to purely words (blocks) @mike
-              - logits.view( B * T, C)
-                - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
-                - ( **4 * 8** , 65 ) = ( **32***  65 )
-            - **targets**
-              - //
-              - targets.view(B * T)
+                - 🪺 ==[ B ]==
+                  - 🪺 **batch_size**
+                    - num_rows = [ 4 ]
+                      - 4 **sentences** (per batch)
+                - 🥚 ==[ T ]==
+                  - 🥚 **block_size**
+                    - num_cols = [8]
+                      - 8 **words** (sequence length per sentences)
+                - 🏷️ ==[ C ]==
+                  - 🏷️ **vocab_size**
+                    - num_ids = [65]
+                      - 65 **unique ids** (vocabulary)
+              - **logits**
+                - // reshaping from **3D** to **2D** tensor
+                  - results in a single row of :
+                    - logits (raw scores)
+                      - **32 words** (4 * 8)
+                    - per **token id**
+                      - 65
+                  - This reshaping is done because
+                  **F.cross_entropy** expects
+                    - 🧮 logits (📥 input) @audit ... input v logit
+                      - **2D** tensor
+                    - 🎯 loss (targets)
+                      - **1D** tensor
+                  - // Does NOT help GENERALIZE learning even though it removes batch (sentences) and unfolds to purely words (blocks) @mike
+                - logits.**view( B * T, C)**
+                  - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
+                  - ( **4 * 8** , 65 ) = ( **32***  65 )
+            - `if` targets 👀 == **None**:
+              - loss 🪬 = **None**
+            - `else:`
+              - Calculate the loss if **targets** are provided
+              - 👀 **==[ targets ]==**
+                - targets.**view(B * T)**
+                  - results in a 1D tensor : (B, T) => (B * T)
+                    - where each element is the "true next token"
+              - 🪬 **==[ loss ]==**
+                - loss = **F.cross_entropy**(logits, targets)
 
-          - `return` logits, loss
-        - **`generate`** (self, idx, max_new_tokens):
+          - `return` logits 🧮, loss 🪬
+        - ߷ **`generate`** (self, idx, max_new_tokens):
 
           - ```python
               for _ in range(max_new_tokens):
@@ -522,10 +580,10 @@ markmap:
                 idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
             ```
 
-          - `return` idx
+          - `return` idx 👁️‍🗨️
   - -- main --
     - m = BigramLanguageModel(65)
-      - 🧠 ==[ m ]==
+      - 🧠 **==[ m ]==**
         - `m.forward(xb, yb)`
           - // pytorch allows us to call a model like a function
           - // - this is the same as calling m.forward(xb, yb)
@@ -568,25 +626,25 @@ markmap:
                   - all values **between 0 and 1**
                   - all **rows sum to 1.0**
 
-      - ==[ loss ]== ⚖️
+      - ==[ loss ]== 🪬
         - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
           - **-- update weight --**
           - **NllLossBackward0** (backpropagation)
           - used to update model's **weight** during training
   - | PRE-TRAIN |
     - -- generate tensor --
-      - ==[ idx ]== 🎚️
+      - ==[ idx ]== 👁️‍🗨️
         - | EXAMPLE | **gpt 🤖**
           - **['the', 'cat', 'sat', 'on', 'mat']**
             - // language model that works with
             a [ vocabulary ] of [ 5 ] words
-          - **idx** = torch.tensor([[0, 1]])
+          - **idx** 👁️‍🗨️ = torch.tensor([[0, 1]])
             - // **idx** representing "The cat"
             - // **2D tensor** with **shape (1, 2)**
               - [1] == batch_size (one row)
               - [2] == sequence length, "The" + "cat" == [ 2 tokens ]
           - **-- generate --**
-            - idx = torch.tensor([[0, 1, 2, 3, 4]])
+            - **idx** 👁️‍🗨️ = torch.tensor([[0, 1, 2, 3, 4]])
               - // After generation, idx might
               - // representing "The cat sat on mat"
               - // **2d tensor** updated to **shape (1, 5)**
@@ -602,7 +660,7 @@ markmap:
               - 🛑 @audit : I don't understand this lol
         - `idx = torch.zeros((1, 1), dtype=torch.long)`
           - creates a 2D tensor full of zeros with shape (1, 1)
-            - **idx** is used as the **initial sequence of tokens** to
+            - **idx** 👁️‍🗨️ is used as the **initial sequence of tokens** to
             feed into the model for generating new tokens.
           - (token indices) tensor is of:
             - **shape (1, 1)**
