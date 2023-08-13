@@ -486,15 +486,37 @@ markmap:
 
                           - Looking at these
                           points on a graph :
+                            - -- distance --
+                              - **royalty**
+                                - ~ : King  -> Man
+                                - ~ : Queen -> Woman
+                              - **gender**
+                                - ~ : King -> Queen
+                                - ~ : Man  -> Woman
+                              - word **algebra**
+                                - King - Man + Woman = Queen
                             - -- horizontal --
-                              - "King" and "Queen" match
-                              - "Man" and "Woman" match
+                              - King and Queen match
+                              - Man  and Woman match
                             - -- vertical --
-                              - "King" and "Man" aligned **approximately**
-                              - "Queen" and "Woman" aligned **exactly**
+                              - King  and Man   aligned **approximately**
+                              - Queen and Woman aligned **exactly**
                             - -- ߷ 🧠 ߷ --
                               - ✅  -- Queens are ONLY FEMALE
                               - ✅  -- Kings aren't exclusively MALE
+                            - -- other **semantic relationships** --
+                              - **[ Remember ]**
+                                - These semantic relationships are **not explicitly programmed** into the model
+                                - They are **learned from the data the model is trained on**. The model notices
+                                that certain words often appear in similar contexts, and it uses this information
+                                 to **place similar words close together in the embedding space**
+                                - This ability to **learn semantic relationships from data** is one of the things that
+                                **makes word embeddings so powerful**
+                              - synonyms
+                              - antonyms
+                              - analogies
+                              - part-whole relationships
+                              - categories
 
         - ⏩ **`forward`** (self, idx 👁️‍🗨️, targets=None):
           - // forward() method defines how input is
@@ -558,6 +580,8 @@ markmap:
                   - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
                   - ( **4 * 8** , 65 ) = ( **32***  65 )
             - `if` targets 👀 == **None**:
+              - // This case might happen during inference, when
+               we don't have or need target values.
               - loss 🪬 = **None**
             - `else:`
               - Calculate the loss if **targets** are provided
@@ -566,9 +590,17 @@ markmap:
                   - results in a 1D tensor : (B, T) => (B * T)
                     - where each element is the "true next token"
               - 🪬 **==[ loss ]==**
-                - loss = **F.cross_entropy**(logits, targets)
+                - loss = **F.cross_entropy**( 🧮 logits, 👀 targets )
+                  - reshaped **logits** and **targets** are passed
+                  to the **cross entropy** loss function
+                  - This computes the **loss between** the **network's
+                  predictions** and the **actual targets**
 
           - `return` logits 🧮, loss 🪬
+            - Finally, the **logits** and the **loss** are
+             **returned** from the forward function
+              - 🧮 **logits** can be used to **generate predictions**
+              - 🪬 **loss** is used during training to **update the model's weights**
         - ߷ **`generate`** (self, idx, max_new_tokens):
 
           - ```python
