@@ -78,5 +78,23 @@
             "args": [],
             "cwd": "${workspaceFolder}"
         }
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug example 'bevy_ecs_tilemap'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--example=bevy_ecs_tilemap",
+                    "--package=bevy_break_out"
+                ],
+                "filter": {
+                    "name": "bevy_ecs_tilemap",
+                    "kind": "example"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
     ]
 }
