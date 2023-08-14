@@ -12,19 +12,19 @@ markmap:
 
 #### -- import **sys, path** --
 
-- ```python
-    import sys
-    from pathlib import Path
-
-    parent_directory = str(Path.cwd().parent)
-    if parent_directory not in sys.path:
-        sys.path.append(parent_directory)
-
-    from utils.dataframe.util_dataframe_table import UtilDataFrameTable as df_table
-  ```
-
-  - @note 🧠 : In Jupyter cell use `Path.cwd().parent` to  
+- @note : In Jupyter cell use `Path.cwd().parent` to  
   get the parent directory of the current working directory
+
+  - ```python
+      import sys
+      from pathlib import Path
+
+      parent_directory = str(Path.cwd().parent)
+      if parent_directory not in sys.path:
+          sys.path.append(parent_directory)
+
+      from utils.dataframe.util_dataframe_table import UtilDataFrameTable as df_table 
+    ```
 
 ### ==[ Gathered ]==
 
