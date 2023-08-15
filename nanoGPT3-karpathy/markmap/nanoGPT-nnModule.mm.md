@@ -18,19 +18,48 @@ markmap:
   - torch.manual_seed(1337)
     - // set the seed for generating random numbers
     - // we are manually setting to `1337` for reproducibility
-- **nn.Module**
-  - methods
-    - 🔰 `__init__` (self, vocab_size)
-    - ⏩ `forward`  (self, idx 👁️‍🗨️, targets=None)
+- 🧠 **nn.Module**
+  - [ Methods ]
+    - 🚧 `__init__` (self, vocab_size)
+    - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
     - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
-- **nn.Embeddings**
+- 🕸️ **nn.Embeddings**
+
+### -- assets --
+
+#### [ TRAINING ]
+
+- [ Data ]
+  - 🦠 = ==[ train_data ]==
+  - ✅ = ==[ val_data   ]==
+
+- ⛓️ = ==[ Chain Funcs ]== = ⛓️
+  - `get_batch`(split) -> **Tuple**[Tensor, Tensor] :
+
+    - ```python
+        data = train_data if split == "train" else val_data
+        ix = torch.randint(len(data) - block_size - 1, (batch_size,))
+        x = torch.stack([data[i : i + block_size] for i in ix])
+        y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
+      ```
+
+      - **data**
+        - 🦠 **train_data** if split == "train"
+        - else ✅ **val_data**
+
+    - `returns` **x, y**
+      - Tuple[Tensor, Tensor]
+        - **xb** 📥
+          - --[inputs]--
+        - **yb** 🎯
+          - --[targets]--
 
 ### -- globals --
 
 #### [ tensor 2d ]
 
-- idx
-  - 👁️‍🗨️ **==[ idx ]==**
+- 👁️‍🗨️ = **==[ idx ]==**
+  - -- forward --
     - type **2D tensor** (B, T)
       - `idx = torch.zeros((1, 1), dtype=torch.long)`
         - **shape (1, 1)**
@@ -138,7 +167,41 @@ markmap:
             - (1, 2) "The cat"
             - (1, 5) "The cat sat on a mat"
 
-- logits
+- 🧮 = **==[ logits ]==**
+  - logits.shape : torch.Size([32, 65]
+    - **-- measure prediction --**
+    - used to **measure** the model's prediction
+    - | EXAMPLE | **gpt 🤖**
+      - -- graph --
+        - classify [inputs] [3 batches] => [classes] [5]
+        - here is [batch size of 3] and a [vocabulary size of 5]
+          - **row**
+            - data point in batch [3]
+          - **column**
+            - [5] class to assign to
+
+      - ```python
+          tensor([[ 0.3134, -0.1676,  0.3773, -0.0824, -0.2973],
+                  [-0.0856,  0.0987,  0.1772,  0.0565, -0.2135],
+                  [ 0.0624,  0.0895,  0.0927, -0.0507, -0.1921]])
+        ```
+
+        - | RAW + **UNBOUNDED** |
+          - values have no **min/max**
+          - and can be positive or negative
+
+      - ```python
+          tensor([[0.2175, 0.1338, 0.2301, 0.1450, 0.2736],
+                  [0.1823, 0.2194, 0.2372, 0.2109, 0.1502],
+                  [0.2108, 0.2171, 0.2182, 0.1882, 0.1657]])
+        ```
+
+        - | **NORMALIZED** SOFTMAX |
+          - `F.softmax(logits, dim=1)`
+          - **convert to probabilities** via softmax
+            - all values **between 0 and 1**
+            - all **rows sum to 1.0**
+
 - targets
 
 #### [ int ]
@@ -149,8 +212,8 @@ markmap:
 
 - ==[ BigramLanguageModel 🧠 ]==(nn.Module):
   - `self`
-    - ==[ token_embedding_table ]==
-      - **nn.Embedding**(vocab_size, vocab_size)
+    - 🌐 = ==[ token_embedding_table ]==
+      - 🕸️ **nn.Embedding**(vocab_size, vocab_size)
         - -- args --
           - **num_embeddings**
           - **embedding_dim**
@@ -159,7 +222,7 @@ markmap:
           - creates **embedding layer**
             - a **lookup table** for each **vocab token** and **idx** 👁️‍🗨️
   - `def`
-    - 🔰 **`__init__`** (self, vocab_size):
+    - 🚧 **`__init__`** (self, vocab_size):
       - **vocab_size** is the size of the vocabulary the model will work with
 
       - ```python
@@ -169,7 +232,7 @@ markmap:
 
         - self.**token_embedding_table**
 
-    - ⏩ **`forward`** (self, idx 👁️‍🗨️, targets=None):
+    - 🔜 **`forward`** (self, idx 👁️‍🗨️, targets=None):
       - **forward()** method defines how **input** is
       **passed through the layers** of the network
 
@@ -234,6 +297,7 @@ markmap:
         - `else:`
           - Calculate the loss if **targets** are provided
           - 👀 **==[ targets ]==**
+            - @audit ... where are targets sourced from?
             - targets.**view(B * T)**
               - results in a 1D tensor : (B, T) => (B * T)
                 - where each element is the "true next token"
@@ -247,6 +311,7 @@ markmap:
       - `return` logits 🧮, loss 🪬
         - Finally, the **logits** and the **loss** are
           **returned** from the forward function
+          - @audit ... where is it returned to ??? Generate ???
           - 🧮 **logits** can be used to **generate predictions**
           - 🪬 **loss** is used during training to **update the model's weights**
     - ߷ **`generate`** (self, idx 👁️‍🗨️, max_new_tokens):
@@ -270,6 +335,7 @@ markmap:
         - `for _ in range(max_new_tokens) :`
           - self(idx)
             - logits, loss
+            - @audit ... how is this function getting *loss*
           - logits
             - logits[:, -1, :]
               - // becomes (B, C)
@@ -287,54 +353,62 @@ markmap:
 
 ## MAIN
 
-- m = **BigramLanguageModel**( 65 🏷️ )
-  - 🧠 **==[ m ]==**
-    - `m.forward(xb, yb)`
-      - pytorch allows us to call a model like a function
-      - This is the same as calling **m.forward(xb, yb)**
-        - xb = 📥 inputs
-        - yb = 🎯 targets
-- logits, loss = m( 📥 xb, 🎯 yb)
-  - ==[ logits ]== 🧮
-    - logits.shape : torch.Size([32, 65]
-      - **-- measure prediction --**
-      - used to **measure** the model's prediction
-      - | EXAMPLE | **gpt 🤖**
-        - -- graph --
-          - classify [inputs] [3 batches] => [classes] [5]
-          - here is [batch size of 3] and a [vocabulary size of 5]
-            - **row**
-              - data point in batch [3]
-            - **column**
-              - [5] class to assign to
+### m = **BigramLanguageModel**( 65 🏷️ )
 
-        - ```python
-            tensor([[ 0.3134, -0.1676,  0.3773, -0.0824, -0.2973],
-                    [-0.0856,  0.0987,  0.1772,  0.0565, -0.2135],
-                    [ 0.0624,  0.0895,  0.0927, -0.0507, -0.1921]])
-          ```
+- 🧠 **==[ m ]==**
+  - `m.forward(xb, yb)`
+    - pytorch allows us to call a model like a function
+    - This is the same as calling **m.forward(xb, yb)**
+      - xb = 📥 inputs
+      - yb = 🎯 targets
+  - `returns`
+    - **logits, loss** = m( 📥 xb, 🎯 yb)
+      - **[ logits ]** 🧮
+      - **[ loss ]** 🪬
+      - ==[ loss ]== 🪬
+        - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
+          - **-- update weight --**
+          - **NllLossBackward0** (backpropagation)
+          - used to update model's **weight** during training
 
-          - | RAW + **UNBOUNDED** |
-            - values have no **min/max**
-            - and can be positive or negative
+### | TRAINING |
 
-        - ```python
-            tensor([[0.2175, 0.1338, 0.2301, 0.1450, 0.2736],
-                    [0.1823, 0.2194, 0.2372, 0.2109, 0.1502],
-                    [0.2108, 0.2171, 0.2182, 0.1882, 0.1657]])
-          ```
+#### -- init --
 
-          - | **NORMALIZED** SOFTMAX |
-            - `F.softmax(logits, dim=1)`
-            - **convert to probabilities** via softmax
-              - all values **between 0 and 1**
-              - all **rows sum to 1.0**
+- 🧩 = **==[ optimizer ]==**
+  - torch.optim.**AdamW**( 🧠 **m**.parameters(), **lr**=`1e-3`)
+    - create pytorch optimizer
+    - @audit : Explain why Adam@ and 1e-3
+- 🪺 **batch_size** = `32`
 
-  - ==[ loss ]== 🪬
-    - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
-      - **-- update weight --**
-      - **NllLossBackward0** (backpropagation)
-      - used to update model's **weight** during training
+#### ♻️ = ==[ loop ]== = ♻️
+
+- for `steps` in range( `100,000` ):
+
+  - ```python
+      xb, yb = get_batch("train")
+      logits, loss = m(xb, yb)
+      optimizer.zero_grad(set_to_none=True)
+      loss.backward()
+      optimizer.step()
+    ```
+
+    - // sample batch of data
+      - ⛓️ `get_batch` ("train")
+        - 📥 = ==[ xb ]==
+          - --[inputs]
+        - 🎯 = ==[ yb ]==
+          - --[targets]--
+    - // evaluate the loss
+      - **m** 🧠 ( xb 📥, yb 🎯)
+        - logits 🧮
+        - **loss** 🪬
+    - // zero-ing out gradient from previous step
+      - 🧩 optimizer.**zero_grad**(set_to_none=True)
+    - // getting gradient of loss wrt to model parameters
+      - 🪬 loss.**backward()**
+    - // using gradient to update model parameters
+      - 🧩 optimizer.**step()**
 
 ## PRE-TRAIN
 
