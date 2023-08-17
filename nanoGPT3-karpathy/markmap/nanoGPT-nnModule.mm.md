@@ -201,6 +201,27 @@ markmap:
           - **convert to probabilities** via softmax
             - all values **between 0 and 1**
             - all **rows sum to 1.0**
+- 🪬 = **==[ loss ]==**
+  - tensor( 4.8948, **grad_fn**=<`NllLossBackward0`>)
+    - **-- update weight --**
+    - used to update model's **weight** during training
+    - | EXAMPLE | **gpt 🤖**
+      - **[ grad_fn ]**
+        - **NllLossBackward0**
+          - used in **classification** tasks
+          - Negative Log Likelihood loss operation
+        - AddBackward0
+          - for the addition operation
+        - MulBackward0
+          - the multiplication operation
+        - MeanBackward0
+          - function for the mean operation
+        - AccumulateGrad
+          - .backward() function on a tensor to compute the gradients
+        - Conv2DBackward
+          - used in Convolutional Neural Networks (CNNs)
+        - LinearBackward
+          - used in Fully Connected layers of Neural Networks
 
 - targets
 
@@ -353,23 +374,18 @@ markmap:
 
 ## MAIN
 
-### m = **BigramLanguageModel**( 65 🏷️ )
+### 🧠 **==[ m ]==**
 
-- 🧠 **==[ m ]==**
-  - `m.forward(xb, yb)`
+- m = **BigramLanguageModel**( 65 🏷️ )
+- 🧠 m( 📥 **xb**, 🎯 **yb**)
+  - This is the same as calling
+    - `m.forward(xb, yb)`
+      - @audit : forward(self, idx, targets=None)
+      - forward signature expects `idx` not `xb` EXPLAIN THIS!
     - pytorch allows us to call a model like a function
-    - This is the same as calling **m.forward(xb, yb)**
-      - xb = 📥 inputs
-      - yb = 🎯 targets
   - `returns`
-    - **logits, loss** = m( 📥 xb, 🎯 yb)
-      - **[ logits ]** 🧮
-      - **[ loss ]** 🪬
-      - ==[ loss ]== 🪬
-        - tensor(**4.8948**, grad_fn=<**'NllLossBackward0'**>)
-          - **-- update weight --**
-          - **NllLossBackward0** (backpropagation)
-          - used to update model's **weight** during training
+    - **[ logits ]** 🧮
+    - **[ loss ]** 🪬
 
 ### | TRAINING |
 
