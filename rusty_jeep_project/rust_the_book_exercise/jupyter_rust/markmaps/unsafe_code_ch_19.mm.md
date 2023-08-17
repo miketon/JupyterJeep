@@ -114,6 +114,50 @@ markmap:
 
     - but **MUST be called** in an **unsafe code block**
 
+  - | EXAMPLE |
+    - `split_at_mut` (**value:** &mut [i32], **mid:** usize)
+     -> (**&mut** [i32], **&mut** [i32]) { ... ... }
+
+      - -- **assert** !overlap --
+
+        - ```rust
+            let len = value.len();
+            assert!(mid <= len);
+          ```
+
+      - -- rust **error** !!! --
+        - "safe" return **FAILS** @ BORROW CHECKER
+
+        - ```rust
+            (&mut values[..mid], &mut values[mid..])
+          ```
+
+          - [E0499] Error: cannot borrow `*values`
+           as mutable more than once at a time
+
+      - -- **compiles** ok --
+        - return in **unsafe code block** bypasses BORROW CHECKER
+
+        - ```rust
+            let ptr = value.as_mut_ptr();
+            unsafe {
+              (
+                slice::from_raw_parts_mut(ptr, mid),
+                slice::from_raw_parts_mut(ptr.add(mid), len -mid)
+              )
+            }
+          ```
+
+          - let ptr = value.**as_mut_ptr()**;
+            - // get RAW POINTER to the data in the slice
+            - // RAW POINTER allow for MORE CONTROL
+             and LESS SAFETY in Rust
+          - **unsafe** { ... }
+            - // start unsafe code block **{ ... }**
+            - // return a tuple **( ... )** of :
+              - slice::**from_raw_parts_mut**(ptr, mid),
+              - slice::**from_raw_parts_mut**(ptr.add(mid), len -mid)
+
 #### 3. Access or modify a **mutable static** variable
 
 #### 4. Implement an **unsafe trait**
