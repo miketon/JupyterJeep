@@ -14,7 +14,7 @@ markmap:
   - import torch
   - import torch.nn as nn
   - from torch.nn import functional as F
-    - ==[ @audit ]== : what is the purpose of `F`???
+    - ==[ 🛑 @audit ]== : what is the purpose of `F`???
   - torch.manual_seed(1337)
     - // set the seed for generating random numbers
     - // we are manually setting to `1337` for reproducibility
@@ -30,36 +30,61 @@ markmap:
 #### [ TRAINING ]
 
 - [ Data ]
-  - 🦠 = ==[ train_data ]==
-  - ✅ = ==[ val_data   ]==
+  - **split**
+    - 🦠 = ==[ train_data ]==
+    - ✅ = ==[ val_data   ]==
 
-- ⛓️ = ==[ Chain Funcs ]== = ⛓️
-  - `get_batch`(split) -> **Tuple**[Tensor, Tensor] :
+#### [ BATCHING ]
 
-    - ```python
-        data = train_data if split == "train" else val_data
-        ix = torch.randint(len(data) - block_size - 1, (batch_size,))
-        x = torch.stack([data[i : i + block_size] for i in ix])
-        y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
-      ```
+##### ⛓️ = ==[ get_batch ]== ⛓️
 
-      - **data**
-        - 🦠 **train_data** if split == "train"
-        - else ✅ **val_data**
+- `get_batch` (**split** 🦠 )
 
-    - `returns` **x, y**
-      - Tuple[Tensor, Tensor]
-        - **xb** 📥
-          - --[inputs]--
-        - **yb** 🎯
-          - --[targets]--
+  - ```python
+      data = train_data if split == "train" else val_data
+      ix = torch.randint(len(data) - block_size - 1, (batch_size,))
+      x = torch.stack([data[i : i + block_size] for i in ix])
+      y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
+    ```
+
+    - **data**
+      - 🦠 **train_data** if split == "train"
+      - else ✅ **val_data**
+
+  - `returns` **x, y**
+    - -> **Tuple**[Tensor, Tensor]
+      - **xb** 📥
+        - --[inputs]--
+      - **yb** 🎯
+        - --[targets]--
 
 ### -- globals --
 
+#### [ int ]
+
+- 🪺 ==[ B ]==
+  - 🪺 **batch_size**
+    - num_rows = [ 4 ]
+      - 4 **sentences** (per batch)
+- 🥚 ==[ T ]==
+  - 🥚 **block_size**
+    - num_cols = [8]
+      - 8 **words** (sequence length per sentences)
+- 🏷️ ==[ C ]==
+  - 🏷️ **vocab_size**
+    - num_ids = [65]
+      - 65 **unique ids** (vocabulary)
+
+### -- heap --
+
 #### [ tensor 2d ]
+
+##### -- input --
 
 - 👁️‍🗨️ = **==[ idx ]==**
   - -- forward --
+    - **xb** 📥
+      - in the forward pass we are passing xb
     - type **2D tensor** (B, T)
       - `idx = torch.zeros((1, 1), dtype=torch.long)`
         - **shape (1, 1)**
@@ -150,6 +175,7 @@ markmap:
                       - part-whole relationships
                       - categories
   - -- generate --
+    - in the generate pass we building the **idx**
     - | EXAMPLE | **gpt 🤖**
       - **['the', 'cat', 'sat', 'on', 'mat']**
         - // language model that works with
@@ -166,6 +192,10 @@ markmap:
           - // **2d tensor** updated to **shape (1, 5)**
             - (1, 2) "The cat"
             - (1, 5) "The cat sat on a mat"
+- = 🎯 ==**[ targets ]**==
+  - **yb** 🎯
+
+##### -- evaluated --
 
 - 🧮 = **==[ logits ]==**
   - logits.shape : torch.Size([32, 65]
@@ -223,165 +253,156 @@ markmap:
         - LinearBackward
           - used in Fully Connected layers of Neural Networks
 
-- targets
-
-#### [ int ]
-
-- vocab_size
-
 ### -- class --
 
-- ==[ BigramLanguageModel 🧠 ]==(nn.Module):
-  - `self`
-    - 🌐 = ==[ token_embedding_table ]==
-      - 🕸️ **nn.Embedding**(vocab_size, vocab_size)
-        - -- args --
-          - **num_embeddings**
-          - **embedding_dim**
-            - **vocab_size** per embedding
-        - -- side effect --
-          - creates **embedding layer**
-            - a **lookup table** for each **vocab token** and **idx** 👁️‍🗨️
-  - `def`
-    - 🚧 **`__init__`** (self, vocab_size):
-      - **vocab_size** is the size of the vocabulary the model will work with
+#### ==[ BigramLanguageModel 🧠 ]==(nn.Module):
 
-      - ```python
-          super().__init__()
-          self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
-        ```
+- `self`
+  - 🌐 = ==[ token_embedding_table ]==
+    - 🕸️ **nn.Embedding**(vocab_size, vocab_size)
+      - -- args --
+        - **num_embeddings**
+        - **embedding_dim**
+          - **vocab_size** per embedding
+      - -- side effect --
+        - creates **embedding layer**
+          - a **lookup table** for each **vocab token** and **idx** 👁️‍🗨️
+- `def`
+  - 🚧 **`__init__`** (self, vocab_size):
+    - **vocab_size** is the size of the vocabulary the model will work with
 
-        - self.**token_embedding_table**
+    - ```python
+        super().__init__()
+        self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
+      ```
 
-    - 🔜 **`forward`** (self, idx 👁️‍🗨️, targets=None):
-      - **forward()** method defines how **input** is
-      **passed through the layers** of the network
+      - self.**token_embedding_table**
+  - 🔜 **`forward`** (self, idx 👁️‍🗨️, targets=None):
+    - **forward()** method defines how **input** is
+    **passed through the layers** of the network
 
-      - ```python
-          logits = self.token_embedding_table(idx)  # (B,T,C)
-          if targets == None:
-            loss = None
-          else:
-            B, T, C = logits.shape
-            logits = logits.view(B * T, C)
-            targets = targets.view(B * T)
-            loss = F.cross_entropy(logits, targets)
-        ```
+    - ```python
+        logits = self.token_embedding_table(idx)  # (B,T,C)
+        if targets == None:
+          loss = None
+        else:
+          B, T, C = logits.shape
+          logits = logits.view(B * T, C)
+          targets = targets.view(B * T)
+          loss = F.cross_entropy(logits, targets)
+      ```
 
-        - 🧮 **==[ logits ]==**
-          - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
-            - // (B, T, C)
-          - logits.**shape**
-            - manually unpacking B, T, C channels
-              - | EXAMPLE |
-                - // from xb.shape -- 📥 inputs
+      - 🧮 **==[ logits ]==**
+        - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
+          - // (B, T, C)
+        - logits.**shape**
+          - manually unpacking B, T, C channels
+            - | EXAMPLE |
+              - // from xb.shape -- 📥 inputs
 
-                - ```python
-                  tensor([
-                          [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
-                          [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
-                          [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
-                          [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
-                        ])
-                  ```
+              - ```python
+                tensor([
+                        [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
+                        [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
+                        [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
+                        [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
+                      ])
+                ```
 
-            - 🪺 ==[ B ]==
-              - 🪺 **batch_size**
-                - num_rows = [ 4 ]
-                  - 4 **sentences** (per batch)
-            - 🥚 ==[ T ]==
-              - 🥚 **block_size**
-                - num_cols = [8]
-                  - 8 **words** (sequence length per sentences)
-            - 🏷️ ==[ C ]==
-              - 🏷️ **vocab_size**
-                - num_ids = [65]
-                  - 65 **unique ids** (vocabulary)
-          - **logits**
-            - logits.**view( B * T, C)**
-              - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
-                - This reshaping is done because
-                **F.cross_entropy** expects
-                  - 🧮 logits (📥 input) @audit ... input v logit
-                    - **2D** tensor
-                  - 🎯 loss (targets)
-                    - **1D** tensor
-                - ( **4 * 8** , 65 ) = ( **32***  65 )
-                  - reshaping from **3D** to **2D** tensor
-                    - // Does NOT help GENERALIZE learning
-                    even though it removes batch (sentences)
-                    and unfolds to purely words (blocks) @mike
-        - `if` targets 👀 == **None**:
-          - // This case might happen during inference, when
-            we don't have or need target values.
-          - loss 🪬 = **None**
-        - `else:`
-          - Calculate the loss if **targets** are provided
-          - 👀 **==[ targets ]==**
-            - @audit ... where are targets sourced from?
-            - targets.**view(B * T)**
-              - results in a 1D tensor : (B, T) => (B * T)
-                - where each element is the "true next token"
-          - 🪬 **==[ loss ]==**
-            - loss = **F.cross_entropy**( 🧮 logits, 👀 targets )
-              - reshaped **logits** and **targets** are passed
-              to the **cross entropy** loss function
-              - This computes the **loss between** the **network's
-              predictions** and the **actual targets**
+        - **logits**
+          - logits.**view( B * T, C)**
+            - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
+              - This reshaping is done because
+              **F.cross_entropy** expects
+                - 🧮 logits (📥 input) 🛑 @audit ... input v logit
+                  - **2D** tensor
+                - 🎯 loss (targets)
+                  - **1D** tensor
+              - ( **4 * 8** , 65 ) = ( **32***  65 )
+                - reshaping from **3D** to **2D** tensor
+                  - // Does NOT help GENERALIZE learning
+                  even though it removes batch (sentences)
+                  and unfolds to purely words (blocks) @mike
+      - `if` targets 👀 == **None**:
+        - // This case might happen during inference, when
+          we don't have or need target values.
+        - loss 🪬 = **None**
+      - `else:`
+        - Calculate the loss if **targets** are provided
+        - 👀 **==[ targets ]==**
+          - 🆗 @audit-ok 🆗 Where are **targets** sourced from?
+            - **ANSWER:** ☑️
+            - **get_batch** ⛓️ returns (xb, **yb** 🎯 )
+              - // **yb** is stored at | MAIN | **scope**
+            - **targets** 👀 <<< **yb** 🎯 when 🧠 **m** (xb, **yb**)
+          - targets.**view(B * T)**
+            - results in a 1D tensor : (B, T) => (B * T)
+              - where each element is the "true next token"
+        - 🪬 **==[ loss ]==**
+          - loss = **F.cross_entropy**( 🧮 logits, 👀 targets )
+            - reshaped **logits** and **targets** are passed
+            to the **cross entropy** loss function
+            - This computes the **loss between** the **network's
+            predictions** and the **actual targets**
+    - `return` logits 🧮, loss 🪬
+      - Finally, the **logits** and the **loss** are
+        **returned** from the forward function
+        - 🛑 @audit ... where is it returned to ??? Generate ???
+        - 🧮 **logits** can be used to **generate predictions**
+        - 🪬 **loss** is used during training to **update the model's weights**
+  - ߷ **`generate`** (self, idx 👁️‍🗨️, max_new_tokens):
+    - args:
+      - **idx**
+        - a batch of sequences
+        - (each sequence is a list of indices)
+      - **max_new_tokens**
+        - maximum number of new tokens to be generated for each sequence
 
-      - `return` logits 🧮, loss 🪬
-        - Finally, the **logits** and the **loss** are
-          **returned** from the forward function
-          - @audit ... where is it returned to ??? Generate ???
-          - 🧮 **logits** can be used to **generate predictions**
-          - 🪬 **loss** is used during training to **update the model's weights**
-    - ߷ **`generate`** (self, idx 👁️‍🗨️, max_new_tokens):
+    - ```python
+        for _ in range(max_new_tokens):
+          logits, loss = self(idx)
+          logits = logits[:, -1, :]  # becomes (B, C)
+          probs = F.softmax(logits, dim=1)  # (B, C)
+          idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
+          idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
+      ```
 
-      - args:
-        - **idx**
-          - a batch of sequences
-          - (each sequence is a list of indices)
-        - **max_new_tokens**
-          - maximum number of new tokens to be generated for each sequence
-
-      - ```python
-          for _ in range(max_new_tokens):
-            logits, loss = self(idx)
-            logits = logits[:, -1, :]  # becomes (B, C)
-            probs = F.softmax(logits, dim=1)  # (B, C)
-            idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
-            idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
-        ```
-
-        - `for _ in range(max_new_tokens) :`
-          - self(idx)
-            - logits, loss
-            - @audit ... how is this function getting *loss*
-          - logits
-            - logits[:, -1, :]
-              - // becomes (B, C)
-          - probs
-            - F.softmax(logits, dim=1)
-              - // (B, C) @audit ... explain
-          - idx_next
-            - torch.multinomial(probs, num_samples=1)
-              - // (B, 1) @audit ... explain
-          - idx
-            - torch.cat((idx, idx_next), dim=1)
-              - // (B, T+1) @audit ... explain
-
-      - `return` idx 👁️‍🗨️
+      - `for _ in range(max_new_tokens) :`
+        - self(idx)
+          - logits, loss
+          - 🛑 @audit ... how is this function getting *loss*
+        - logits
+          - logits[:, -1, :]
+            - // becomes (B, C)
+        - probs
+          - F.softmax(logits, dim=1)
+            - // (B, C) 🛑 @audit ... explain
+        - idx_next
+          - torch.multinomial(probs, num_samples=1)
+            - // (B, 1) 🛑 @audit ... explain
+        - idx
+          - torch.cat((idx, idx_next), dim=1)
+            - // (B, T+1) 🛑 @audit ... explain
+    - `return` idx 👁️‍🗨️
 
 ## MAIN
+
+### ⛓️ **get_batch** ( =="train"== )
+
+- 📥 = ==[ xb ]==
+  - --[inputs]
+- 🎯 = ==[ yb ]==
+  - --[targets]--
 
 ### 🧠 **==[ m ]==**
 
 - m = **BigramLanguageModel**( 65 🏷️ )
 - 🧠 m( 📥 **xb**, 🎯 **yb**)
   - This is the same as calling
-    - `m.forward(xb, yb)`
-      - @audit : forward(self, idx, targets=None)
+    - 🔜 m.**forward**( 📥 xb, 🎯 yb )
+      - 🛑 @audit : forward(self, idx, targets=None)
       - forward signature expects `idx` not `xb` EXPLAIN THIS!
+      - ==[ ANSWER ]==
     - pytorch allows us to call a model like a function
   - `returns`
     - **[ logits ]** 🧮
@@ -394,7 +415,7 @@ markmap:
 - 🧩 = **==[ optimizer ]==**
   - torch.optim.**AdamW**( 🧠 **m**.parameters(), **lr**=`1e-3`)
     - create pytorch optimizer
-    - @audit : Explain why Adam@ and 1e-3
+    - 🛑 @audit : Explain why Adam@ and 1e-3
 - 🪺 **batch_size** = `32`
 
 #### ♻️ = ==[ loop ]== = ♻️
@@ -410,11 +431,10 @@ markmap:
     ```
 
     - // sample batch of data
-      - ⛓️ `get_batch` ("train")
-        - 📥 = ==[ xb ]==
-          - --[inputs]
-        - 🎯 = ==[ yb ]==
-          - --[targets]--
+      - ⛓️ **get_batch** ("train")
+        - xb 📥
+        - yb 🎯
+
     - // evaluate the loss
       - **m** 🧠 ( xb 📥, yb 🎯)
         - logits 🧮
