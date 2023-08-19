@@ -57,8 +57,9 @@ markmap:
 - ==[ raw pointer ]==
   - **differences** vs -- references --
     1. allowed to **ignore borrowing rules**
-    2. having both **mutable** and **immutable** pointers
-    3. **multiple mutable** pointers to the **same address**
+    2. raw pointers can point to the **same address**
+       -- **references** can **NOT** --
+    3. this allows **mutable** and **immutable** pointers
     4. allowed to be **null**
     5. no **automatic cleanup**
 
