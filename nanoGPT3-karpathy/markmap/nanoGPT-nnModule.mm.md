@@ -13,8 +13,94 @@ markmap:
 - -- imports --
   - import torch
   - import torch.nn as nn
+    - ==[ 🛑 @audit ]== : What is the purpose of `nn`???
   - from torch.nn import functional as F
-    - ==[ 🛑 @audit ]== : what is the purpose of `F`???
+    - ==[ F ]==
+      - 🆗 @udit-ok 🆗 : What is the purpose of `F`???
+        - ANSWER: ☑️
+          - shorthand for `torch.nn.functional` module
+      - 📦 ==[ UNPACK ]== 📦
+        - | CHANNEL |
+          - B, T, C = logits.**shape**
+            - nn.Module
+              - `__init__`(self, vocab_size 🏷️ ):
+                - 🕸️ self.**token_embedding_table**
+                  - = 🕸️ nn.**Embedding**(vocab_size 🏷️, vocab_size 🏷️)
+            - logits 🧮 = 🕸️ self.**token_embedding_table**(idx 👁️‍🗨️)
+              - // returns (B, T, C)
+          - 2D Tensor
+            - (**B * T**, C)
+              - logits 🧮 = logits.**view**( B * T, C)
+          - 1D Tensor
+            - (**B * T**)
+              - targets.**view** (B * T)
+      - ⚔️ = ==[ cross_entropy ]== ⚔️
+        - (🧮, 🎯) => 🪬
+          - input `args`
+            - @audit : logits 🧮 and targets 🎯 have **different
+             dimensions**, isn't this a **mismatch** ?  Why???
+              - ANSWER: ☑️
+                - Even though logits and targets have **different
+                dimensions**, they are **perfectly compatible** for
+                the **cross entropy loss** function because they
+                each provide a piece of **information needed**
+                to **calculate the loss**
+                  - predicted **probabilities**
+                  - **true** classes
+            - **logits** 🧮
+              - **2D** Tensor (B * T, C)
+                - **predicted** probabilities (score per category)
+              - | EXAMPLE | **gpt 🤖**
+
+                - **[C]** vocab = **4**
+                  - ['cat', 'dog', 'bird', 'fish']
+                  - index
+                    - [0, 1, 2, 3]
+                - **[B]** = **2** Batch (Sentences)
+                  - Sentence 1:
+                    - **[T]** = **3** Tokens: 
+                      - **[0, 1, 2]**  # corresponds to "cat dog bird"
+                  - Sentence 2:
+                    - **[T]** = **3** Tokens: 
+                      - **[2, 3, 1]**  # corresponds to "bird fish dog"
+
+                - ```python
+                    logits = [
+                      # sentence 1
+                      [0.1, 0.2, 0.3, 0.4],  # scores for first token
+                      [0.1, 0.2, 0.3, 0.4],  # scores for second token
+                      [0.1, 0.2, 0.3, 0.4],  # scores for third token
+                      # sentence 2
+                      [0.1, 0.2, 0.3, 0.4],  # scores for fourth token
+                      [0.1, 0.2, 0.3, 0.4],  # scores for fifth token
+                      [0.1, 0.2, 0.3, 0.4]   # scores for sixth token
+                    ]
+                  ```
+
+                  - tensor.shape (2x3, 4) // (B * T, C)
+                    - The logits tensor might look like this if for
+                    **simplicity**, let's assume the model gives **equal
+                    scores** to **each class**
+
+                - F.**cross_entropy**(🧮, 🎯) =>
+                 🪬 **cross entropy loss** results
+                  1. It applies the **softmax** function to the **logits** 🧮 to convert them into **probabilities**
+                  2. Then, it calculates the **negative log likelihood** of the true class ... @audit what is **nll**
+                  3. Specified by **targets** 🎯 under this probabilistic distribution
+
+            - **targets** 🎯
+              - **1D Tensor** (B * T, )
+                - @audit : Would (B * T) more accurate tuple rep??
+                - **true** classes (the actual next word)
+              - | EXAMPLE | **gpt 🤖**
+
+                - ```python
+                    targets = [0, 1, 2, 2, 3, 1] # 'cat', 'dog', 'bird', 'bird', 'fish', 'dog'
+                  ```
+
+          - `returns` the **loss** 🪬 given
+            - 🧠 model's **prediction**
+            - actual **targets** 🎯
   - torch.manual_seed(1337)
     - // set the seed for generating random numbers
     - // we are manually setting to `1337` for reproducibility
@@ -62,18 +148,18 @@ markmap:
 
 #### [ int ]
 
-- 🪺 ==[ B ]==
+- 🪺 ==[ B ]== atch
   - 🪺 **batch_size**
-    - num_rows = [ 4 ]
-      - 4 **sentences** (per batch)
-- 🥚 ==[ T ]==
+    - num_rows = **[ 4 ]**
+      - 4 **sentences** (batch) processed in **parallel**
+- 🥚 ==[ T ]== okens
   - 🥚 **block_size**
-    - num_cols = [8]
-      - 8 **words** (sequence length per sentences)
-- 🏷️ ==[ C ]==
+    - num_cols = **[ 8 ]**
+      - 8 **words** token length per batch (sentences)
+- 🏷️ ==[ C ]== ategories
   - 🏷️ **vocab_size**
-    - num_ids = [65]
-      - 65 **unique ids** (vocabulary)
+    - num_ids = **[ 65 ]**
+      - 65 **unique word ids** (categories)
 
 ### -- heap --
 
@@ -83,8 +169,9 @@ markmap:
 
 - 👁️‍🗨️ = **==[ idx ]==**
   - -- forward --
-    - **xb** 📥
-      - in the forward pass we are passing xb
+    - 📥 **xb**
+      - in the **forward** pass => 📥 **xb** as 👁️‍🗨️ **idx**
+        because 📥 **xb** is **also** a 2D tensor **(B, T)**
     - type **2D tensor** (B, T)
       - `idx = torch.zeros((1, 1), dtype=torch.long)`
         - **shape (1, 1)**
@@ -93,15 +180,16 @@ markmap:
             - **B** is the 🪺 **batch_size**
               - **[8]** in this context
             - **T** is the **length** of **each sequence**
-              - not same as 🥚 **block_size**
-                - T is the current sequence length of the context during
-                generation, and it can change as new tokens are generated
-                - 🛑 @audit : I don't understand this lol
+              - **!NOT!** same as 🥚 **block_size**
+                - because **T** is the **current sequence length** of
+                the context during generation, and it can change as
+                new tokens are generated
+                - however, 🥚 **block_size** is the max length of **T**
         - **type long**
           - because it is **intended to hold integer** values
         - | EXAMPLE |
           - creates a 2D tensor full of zeros with shape (1, 1)
-            - **idx** 👁️‍🗨️ is used as the **initial sequence of tokens** to
+            - 👁️‍🗨️ **idx** is used as the **initial sequence of tokens** to
             feed into the model for generating new tokens.
     - **indexes** to ->
       - **token** in the vocabulary
@@ -255,7 +343,7 @@ markmap:
 
 ### -- class --
 
-#### ==[ BigramLanguageModel 🧠 ]==(nn.Module):
+#### ==[ BigramLanguageModel 🧠 ]==(nn.Module)
 
 - `self`
   - 🌐 = ==[ token_embedding_table ]==
@@ -313,7 +401,7 @@ markmap:
           - logits.**view( B * T, C)**
             - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
               - This reshaping is done because
-              **F.cross_entropy** expects
+              ⚔️ **F.cross_entropy** expects
                 - 🧮 logits (📥 input) 🛑 @audit ... input v logit
                   - **2D** tensor
                 - 🎯 loss (targets)
@@ -330,7 +418,7 @@ markmap:
       - `else:`
         - Calculate the loss if **targets** are provided
         - 👀 **==[ targets ]==**
-          - 🆗 @audit-ok 🆗 Where are **targets** sourced from?
+          - 🆗 @udit-ok 🆗 Where are **targets** sourced from?
             - **ANSWER:** ☑️
             - **get_batch** ⛓️ returns (xb, **yb** 🎯 )
               - // **yb** is stored at | MAIN | **scope**
@@ -339,7 +427,7 @@ markmap:
             - results in a 1D tensor : (B, T) => (B * T)
               - where each element is the "true next token"
         - 🪬 **==[ loss ]==**
-          - loss = **F.cross_entropy**( 🧮 logits, 👀 targets )
+          - loss = ⚔️ **F.cross_entropy**( 🧮 logits, 👀 targets )
             - reshaped **logits** and **targets** are passed
             to the **cross entropy** loss function
             - This computes the **loss between** the **network's
@@ -391,8 +479,14 @@ markmap:
 
 - 📥 = ==[ xb ]==
   - --[inputs]
+    - xb.**shape** : torch.Size(**[32, 8]**)
+      - row [32]
+      - columns [8]
 - 🎯 = ==[ yb ]==
   - --[targets]--
+    - yb.**shape** : torch.Size(**[32, 8]**)
+      - row [32]
+      - columns [8]
 
 ### 🧠 **==[ m ]==**
 
