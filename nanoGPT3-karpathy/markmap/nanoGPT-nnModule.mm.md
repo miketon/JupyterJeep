@@ -46,7 +46,14 @@ markmap:
                 each provide a piece of **information needed**
                 to **calculate the loss**
                   - predicted **probabilities**
+                    - **2nd dimension** needed for each **[C]**ategory
+                    - **probabilities** == each **[C]** per token **softmax** sum to 1
+                    - so we can **nll** to reduce **loss** error
                   - **true** classes
+                    - store the **actual** id target 🎯
+                    - every other **[C]**ategory would have a value of **0**
+                    - it's **naive** to store all those channels when the **actual** id target 🎯 is available
+                    - **compress** to 1 dimension
             - **logits** 🧮
               - **2D** Tensor (B * T, C)
                 - **predicted** probabilities (score per category)
@@ -61,19 +68,22 @@ markmap:
                     - **[T]** = **3** Tokens: 
                       - **[0, 1, 2]**  # corresponds to "cat dog bird"
                   - Sentence 2:
-                    - **[T]** = **3** Tokens: 
+                    - **[T]** = **3** Tokens:
                       - **[2, 3, 1]**  # corresponds to "bird fish dog"
 
                 - ```python
                     logits = [
-                      # sentence 1
-                      [0.1, 0.2, 0.3, 0.4],  # scores for first token
-                      [0.1, 0.2, 0.3, 0.4],  # scores for second token
-                      [0.1, 0.2, 0.3, 0.4],  # scores for third token
-                      # sentence 2
-                      [0.1, 0.2, 0.3, 0.4],  # scores for fourth token
-                      [0.1, 0.2, 0.3, 0.4],  # scores for fifth token
-                      [0.1, 0.2, 0.3, 0.4]   # scores for sixth token
+                     # ---  ---  ---- ----
+                     # cat  dog  bird fish
+                     # ---  ---  ---- ----
+                     # sentence 1 - 'cat dog bird'
+                      [0.7, 0.2, 0.1, 0.0],  # scores for first token
+                      [0.2, 0.7, 0.0, 0.1],  # scores for second token
+                      [0.1, 0.1, 0.7, 0.1],  # scores for third token
+                     # sentence 2 - 'bird fish dog'
+                      [0.1, 0.1, 0.7, 0.1],  # scores for fourth token
+                      [0.0, 0.0, 0.1, 0.9],  # scores for fifth token
+                      [0.2, 0.7, 0.0, 0.1]   # scores for sixth token
                     ]
                   ```
 
@@ -81,6 +91,7 @@ markmap:
                     - The logits tensor might look like this if for
                     **simplicity**, let's assume the model gives **equal
                     scores** to **each class**
+                    - NAH, Imma hand edit to approximate training lol
 
                 - F.**cross_entropy**(🧮, 🎯) =>
                  🪬 **cross entropy loss** results
@@ -97,6 +108,30 @@ markmap:
                 - ```python
                     targets = [0, 1, 2, 2, 3, 1] # 'cat', 'dog', 'bird', 'bird', 'fish', 'dog'
                   ```
+
+                  - tensor.shape(2x3, ) // (B * T, )
+                  - this is the **true** class, so we do NOT need
+                  PROBABILITIES and only need a vector of 1 for
+                  **[C]** vocab
+
+                    - **NAIVELY** expanded => **logits** 🧮
+
+                      - ```python
+                        targets = [
+                        # ---  ---  ---- ----
+                        # cat  dog  bird fish
+                        #   0    1     2    3  == id
+                        # ---  ---  ---- ----
+                        # sentence 1 - 'cat dog bird'
+                          [1.0, 0.0, 0.0, 0.0],  # scores for first token
+                          [0.0, 1.0, 0.0, 0.0],  # scores for second token
+                          [0.0, 0.0, 1.0, 0.0],  # scores for third token
+                        # sentence 2 - 'bird fish dog'
+                          [0.0, 0.0, 1.0, 0.0],  # scores for fourth token
+                          [0.0, 0.0, 0.0, 1.0],  # scores for fifth token
+                          [0.0, 1.0, 0.0, 0.0]   # scores for sixth token
+                        ]
+                        ```
 
           - `returns` the **loss** 🪬 given
             - 🧠 model's **prediction**
