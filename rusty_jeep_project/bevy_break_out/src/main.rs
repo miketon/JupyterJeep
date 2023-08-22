@@ -1,22 +1,30 @@
+// src/
 mod app_state;
-mod console_bevy_save;
 mod game;
-mod game_of_life;
 mod menu;
 mod splash;
+
+// src/ (bevy save)
+mod console_bevy_save;
+mod game_of_life;
+
+// src/folders/
 // why so I need to import this here when it's not directly used in this file?
 // - but is used in splash.rs and menu.rs
 mod bundles;
-// @note : lol forgot note above and fumbled aroudn AGAIN with forgetting to
+// @note : lol forgot note above and fumbled around AGAIN with forgetting to
 // import this here lol
 mod configs;
 
+// local imports
 use crate::app_state::AppState;
-use crate::console_bevy_save::ConsoleBevySavePlugin;
 use crate::game::GamePlugin;
-use crate::game_of_life::GameOfLifePlugin;
 use crate::menu::MenuPlugin;
 use crate::splash::SplashPlugin;
+use crate::console_bevy_save::ConsoleBevySavePlugin;
+use crate::game_of_life::GameOfLifePlugin;
+
+// cargo.toml plugins
 use bevy::prelude::*;
 use bevy_editor_pls::prelude::*;
 

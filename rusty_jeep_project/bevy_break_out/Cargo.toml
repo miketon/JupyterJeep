@@ -8,9 +8,9 @@ edition = "2021"
 [dependencies]
 bevy = {version = "0.10", features = ["mp3"]}
 bevy_editor_pls = "0.4"
+bevy-inspector-egui = "0.18"
 bevy_save = "0.8.1"
 bevy_ecs_tilemap = "0.10.0"
-bevy-inspector-egui = "0.18"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

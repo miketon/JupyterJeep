@@ -77,7 +77,7 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
-        }
+        },
         {
             "type": "lldb",
             "request": "launch",
