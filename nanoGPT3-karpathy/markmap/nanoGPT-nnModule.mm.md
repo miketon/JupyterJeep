@@ -37,7 +37,7 @@ markmap:
       - ⚔️ = ==[ cross_entropy ]== ⚔️
         - (🧮, 🎯) => 🪬
           - input `args`
-            - @audit : logits 🧮 and targets 🎯 have **different
+            - 🆗 @udit-ok 🆗 : logits 🧮 and targets 🎯 have **different
              dimensions**, isn't this a **mismatch** ?  Why???
               - ANSWER: ☑️
                 - Even though logits and targets have **different
@@ -101,7 +101,15 @@ markmap:
 
             - **targets** 🎯
               - **1D Tensor** (B * T, )
-                - @audit : Would (B * T) more accurate tuple rep??
+                - 🆗 @udit-ok 🆗  : **Difference** between
+                 **(B * T, )** and **(B * T)** ?????
+                  - ANSWER :
+                    - The difference is **subtle** overall
+                      - **(B * T ,)** is more **clearly a 1D Tensor**, the
+                      trailing comma indicates it's a **tuple**
+                      with a single element
+                      - **(B * T)** on the otherhand can be misinterpreted
+                      as a **parenthiszed expression**
                 - **true** classes (the actual next word)
               - | EXAMPLE | **gpt 🤖**
 
@@ -468,9 +476,19 @@ markmap:
             - This computes the **loss between** the **network's
             predictions** and the **actual targets**
     - `return` logits 🧮, loss 🪬
+      - 🆗 @udit-ok 🆗 : ... where is it returned to ???
+        - ANSWER :
+          - | FORWARD PASS |
+            - logits, loss = **m**(xb, yb)
+          - | COMPUTE GRADIENTS |
+            - loss.**backward()**
+          - | UPDATE WEIGHTS |
+            - optimizer.**step()**
+          - | CLEAR GRADIENTS |
+            - optimizer.**zero_grad()**
+              - (for next iteration)
       - Finally, the **logits** and the **loss** are
         **returned** from the forward function
-        - 🛑 @audit ... where is it returned to ??? Generate ???
         - 🧮 **logits** can be used to **generate predictions**
         - 🪬 **loss** is used during training to **update the model's weights**
   - ߷ **`generate`** (self, idx 👁️‍🗨️, max_new_tokens):
