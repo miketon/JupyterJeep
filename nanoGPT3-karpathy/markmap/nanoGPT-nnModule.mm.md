@@ -96,9 +96,8 @@ markmap:
                 - F.**cross_entropy**(🧮, 🎯) =>
                  🪬 **cross entropy loss** results
                   1. It applies the **softmax** function to the **logits** 🧮 to convert them into **probabilities**
-                  2. Then, it calculates the **negative log likelihood** of the true class ... @audit what is **nll**
+                  2. Then, it calculates the 🪵 **NLL** of the **true** class
                   3. Specified by **targets** 🎯 under this probabilistic distribution
-
             - **targets** 🎯
               - **1D Tensor** (B * T, )
                 - 🆗 @udit-ok 🆗  : **Difference** between
@@ -144,6 +143,54 @@ markmap:
           - `returns` the **loss** 🪬 given
             - 🧠 model's **prediction**
             - actual **targets** 🎯
+      - 🪵 = ==[ NLL ]== 🪵
+
+        - ```python
+            NLL = -sum(y_true * log(y_pred))
+          ```
+
+          - | EXAMPLE | **gpt 🤖**
+
+          - ```python
+              # True class
+              y_true = np.array([0, 1, 0])
+
+              # Predicted probabilities
+              y_pred = np.array([0.2, 0.5, 0.3])
+
+              # Compute NLL
+              nll = -np.sum(y_true * np.log(y_pred))
+            ```
+
+        - 🆗 @udit-ok 🆗 : What is **nll**
+          - ANSWER :
+            - **explain** like I am 5
+              - **negative likelihood**
+                - the more **CORRECT** your guesses
+                are the **lower** this value
+                - likelihood otoh is higher with correctness,
+                this is the opposite of that
+              - **log**
+                - log **MAGNIFIES** small **differences**
+                - small **ERROR** return proportionately **HIGHER LOSS**
+            - **nll** is useful for ML **because** :
+              - **Measure of Error**
+                - NLL **measures** the **discrepancy**/error between
+                  the **prediction** and the **actual** values
+              - **Handling Probabilities**
+                - **true label** = class with **1.0**, and all
+                others at 0.0, 
+                - **NLL measures** this to the
+                model's **predicted probability**
+              - **Emphasizes Correct Predictions**
+                - the **log** part of NLL **heavily penalizes**
+                the **model** for being **VERY CONFIDENT**
+                but **WRONG**
+              - **Optimization**
+                - **NLL** is a **smooth and differentiable** function,
+                making it suitable for **GRADIENT DESCENT**
+                - supports which **direction to adjust** model
+                **parameter** to improve **predictions**
   - torch.manual_seed(1337)
     - // set the seed for generating random numbers
     - // we are manually setting to `1337` for reproducibility
@@ -423,37 +470,38 @@ markmap:
           loss = F.cross_entropy(logits, targets)
       ```
 
-      - 🧮 **==[ logits ]==**
-        - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
-          - // (B, T, C)
-        - logits.**shape**
-          - manually unpacking B, T, C channels
-            - | EXAMPLE |
-              - // from xb.shape -- 📥 inputs
+      - 📦 | UNPACK | ⚔️
+        - 🧮 **==[ logits ]==**
+          - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
+            - // (B, T, C)
+          - logits.**shape**
+            - manually unpacking B, T, C channels
+              - | EXAMPLE |
+                - // from xb.shape -- 📥 inputs
 
-              - ```python
-                tensor([
-                        [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
-                        [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
-                        [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
-                        [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
-                      ])
-                ```
+                - ```python
+                  tensor([
+                          [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
+                          [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
+                          [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
+                          [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
+                        ])
+                  ```
 
-        - **logits**
-          - logits.**view( B * T, C)**
-            - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
-              - This reshaping is done because
-              ⚔️ **F.cross_entropy** expects
-                - 🧮 logits (📥 input) 🛑 @audit ... input v logit
-                  - **2D** tensor
-                - 🎯 loss (targets)
-                  - **1D** tensor
-              - ( **4 * 8** , 65 ) = ( **32***  65 )
-                - reshaping from **3D** to **2D** tensor
-                  - // Does NOT help GENERALIZE learning
-                  even though it removes batch (sentences)
-                  and unfolds to purely words (blocks) @mike
+          - **logits**
+            - logits.**view( B * T, C)**
+              - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
+                - This reshaping is done because
+                ⚔️ **F.cross_entropy** expects
+                  - 🧮 logits (📥 input) 🛑 @audit ... input v logit
+                    - **2D** tensor
+                  - 🎯 loss (targets)
+                    - **1D** tensor
+                - ( **4 * 8** , 65 ) = ( **32***  65 )
+                  - reshaping from **3D** to **2D** tensor
+                    - // Does NOT help GENERALIZE learning
+                    even though it removes batch (sentences)
+                    and unfolds to purely words (blocks) @mike
       - `if` targets 👀 == **None**:
         - // This case might happen during inference, when
           we don't have or need target values.
@@ -478,15 +526,16 @@ markmap:
     - `return` logits 🧮, loss 🪬
       - 🆗 @udit-ok 🆗 : ... where is it returned to ???
         - ANSWER :
-          - | FORWARD PASS |
-            - logits, loss = **m**(xb, yb)
-          - | COMPUTE GRADIENTS |
-            - loss.**backward()**
-          - | UPDATE WEIGHTS |
-            - optimizer.**step()**
-          - | CLEAR GRADIENTS |
-            - optimizer.**zero_grad()**
-              - (for next iteration)
+          - | MAIN.**TRAINING** | **loop** ♻️
+            - ♻️ | FORWARD PASS |
+              - logits, loss = **m**(xb, yb)
+            - ♻️ | COMPUTE GRADIENTS |
+              - loss.**backward()**
+            - ♻️ | UPDATE WEIGHTS |
+              - optimizer.**step()**
+            - ♻️ | CLEAR GRADIENTS |
+              - optimizer.**zero_grad()**
+                - (for next iteration)
       - Finally, the **logits** and the **loss** are
         **returned** from the forward function
         - 🧮 **logits** can be used to **generate predictions**
