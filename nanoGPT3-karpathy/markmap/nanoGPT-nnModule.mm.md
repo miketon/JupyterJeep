@@ -27,7 +27,7 @@ markmap:
                 - 🕸️ self.**token_embedding_table**
                   - = 🕸️ nn.**Embedding**(vocab_size 🏷️, vocab_size 🏷️)
             - logits 🧮 = 🕸️ self.**token_embedding_table**(idx 👁️‍🗨️)
-              - // returns (B, T, C)
+              - // returns (B, T, C) ♿
           - 2D Tensor
             - (**B * T**, C)
               - logits 🧮 = logits.**view**( B * T, C)
@@ -470,43 +470,44 @@ markmap:
           loss = F.cross_entropy(logits, targets)
       ```
 
-      - 📦 | UNPACK | ⚔️
-        - 🧮 **==[ logits ]==**
-          - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
-            - // (B, T, C)
-          - logits.**shape**
-            - manually unpacking B, T, C channels
-              - | EXAMPLE |
-                - // from xb.shape -- 📥 inputs
-
-                - ```python
-                  tensor([
-                          [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
-                          [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
-                          [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
-                          [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
-                        ])
-                  ```
-
-          - **logits**
-            - logits.**view( B * T, C)**
-              - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
-                - This reshaping is done because
-                ⚔️ **F.cross_entropy** expects
-                  - 🧮 logits (📥 input) 🛑 @audit ... input v logit
-                    - **2D** tensor
-                  - 🎯 loss (targets)
-                    - **1D** tensor
-                - ( **4 * 8** , 65 ) = ( **32***  65 )
-                  - reshaping from **3D** to **2D** tensor
-                    - // Does NOT help GENERALIZE learning
-                    even though it removes batch (sentences)
-                    and unfolds to purely words (blocks) @mike
+      - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
+        - // (B, T, C) ♿
       - `if` targets 👀 == **None**:
         - // This case might happen during inference, when
           we don't have or need target values.
         - loss 🪬 = **None**
       - `else:`
+        - 📦 | UNPACK | ⚔️
+          - 🧮 **==[ logits ]==**
+            - logits.**shape**
+              - **unpack** to B, T, C channels
+                - | EXAMPLE |
+                  - // from xb.shape -- 📥 inputs
+
+                  - ```python
+                    tensor([
+                            [53, 59,  6,  1, 58, 56, 47, 40], # Sequence 1
+                            [49, 43, 43, 54,  1, 47, 58,  1], # Sequence 2
+                            [13, 52, 45, 43, 50, 53,  8,  0], # Sequence 3
+                            [ 1, 39,  1, 46, 53, 59, 57, 43]  # Sequence 4
+                          ])
+                    ```
+
+            - **logits**
+              - logits.**view( B * T, C)**
+                - // **repack** to B * T, C channels
+                - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
+                  - This reshaping is done because
+                  ⚔️ **F.cross_entropy** expects
+                    - 🧮 logits (📥 input) 🛑 @audit ... input v logit
+                      - **2D** tensor
+                    - 🎯 loss (targets)
+                      - **1D** tensor
+                  - ( **4 * 8** , 65 ) = ( **32***  65 )
+                    - reshaping from **3D** to **2D** tensor
+                      - // Does NOT help GENERALIZE learning
+                      even though it removes batch (sentences)
+                      and unfolds to purely words (blocks) @mike
         - Calculate the loss if **targets** are provided
         - 👀 **==[ targets ]==**
           - 🆗 @udit-ok 🆗 Where are **targets** sourced from?
@@ -580,20 +581,20 @@ markmap:
 ### ⛓️ **get_batch** ( =="train"== )
 
 - 📥 = ==[ xb ]==
-  - --[inputs]
+  - --[inputs]-- // ♿  `idx` 👁️‍🗨️
     - xb.**shape** : torch.Size(**[32, 8]**)
       - row [32]
       - columns [8]
 - 🎯 = ==[ yb ]==
-  - --[targets]--
+  - --[targets]-- // ♿ `targets` 👀
     - yb.**shape** : torch.Size(**[32, 8]**)
       - row [32]
       - columns [8]
 
-### 🧠 **==[ m ]==**
+### 🧠 **==[ m ]==** // ♿
 
 - m = **BigramLanguageModel**( 65 🏷️ )
-- 🧠 m( 📥 **xb**, 🎯 **yb**)
+- 🧠 m( 📥 **xb** 👁️‍🗨️, 🎯 **yb** 👀)
   - This is the same as calling
     - 🔜 m.**forward**( 📥 xb, 🎯 yb )
       - 🛑 @audit : forward(self, idx, targets=None)
@@ -604,7 +605,7 @@ markmap:
     - **[ logits ]** 🧮
     - **[ loss ]** 🪬
 
-### | TRAINING |
+### ♿ | TRAINING | ♿
 
 #### -- init --
 
