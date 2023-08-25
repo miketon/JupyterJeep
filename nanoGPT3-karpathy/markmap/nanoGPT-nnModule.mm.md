@@ -471,6 +471,9 @@ markmap:
       ```
 
       - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
+        - @embedding_table
+          - **idx**    .shape - **torch.Size([4, 8])**
+          - **logits** .shape - **torch.Size([4, 8, 65])**
         - // (B, T, C) ♿
           - 🆗 @udit-ok 🆗 : we **MUST** always get **logits**
           - `generate`()) implicitly depends on this via self(idx)
@@ -561,7 +564,7 @@ markmap:
       ```
 
       - `for _ in range(max_new_tokens) :`
-        - logits
+        - logits - shape :  **torch.Size([1, 65])**
           - self(**idx**)
             - 🆗 @udit-ok 🆗
               - **logits** , _
@@ -582,44 +585,100 @@ markmap:
                 - | EXAMPLE |
 
                   - ```python
-                    [ [B]   [T]
-                      ---   ---   C0  C1  C2  C3  [C]
-                                  --  --  --  --  ---
-                      B0 [
-                            T0 [0.1 0.2 0.3 0.4]
-                            T1 [0.2 0.3 0.4 0.1]
-                            # Last time step in - B0 - 
-                            T2 [0.3 0.4 0.1 0.2] 
-                                                ]
+                    [   [B]   [T]
+                        ---   ---   C0   C1   C2   C3  [C]
+                                    --   --   --   --  ---
+                        B0 [
+                              T0  [1.0, 2.0, 3.0, 4.0]
+                              T1  [9.0, 9.2, 9.5, 9.7] 
+                              # Last time step in     - B0 - 
+                              T2  [5.0, 6.0, 7.0, 8.0]
+                          ]
 
-                      B1 [
-                            T0 [0.4 0.3 0.2 0.1]
-                            T1 [0.1 0.4 0.3 0.2]
-                            # Last time step in - B1 -
-                            T2 [0.2 0.1 0.4 0.3]
-                                                ]
-                                                      ]
+                        B1 [
+                              T0  [9.1, 9.3, 9.6, 9.8] 
+                              T1  [5.1, 6.1, 7.1, 8.1]
+                              # Last time step in     - B1 -  
+                              T2  [1.1, 2.1, 3.1, 4.1]
+                          ]
+                    ]
                     ```
 
                     - The set of [C]ategory logits for the LAST
                     [T]ime step in each [B]atch are
-                      - | B0 | **T2** == [0.3 0.4 0.1 0.2]
-                      - | B1 | **T2** == [0.2 0.1 0.4 0.3]
-        - probs
+                      - | B0:T(-1) | **T2** == [5.0, 6.0, 7.0, 8.0]
+                      - | B1:T(-1) | **T2** == [1.1, 2.1, 3.1, 4.1]
+        - probs - shape :  **torch.Size([1, 65])**
           - F.softmax(logits, dim=1)
-            - **softmax** takes a **range** of
-            values and **map** them where
-              - the **sum** of all element == **1.0**
-              - each **element** is a valid
-              probability between **0.0 and 1.0**
-            - // (B, C) 🛑 @audit ... explain
-        - idx_next
+            - 🆗 @udit-ok 🆗
+              - | **logits** |
+                - starts out as raw, unnormalized predictions or output of model
+                - **softmax** takes a **range** of
+                values and **map** them where
+                  - the **sum** of all element == **1.0**
+                  - each **element** is a valid
+                  probability between **0.0 and 1.0**
+              - | **dim** |
+                - batch of data with dimensions [batch_size, vocab], **dim=1**
+                **softmax** will **apply to each row** i.e. each individual sample
+                in the batch
+                  - 0 = columns
+                  - 1 = rows
+              - | EXAMPLE |
+
+                - ```python
+                    [
+                      [5.0, 6.0, 7.0, 8.0], # B0:T(-1)  
+                      [1.1, 2.1, 3.1, 4.1]  # B1:T(-1)
+                    ]
+                  ```
+
+                  - F.softmax(logits, dim=1)
+
+                    - ```python
+                        tensor([
+                                [0.0321, 0.0871, 0.2369, 0.6439], 
+                                [0.0321, 0.0871, 0.2369, 0.6439]
+                              ])
+                      ```
+
+                      - 🆗 @udit-ok 🆗 : Why are BOTH ROWS EQUAL???
+                      - ANSWER :
+                        - The **RELATIVE DIFFERENCES** in each ROW are the SAME,
+                        each probability is **1.0 MORE** than the **PREVIOUS**
+                        - BECAUSE :
+                          - softmax EXPONENTIATES it's input so ALL LOGITS are POSITIVE
+                          - @ all POSITIVE logits become LARGER
+                          - @ all NEGATIVE logits become SMALLER (but stay positive)
+                          - **RATIO** between positive numbers REMAIN the **SAME**
+                            - when softmax **normalizes** exponentiated
+                            logits so they **SUM to 1.0**, the resulting
+                            'prob' **maintain** the exp **RATIO**
+
+                - ```python
+                    [ # random tensor
+                      [0.0560, 0.4175, 0.3114, 0.9418], 
+                      [0.9193, 0.1046, 0.0022, 0.0089]
+                    ]
+                  ```
+
+                  - F.softmax(logits, dim=1)
+
+                    - ```python
+                        tensor([
+                                [0.1626, 0.2334, 0.2099, 0.3942], 
+                                [0.4455, 0.1972, 0.1780, 0.1792]
+                              ])
+                      ```
+
+        - idx_next - shape : **torch.Size([1, 1])**
           - torch.multinomial(probs, num_samples=1)
             - // (B, 1) 🛑 @audit ... explain
         - idx
           - torch.cat((idx, idx_next), dim=1)
             - // (B, T+1) 🛑 @audit ... explain
     - `return` idx 👁️‍🗨️
+      - idx.shape :  **torch.Size([1, 301])**
 
 ## MAIN
 
