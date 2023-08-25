@@ -472,6 +472,8 @@ markmap:
 
       - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
         - // (B, T, C) ♿
+          - 🆗 @udit-ok 🆗 : we **MUST** always get **logits**
+          - `generate`()) implicitly depends on this via self(idx)
       - `if` targets 👀 == **None**:
         - // This case might happen during inference, when
           we don't have or need target values.
@@ -551,7 +553,7 @@ markmap:
 
     - ```python
         for _ in range(max_new_tokens):
-          logits, loss = self(idx)
+          logits, _ = self(idx) # logits, discarding loss = NONE
           logits = logits[:, -1, :]  # becomes (B, C)
           probs = F.softmax(logits, dim=1)  # (B, C)
           idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
@@ -559,14 +561,57 @@ markmap:
       ```
 
       - `for _ in range(max_new_tokens) :`
-        - self(idx)
-          - logits, loss
-          - 🛑 @audit ... how is this function getting *loss*
         - logits
-          - logits[:, -1, :]
-            - // becomes (B, C)
+          - self(**idx**)
+            - 🆗 @udit-ok 🆗
+              - **logits** , _
+                - the '_' **underscore** character indicates
+                a variable that is **NOT USED**
+                - discarding **loss**, because will always be **NONE**
+            - ~== 🔜 **forward**(self, idx, None)
+              - self(idx) is effectively calling `nn.Module.__call()__`
+                - // + additional hooks before and after
+                - // so not exactly the same, but close enough
+          - `logits[:, -1, :]`
+            - 🆗 @udit-ok 🆗
+              - Selects the LAST set of logits for
+              the last [T]ime step in the [B]atch
+                - [:(B), -1(T), :(C)]
+                  - ' :' = select all
+                  - '-1' = select the LAST entry
+                - | EXAMPLE |
+
+                  - ```python
+                    [ [B]   [T]
+                      ---   ---   C0  C1  C2  C3  [C]
+                                  --  --  --  --  ---
+                      B0 [
+                            T0 [0.1 0.2 0.3 0.4]
+                            T1 [0.2 0.3 0.4 0.1]
+                            # Last time step in - B0 - 
+                            T2 [0.3 0.4 0.1 0.2] 
+                                                ]
+
+                      B1 [
+                            T0 [0.4 0.3 0.2 0.1]
+                            T1 [0.1 0.4 0.3 0.2]
+                            # Last time step in - B1 -
+                            T2 [0.2 0.1 0.4 0.3]
+                                                ]
+                                                      ]
+                    ```
+
+                    - The set of [C]ategory logits for the LAST
+                    [T]ime step in each [B]atch are
+                      - | B0 | **T2** == [0.3 0.4 0.1 0.2]
+                      - | B1 | **T2** == [0.2 0.1 0.4 0.3]
         - probs
           - F.softmax(logits, dim=1)
+            - **softmax** takes a **range** of
+            values and **map** them where
+              - the **sum** of all element == **1.0**
+              - each **element** is a valid
+              probability between **0.0 and 1.0**
             - // (B, C) 🛑 @audit ... explain
         - idx_next
           - torch.multinomial(probs, num_samples=1)
