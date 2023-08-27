@@ -65,7 +65,7 @@ markmap:
                     - [0, 1, 2, 3]
                 - **[B]** = **2** Batch (Sentences)
                   - Sentence 1:
-                    - **[T]** = **3** Tokens: 
+                    - **[T]** = **3** Tokens:
                       - **[0, 1, 2]**  # corresponds to "cat dog bird"
                   - Sentence 2:
                     - **[T]** = **3** Tokens:
@@ -179,7 +179,7 @@ markmap:
                   the **prediction** and the **actual** values
               - **Handling Probabilities**
                 - **true label** = class with **1.0**, and all
-                others at 0.0, 
+                others at 0.0,
                 - **NLL measures** this to the
                 model's **predicted probability**
               - **Emphasizes Correct Predictions**
@@ -235,6 +235,8 @@ markmap:
         - --[targets]--
 
 ### -- globals --
+
+- @audit ... is 🕸️ nn.Embeddings GLOBALLY ACCESSIBLE???
 
 #### [ int ]
 
@@ -558,16 +560,21 @@ markmap:
         for _ in range(max_new_tokens):
           logits, _ = self(idx) # logits, discarding loss = NONE
           logits = logits[:, -1, :]  # becomes (B, C)
+          # bag of marbles - for each marble a prob sums to 1.0
           probs = F.softmax(logits, dim=1)  # (B, C)
+          # calculate the next likely marble
           idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
+          # add marble to sequence .i.e. generate next token
           idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
       ```
 
       - `for _ in range(max_new_tokens) :`
-        - logits - shape :  **torch.Size([1, 65])**
+        - logits
           - self(**idx**)
             - 🆗 @udit-ok 🆗
               - **logits** , _
+                - shape :  **torch.Size([1, 1, 65])**
+                  - // B, T, C
                 - the '_' **underscore** character indicates
                 a variable that is **NOT USED**
                 - discarding **loss**, because will always be **NONE**
@@ -576,109 +583,190 @@ markmap:
                 - // + additional hooks before and after
                 - // so not exactly the same, but close enough
           - `logits[:, -1, :]`
+            - shape :  **torch.Size([1, 65])**
+              - // B * T[-1], C
+                - 🆗 @udit-ok 🆗
+                  - T[-1] == just getting the LAST time step in each BATCH
             - 🆗 @udit-ok 🆗
               - Selects the LAST set of logits for
               the last [T]ime step in the [B]atch
                 - [:(B), -1(T), :(C)]
                   - ' :' = select all
                   - '-1' = select the LAST entry
-                - | EXAMPLE |
+                    - | EXAMPLE |
+
+                      - ```python
+                        [   [B]   [T]
+                            ---   ---   C0   C1   C2   C3  [C]
+                                        --   --   --   --  ---
+                            B0 [
+                                  T0  [1.0, 2.0, 3.0, 4.0]
+                                  T1  [9.0, 9.2, 9.5, 9.7] 
+                                  # Last time step in     - B0 - 
+                                  T2  [5.0, 6.0, 7.0, 8.0]
+                              ]
+
+                            B1 [
+                                  T0  [9.1, 9.3, 9.6, 9.8] 
+                                  T1  [5.1, 6.1, 7.1, 8.1]
+                                  # Last time step in     - B1 -  
+                                  T2  [1.1, 2.1, 3.1, 4.1]
+                              ]
+                        ]
+                        ```
+
+                        - The set of [C]ategory logits for the LAST
+                        [T]ime step in each [B]atch are
+                          - | B0:T(-1) | **T2** == [5.0, 6.0, 7.0, 8.0]
+                          - | B1:T(-1) | **T2** == [1.1, 2.1, 3.1, 4.1]
+        - 🎱 probs - shape :  **torch.Size([1, 65])**
+          - F.**softmax**(logits, dim=1)
+            - | **logits** |
+              - shape : **torch.Size([1, 65])**
+              - starts out as raw, unnormalized predictions or output of model
+              - **softmax** takes a **range** of
+              values and **map** them where
+                - the **sum** of all element == **1.0**
+                - each **element** is a valid
+                probability between **0.0 and 1.0**
+            - | **dim** |
+              - batch of data with dimensions [batch_size, vocab], **dim=1**
+              **softmax** will **apply to each row** i.e. each individual sample
+              in the batch
+                - 0 = columns
+                - 1 = rows
+                - @audit : Explain dimensions higher than a table, 3D ?
+            - | EXAMPLE |
+
+              - ```python
+                  [
+                    [5.0, 6.0, 7.0, 8.0], # B0:T(-1)  
+                    [1.1, 2.1, 3.1, 4.1]  # B1:T(-1)
+                  ]
+                ```
+
+                - F.softmax(logits, dim=1)
 
                   - ```python
-                    [   [B]   [T]
-                        ---   ---   C0   C1   C2   C3  [C]
-                                    --   --   --   --  ---
-                        B0 [
-                              T0  [1.0, 2.0, 3.0, 4.0]
-                              T1  [9.0, 9.2, 9.5, 9.7] 
-                              # Last time step in     - B0 - 
-                              T2  [5.0, 6.0, 7.0, 8.0]
-                          ]
-
-                        B1 [
-                              T0  [9.1, 9.3, 9.6, 9.8] 
-                              T1  [5.1, 6.1, 7.1, 8.1]
-                              # Last time step in     - B1 -  
-                              T2  [1.1, 2.1, 3.1, 4.1]
-                          ]
-                    ]
+                      tensor([
+                              [0.0321, 0.0871, 0.2369, 0.6439], 
+                              [0.0321, 0.0871, 0.2369, 0.6439]
+                            ])
                     ```
 
-                    - The set of [C]ategory logits for the LAST
-                    [T]ime step in each [B]atch are
-                      - | B0:T(-1) | **T2** == [5.0, 6.0, 7.0, 8.0]
-                      - | B1:T(-1) | **T2** == [1.1, 2.1, 3.1, 4.1]
-        - probs - shape :  **torch.Size([1, 65])**
-          - F.softmax(logits, dim=1)
-            - 🆗 @udit-ok 🆗
-              - | **logits** |
-                - starts out as raw, unnormalized predictions or output of model
-                - **softmax** takes a **range** of
-                values and **map** them where
-                  - the **sum** of all element == **1.0**
-                  - each **element** is a valid
-                  probability between **0.0 and 1.0**
-              - | **dim** |
-                - batch of data with dimensions [batch_size, vocab], **dim=1**
-                **softmax** will **apply to each row** i.e. each individual sample
-                in the batch
-                  - 0 = columns
-                  - 1 = rows
+                    - 🆗 @udit-ok 🆗 : Why are BOTH ROWS EQUAL???
+                    - ANSWER :
+                      - The **RELATIVE DIFFERENCES** in each ROW are the SAME,
+                      each probability is **1.0 MORE** than the **PREVIOUS**
+                      - BECAUSE :
+                        - softmax EXPONENTIATES it's input so ALL LOGITS are POSITIVE
+                        - @ all POSITIVE logits become LARGER
+                        - @ all NEGATIVE logits become SMALLER (but stay positive)
+                        - **RATIO** between positive numbers REMAIN the **SAME**
+                          - when softmax **normalizes** exponentiated
+                          logits so they **SUM to 1.0**, the resulting
+                          'prob' **maintain** the exp **RATIO**
+
+              - ```python
+                  [ # random tensor
+                    [0.0560, 0.4175, 0.3114, 0.9418], 
+                    [0.9193, 0.1046, 0.0022, 0.0089]
+                  ]
+                ```
+
+                - F.softmax(logits, dim=1)
+
+                  - ```python
+                      tensor([
+                              [0.1626, 0.2334, 0.2099, 0.3942], 
+                              [0.4455, 0.1972, 0.1780, 0.1792]
+                            ])
+                    ```
+
+        - **idx_next** - shape : **torch.Size([1, 1])**
+          - torch.**multinomial**(probs, num_samples=1)
+            - **multinomial**
+              - 🆗 @udit-ok 🆗 :
+                - samples from 🎱 'probs' distribution (bag of marbles)
+                  - 'probs' == **bag of marbles** 🎱
+                  - The marbles in the bag are NOT equally distributed
+                  - There are more of some colors and less of others
+                  - This UNEVEN distribution will be represented in the 'probs' tensor
+                  - Each COLOR [Category] has a probability associated with it
+                    - So, if the probs tensor indicates that the "red"
+                    class has a high probability, it's like the bag has
+                    many red marbles, and you're more likely to pull
+                    out a red marble.
+              - inputs
+                - 'num_samples'
+                  - 🆗 @udit-ok 🆗 :
+                    - Tasks where > 1 samples are beneficial
+                      - Beam Search
+                      - Ensemble Methods
+                      - Uncertainty Qualifications
+                      - Diversity Promotion
+                      - Reinforcement Learning
+                - 'probs' is expected to be a valid probability
+                  - must be positive values ONLY
+                    - pytorch will throw ERROR
+                  - all entries must SUM up to 1.0
+                    - no ERROR thrown, but implicit drift because
+                    probability constraint not adhered to
+              - `returns` **idx_next**
+                - **picking** 1 (num_samples) **marble** 🎱 from each item in the batch
+                - the index (marble) chosen for each item
+                  - | EXAMPLE |
+
+                    - ```python
+                        probs = torch.tensor([
+                          # [C]      0    1    2    3    [B]atch
+                          #        ---  ---  ---  ---    ---
+                                  [0.1, 0.2, 0.5, 0.2], #  0
+                                  [0.3, 0.3, 0.2, 0.2], #  1
+                                  [0.2, 0.2, 0.2, 0.4], #  2
+                        ])
+
+                        idx_next = torch.multinomial(probs, num_samples=1)
+                        print(idx_next)
+                      ```
+
+                      - ```sh
+                          tensor([
+                            [2], # 0.5
+                            # 1 == 0.3 ... and that may 
+                            # sometimes return instead
+                            [0], # 0.3
+                            [3], # 0.4
+                          ])
+                        ```
+
+        - **idx**
+          - torch.**cat**((idx, idx_next), dim=1)
+            - cat() is a function that **combines**
+            **tensors** along a specific **dimension**
               - | EXAMPLE |
 
                 - ```python
-                    [
-                      [5.0, 6.0, 7.0, 8.0], # B0:T(-1)  
-                      [1.1, 2.1, 3.1, 4.1]  # B1:T(-1)
-                    ]
+                    idx = torch.tensor([
+                      [1, 2, 3]
+                    ])
+
+                    idx_next = torch.tensor([
+                      [4]
+                    ])
                   ```
 
-                  - F.softmax(logits, dim=1)
+                  - idx = torch.cat((idx, idx_next), dim=1)
+                  - print(idx)
 
-                    - ```python
-                        tensor([
-                                [0.0321, 0.0871, 0.2369, 0.6439], 
-                                [0.0321, 0.0871, 0.2369, 0.6439]
-                              ])
+                    - ```sh
+                        tensor([[1, 2, 3, 4]])
                       ```
 
-                      - 🆗 @udit-ok 🆗 : Why are BOTH ROWS EQUAL???
-                      - ANSWER :
-                        - The **RELATIVE DIFFERENCES** in each ROW are the SAME,
-                        each probability is **1.0 MORE** than the **PREVIOUS**
-                        - BECAUSE :
-                          - softmax EXPONENTIATES it's input so ALL LOGITS are POSITIVE
-                          - @ all POSITIVE logits become LARGER
-                          - @ all NEGATIVE logits become SMALLER (but stay positive)
-                          - **RATIO** between positive numbers REMAIN the **SAME**
-                            - when softmax **normalizes** exponentiated
-                            logits so they **SUM to 1.0**, the resulting
-                            'prob' **maintain** the exp **RATIO**
-
-                - ```python
-                    [ # random tensor
-                      [0.0560, 0.4175, 0.3114, 0.9418], 
-                      [0.9193, 0.1046, 0.0022, 0.0089]
-                    ]
-                  ```
-
-                  - F.softmax(logits, dim=1)
-
-                    - ```python
-                        tensor([
-                                [0.1626, 0.2334, 0.2099, 0.3942], 
-                                [0.4455, 0.1972, 0.1780, 0.1792]
-                              ])
-                      ```
-
-        - idx_next - shape : **torch.Size([1, 1])**
-          - torch.multinomial(probs, num_samples=1)
-            - // (B, 1) 🛑 @audit ... explain
-        - idx
-          - torch.cat((idx, idx_next), dim=1)
-            - // (B, T+1) 🛑 @audit ... explain
     - `return` idx 👁️‍🗨️
       - idx.shape :  **torch.Size([1, 301])**
+        - returning generated text
+        <= 300 (max_new_tokens)
 
 ## MAIN
 
