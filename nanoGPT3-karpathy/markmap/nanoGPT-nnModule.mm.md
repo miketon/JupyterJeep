@@ -197,9 +197,10 @@ markmap:
 - 🧠 **nn.Module**
   - [ Methods ]
     - 🚧 `__init__` (self, vocab_size)
+      - 🌐 self.**token_embedding_table**
+        - 🕸️ **nn.Embeddings**
     - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
     - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
-- 🕸️ **nn.Embeddings**
 
 ### -- assets --
 
@@ -236,22 +237,35 @@ markmap:
 
 ### -- globals --
 
-- @audit ... is 🕸️ nn.Embeddings GLOBALLY ACCESSIBLE???
-
 #### [ int ]
 
-- 🪺 ==[ B ]== atch
+- 🪺 = ==**[ B ]**== atch
   - 🪺 **batch_size**
     - num_rows = **[ 4 ]**
       - 4 **sentences** (batch) processed in **parallel**
-- 🥚 ==[ T ]== okens
+- 🥚 = ==**[ T ]**== okens
   - 🥚 **block_size**
     - num_cols = **[ 8 ]**
       - 8 **words** token length per batch (sentences)
-- 🏷️ ==[ C ]== ategories
+- 🏷️ = ==**[ C ]**== ategories
   - 🏷️ **vocab_size**
     - num_ids = **[ 65 ]**
       - 65 **unique word ids** (categories)
+
+#### [ nn.Module ]
+
+- 🧠 = ==**[ m ]**==
+  - BigramLanguageModel(**nn.Module**)
+
+##### [ nn.Embeddings ]
+
+- 🌐 = ==**[ m.token_embedding_table ]**==
+  - m.init()
+  - @audit ... is 🕸️ nn.Embeddings GLOBALLY ACCESSIBLE???
+
+#### [ torch.Optim ]
+
+- 🧩 = ==**[ optimizer ]**==
 
 ### -- heap --
 
@@ -559,6 +573,9 @@ markmap:
     - ```python
         for _ in range(max_new_tokens):
           logits, _ = self(idx) # logits, discarding loss = NONE
+          # focus only on the last[-1] [T]ime step ... we are :
+          # (B, T, C) -> (B * T, C) where B * T = B * T[-1] 
+          # ... B != T[-1]
           logits = logits[:, -1, :]  # becomes (B, C)
           # bag of marbles - for each marble a prob sums to 1.0
           probs = F.softmax(logits, dim=1)  # (B, C)
@@ -571,54 +588,52 @@ markmap:
       - `for _ in range(max_new_tokens) :`
         - logits
           - self(**idx**)
-            - 🆗 @udit-ok 🆗
-              - **logits** , _
-                - shape :  **torch.Size([1, 1, 65])**
-                  - // B, T, C
-                - the '_' **underscore** character indicates
-                a variable that is **NOT USED**
-                - discarding **loss**, because will always be **NONE**
             - ~== 🔜 **forward**(self, idx, None)
               - self(idx) is effectively calling `nn.Module.__call()__`
                 - // + additional hooks before and after
                 - // so not exactly the same, but close enough
+            - **logits** , _
+              - 🆗 @udit-ok 🆗
+                - discarding **loss**, because will always be **NONE**
+                  - the '_' **underscore** character indicates
+                  a variable that is **NOT USED**
           - `logits[:, -1, :]`
-            - shape :  **torch.Size([1, 65])**
-              - // B * T[-1], C
+            - (B,T,C) => (B, C)
+              - shape :  **torch.Size([1, 1, 65])**
+              - shape :  **torch.Size([1, 65])**
+              - [: -1, :] = B[:] T[-1] C[:]
                 - 🆗 @udit-ok 🆗
-                  - T[-1] == just getting the LAST time step in each BATCH
-            - 🆗 @udit-ok 🆗
-              - Selects the LAST set of logits for
-              the last [T]ime step in the [B]atch
-                - [:(B), -1(T), :(C)]
-                  - ' :' = select all
-                  - '-1' = select the LAST entry
-                    - | EXAMPLE |
+                  - Selects the LAST set of [T]ime step in each [B]atch :
+                  (B, T, C) => (B * T, C) **where B * T = B * T[-1]**
+                    - ' :' = select ALL [B]atch
+                    - '-1' = select the LAST [T]ime entry
+                    - ' :' = select ALL [C]ategory
+                      - | EXAMPLE |
 
-                      - ```python
-                        [   [B]   [T]
-                            ---   ---   C0   C1   C2   C3  [C]
-                                        --   --   --   --  ---
-                            B0 [
-                                  T0  [1.0, 2.0, 3.0, 4.0]
-                                  T1  [9.0, 9.2, 9.5, 9.7] 
-                                  # Last time step in     - B0 - 
-                                  T2  [5.0, 6.0, 7.0, 8.0]
-                              ]
+                        - ```python
+                          [   [B]   [T]
+                              ---   ---   C0   C1   C2   C3  [C]
+                                          --   --   --   --  ---
+                              B0 [
+                                    T0  [1.0, 2.0, 3.0, 4.0]
+                                    T1  [9.0, 9.2, 9.5, 9.7] 
+                                    # Last time step in     - B0 - 
+                                    T2  [5.0, 6.0, 7.0, 8.0]
+                                ]
 
-                            B1 [
-                                  T0  [9.1, 9.3, 9.6, 9.8] 
-                                  T1  [5.1, 6.1, 7.1, 8.1]
-                                  # Last time step in     - B1 -  
-                                  T2  [1.1, 2.1, 3.1, 4.1]
-                              ]
-                        ]
-                        ```
+                              B1 [
+                                    T0  [9.1, 9.3, 9.6, 9.8] 
+                                    T1  [5.1, 6.1, 7.1, 8.1]
+                                    # Last time step in     - B1 -  
+                                    T2  [1.1, 2.1, 3.1, 4.1]
+                                ]
+                          ]
+                          ```
 
-                        - The set of [C]ategory logits for the LAST
-                        [T]ime step in each [B]atch are
-                          - | B0:T(-1) | **T2** == [5.0, 6.0, 7.0, 8.0]
-                          - | B1:T(-1) | **T2** == [1.1, 2.1, 3.1, 4.1]
+                          - The set of [C]ategory logits for the LAST
+                          [T]ime step in each [B]atch are
+                            - | B0:T(-1) | **T2** == [5.0, 6.0, 7.0, 8.0]
+                            - | B1:T(-1) | **T2** == [1.1, 2.1, 3.1, 4.1]
         - 🎱 probs - shape :  **torch.Size([1, 65])**
           - F.**softmax**(logits, dim=1)
             - | **logits** |
@@ -689,14 +704,14 @@ markmap:
               - 🆗 @udit-ok 🆗 :
                 - samples from 🎱 'probs' distribution (bag of marbles)
                   - 'probs' == **bag of marbles** 🎱
-                  - The marbles in the bag are NOT equally distributed
-                  - There are more of some colors and less of others
-                  - This UNEVEN distribution will be represented in the 'probs' tensor
+                    - The marbles in the bag are NOT equally distributed
+                    - There are more of some colors and less of others
+                    - This UNEVEN distribution will be represented in the 'probs' tensor
                   - Each COLOR [Category] has a probability associated with it
-                    - So, if the probs tensor indicates that the "red"
-                    class has a high probability, it's like the bag has
-                    many red marbles, and you're more likely to pull
-                    out a red marble.
+                    - So, if the 'probs' tensor indicates that the "red"
+                    class has a high probability
+                      - it's like the bag has many red marbles,  
+                      - and you're more likely to pull out a red marble.
               - inputs
                 - 'num_samples'
                   - 🆗 @udit-ok 🆗 :
@@ -733,12 +748,15 @@ markmap:
                       - ```sh
                           tensor([
                             [2], # 0.5
-                            # 1 == 0.3 ... and that may 
-                            # sometimes return instead
-                            [0], # 0.3
-                            [3], # 0.4
+                            [0], # 0.3 ... [1] also valid  
+                            [3], # 0.4  
                           ])
                         ```
+
+                        - Actual [C]ategory returned is ==[ NON-DETERMINISTIC ]==
+                        when 'prob' values are **EQUAL**
+                        - We returned **0** in this case, even though **1** ALSO equals **0.3**
+                          - Rerun doesn't guarantee **0**
 
         - **idx**
           - torch.**cat**((idx, idx_next), dim=1)
@@ -765,8 +783,8 @@ markmap:
 
     - `return` idx 👁️‍🗨️
       - idx.shape :  **torch.Size([1, 301])**
-        - returning generated text
-        <= 300 (max_new_tokens)
+        - returning **generated text**
+        <= **max_new_tokens** (300)
 
 ## MAIN
 
@@ -783,7 +801,7 @@ markmap:
       - row [32]
       - columns [8]
 
-### 🧠 **==[ m ]==** // ♿
+### 🧠 ==[ m ]== // ♿
 
 - m = **BigramLanguageModel**( 65 🏷️ )
 - 🧠 m( 📥 **xb** 👁️‍🗨️, 🎯 **yb** 👀)
@@ -801,7 +819,7 @@ markmap:
 
 #### -- init --
 
-- 🧩 = **==[ optimizer ]==**
+- 🧩 ==[ optimizer ]==
   - torch.optim.**AdamW**( 🧠 **m**.parameters(), **lr**=`1e-3`)
     - create pytorch optimizer
     - 🛑 @audit : Explain why Adam@ and 1e-3
