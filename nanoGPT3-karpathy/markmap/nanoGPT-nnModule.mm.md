@@ -6,6 +6,115 @@ markmap:
 
 # NN.MODULE
 
+## 🔑 -- KEY -- 🔑
+
+### 💾 -- ASSETS -- 💾
+
+#### [ TRAINING ]
+
+- [ Data ]
+  - **split**
+    - 🦠 = ==[ train_data ]==
+    - ✅ = ==[ val_data   ]==
+
+#### [ BATCHING ]
+
+##### ⛓️ = ==[ get_batch ]== ⛓️
+
+- `get_batch` (**split** 🦠 )
+
+  - ```python
+      data = train_data if split == "train" else val_data
+      ix = torch.randint(len(data) - block_size - 1, (batch_size,))
+      x = torch.stack([data[i : i + block_size] for i in ix])
+      y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
+    ```
+
+    - **data**
+      - 🦠 **train_data** if split == "train"
+      - else ✅ **val_data**
+
+  - `returns` **x, y**
+    - -> **Tuple**[Tensor, Tensor]
+      - **xb** 📥
+        - --[inputs]--
+      - **yb** 🎯
+        - --[targets]--
+
+### 🌍 -- MODEL -- 🌍
+
+- [ TYPE ]
+  - ✅ | BIGRAM | ✅
+    - @embedding_table 🌐
+      - @audit : Does nn.Module Bigram have weights and bias in addition to an embedding_table?
+      - @audit : BIGRAM can also be implemented as counting and probability?
+      - 🧠 **nn.Module**
+        - [ Params ]
+          - 🌐 self.**token_embedding_table**
+            - 🕸️ **nn.Embeddings**
+        - [ Methods ]
+          - 🚧 `__init__` (self, vocab_size)
+          - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
+          - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
+  - 🛜 🔐 -- OTHERS -- 🔐 🛜
+    - @audit : Types and Params?
+    - | ANN |
+      - @weights
+      - @bias
+    - | GPT |
+      - @attention
+    - | RNN |
+      - @gate
+    - | ResNet |
+      - @residual connections
+
+### -- @MAIN 🛜 --
+
+#### [ INSTANTIATE ]
+
+- -- @python --
+  - @🪺
+    - `batch_size = 32`
+- -- @pytorch --
+  - @🧠
+    - `m = BigramLanguageModel( 65 )`
+      - @🌐. -- 🔑 --
+        - // generates embeddings table
+  - @🧩
+    - `optimizer = torch.optim.AdamW(m.parameters(), lr=1e-3)`
+
+#### [ UPDATE PARAMS ]
+
+- [ TRAINING ]
+  - @♻️
+    - `for steps in range(10,000) :`
+      - ⛓️
+        - `xb, yb = get_batch("train")`
+          - // yb (input) = xb + 1 (target)
+      - 🧠
+        - `logits, loss = m (xb, yb)`
+          - 🔜
+            - // m.forward(idx=xb, target=yb)
+      - 🧩
+        - `optimizer.zero_grad(set_to_none=True)`
+        - `loss.backward()`
+          - // getting gradient of loss wrt to model parameters
+          - -- 🔑💡 -- CALCULATE **LOSS** 🪬
+        - `optimizer.step()`
+          - // using gradient to update model parameters
+          - -- 🔑💡 -- GRADIENT **UPDATE PARAMS**
+            - | @BIGRAM | ✅
+
+#### [ GENERATE ]
+
+- [ PRINT TOKENS ]
+  - @👁️‍🗨️
+    - idx = torch.zeros((1, 1), dtype=torch.long)
+    - @audit : Why reset idx?
+  - @🧠.߷
+    - `print(decode(m.generate(idx, max_new_tokens=300, debug=True)[0].tolist()))`
+      - -- 🔑💡 -- **GENERATE** TOKENS
+
 ## INIT
 
 ### -- library --
@@ -13,7 +122,10 @@ markmap:
 - -- imports --
   - import torch
   - import torch.nn as nn
-    - ==[ 🛑 @audit ]== : What is the purpose of `nn`???
+    - 🆗 @udit-ok 🆗 : What is the purpose of `nn`???
+      - ANSWER: ☑️
+        - nn.Module - pytorch 🧠 model : 🚧, 🔜, ߷
+          - nn.Embedding ️🕸️ on nn.Module **init** 🚧
   - from torch.nn import functional as F
     - ==[ F ]==
       - 🆗 @udit-ok 🆗 : What is the purpose of `F`???
@@ -24,10 +136,10 @@ markmap:
           - B, T, C = logits.**shape**
             - nn.Module
               - `__init__`(self, vocab_size 🏷️ ):
-                - 🕸️ self.**token_embedding_table**
+                - 🌐 self.**token_embedding_table**
                   - = 🕸️ nn.**Embedding**(vocab_size 🏷️, vocab_size 🏷️)
-            - logits 🧮 = 🕸️ self.**token_embedding_table**(idx 👁️‍🗨️)
-              - // returns (B, T, C) ♿
+            - logits 🧮 = 🌐 self.**token_embedding_table**(idx 👁️‍🗨️) ♿
+              - // returns (B, T, C)
           - 2D Tensor
             - (**B * T**, C)
               - logits 🧮 = logits.**view**( B * T, C)
@@ -102,7 +214,7 @@ markmap:
               - **1D Tensor** (B * T, )
                 - 🆗 @udit-ok 🆗  : **Difference** between
                  **(B * T, )** and **(B * T)** ?????
-                  - ANSWER :
+                  - ANSWER: ☑️
                     - The difference is **subtle** overall
                       - **(B * T ,)** is more **clearly a 1D Tensor**, the
                       trailing comma indicates it's a **tuple**
@@ -163,7 +275,7 @@ markmap:
             ```
 
         - 🆗 @udit-ok 🆗 : What is **nll**
-          - ANSWER :
+          - ANSWER: ☑️
             - **explain** like I am 5
               - **negative likelihood**
                 - the more **CORRECT** your guesses
@@ -194,48 +306,8 @@ markmap:
   - torch.manual_seed(1337)
     - // set the seed for generating random numbers
     - // we are manually setting to `1337` for reproducibility
-- 🧠 **nn.Module**
-  - [ Methods ]
-    - 🚧 `__init__` (self, vocab_size)
-      - 🌐 self.**token_embedding_table**
-        - 🕸️ **nn.Embeddings**
-    - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
-    - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
 
-### -- assets --
-
-#### [ TRAINING ]
-
-- [ Data ]
-  - **split**
-    - 🦠 = ==[ train_data ]==
-    - ✅ = ==[ val_data   ]==
-
-#### [ BATCHING ]
-
-##### ⛓️ = ==[ get_batch ]== ⛓️
-
-- `get_batch` (**split** 🦠 )
-
-  - ```python
-      data = train_data if split == "train" else val_data
-      ix = torch.randint(len(data) - block_size - 1, (batch_size,))
-      x = torch.stack([data[i : i + block_size] for i in ix])
-      y = torch.stack([data[i + 1 : i + block_size + 1] for i in ix])
-    ```
-
-    - **data**
-      - 🦠 **train_data** if split == "train"
-      - else ✅ **val_data**
-
-  - `returns` **x, y**
-    - -> **Tuple**[Tensor, Tensor]
-      - **xb** 📥
-        - --[inputs]--
-      - **yb** 🎯
-        - --[targets]--
-
-### -- globals --
+### ♿ -- globals -- ♿
 
 #### [ int ]
 
@@ -276,8 +348,9 @@ markmap:
 - 👁️‍🗨️ = **==[ idx ]==**
   - -- forward --
     - 📥 **xb**
-      - in the **forward** pass => 📥 **xb** as 👁️‍🗨️ **idx**
-        because 📥 **xb** is **also** a 2D tensor **(B, T)**
+      - **-- 🛜 👁️‍🗨️ 🛜 --**
+        - in the **forward** pass => 📥 **xb** as 👁️‍🗨️ **idx**
+          because 📥 **xb** is **also** a 2D tensor **(B, T)**
     - type **2D tensor** (B, T)
       - `idx = torch.zeros((1, 1), dtype=torch.long)`
         - **shape (1, 1)**
@@ -430,22 +503,24 @@ markmap:
     - **-- update weight --**
     - used to update model's **weight** during training
     - | EXAMPLE | **gpt 🤖**
-      - **[ grad_fn ]**
-        - **NllLossBackward0**
+      - **[ grad_fn ]** 
+        - **NllLossBackward0** @⚔️
           - used in **classification** tasks
           - Negative Log Likelihood loss operation
-        - AddBackward0
-          - for the addition operation
-        - MulBackward0
-          - the multiplication operation
-        - MeanBackward0
-          - function for the mean operation
-        - AccumulateGrad
-          - .backward() function on a tensor to compute the gradients
-        - Conv2DBackward
-          - used in Convolutional Neural Networks (CNNs)
-        - LinearBackward
-          - used in Fully Connected layers of Neural Networks
+        - 🛜🔐 -- OTHERS -- 🔐🛜
+          - @audit : Loss Types
+          - AddBackward0
+            - for the addition operation
+          - MulBackward0
+            - the multiplication operation
+          - MeanBackward0
+            - function for the mean operation
+          - AccumulateGrad
+            - .backward() function on a tensor to compute the gradients
+          - Conv2DBackward
+            - used in Convolutional Neural Networks (CNNs)
+          - LinearBackward
+            - used in Fully Connected layers of Neural Networks
 
 ### -- class --
 
@@ -487,18 +562,19 @@ markmap:
       ```
 
       - **logits** = self.**token_embedding_table( idx 👁️‍🗨️ )**
-        - @embedding_table
+        - 🌐 @embedding_table ♿
           - **idx**    .shape - **torch.Size([4, 8])**
           - **logits** .shape - **torch.Size([4, 8, 65])**
-        - // (B, T, C) ♿
-          - 🆗 @udit-ok 🆗 : we **MUST** always get **logits**
-          - `generate`()) implicitly depends on this via self(idx)
+        - // (B, T, C)
+          - **-- 🛜 🔐 🛜 --**
+            - 🆗 @udit-ok 🆗 : we **MUST** always get **logits**
+            - `generate`() implicitly depends on this via self(idx)
       - `if` targets 👀 == **None**:
         - // This case might happen during inference, when
           we don't have or need target values.
         - loss 🪬 = **None**
       - `else:`
-        - 📦 | UNPACK | ⚔️
+        - 📦 | @UNPACK | ⚔️
           - 🧮 **==[ logits ]==**
             - logits.**shape**
               - **unpack** to B, T, C channels
@@ -532,9 +608,9 @@ markmap:
         - Calculate the loss if **targets** are provided
         - 👀 **==[ targets ]==**
           - 🆗 @udit-ok 🆗 Where are **targets** sourced from?
-            - **ANSWER:** ☑️
+            - ANSWER: ☑️
             - **get_batch** ⛓️ returns (xb, **yb** 🎯 )
-              - // **yb** is stored at | MAIN | **scope**
+              - // ♿ **yb** is stored at | MAIN | **scope**
             - **targets** 👀 <<< **yb** 🎯 when 🧠 **m** (xb, **yb**)
           - targets.**view(B * T)**
             - results in a 1D tensor : (B, T) => (B * T)
@@ -547,8 +623,8 @@ markmap:
             predictions** and the **actual targets**
     - `return` logits 🧮, loss 🪬
       - 🆗 @udit-ok 🆗 : ... where is it returned to ???
-        - ANSWER :
-          - | MAIN.**TRAINING** | **loop** ♻️
+        - ANSWER: ☑️
+          - | MAIN.**TRAINING** ♿ | **loop** ♻️
             - ♻️ | FORWARD PASS |
               - logits, loss = **m**(xb, yb)
             - ♻️ | COMPUTE GRADIENTS |
@@ -670,7 +746,7 @@ markmap:
                     ```
 
                     - 🆗 @udit-ok 🆗 : Why are BOTH ROWS EQUAL???
-                    - ANSWER :
+                    - ANSWER: ☑️
                       - The **RELATIVE DIFFERENCES** in each ROW are the SAME,
                       each probability is **1.0 MORE** than the **PREVIOUS**
                       - BECAUSE :
@@ -786,7 +862,7 @@ markmap:
         - returning **generated text**
         <= **max_new_tokens** (300)
 
-## MAIN
+## 🛜 MAIN 🛜
 
 ### ⛓️ **get_batch** ( =="train"== )
 
@@ -807,9 +883,12 @@ markmap:
 - 🧠 m( 📥 **xb** 👁️‍🗨️, 🎯 **yb** 👀)
   - This is the same as calling
     - 🔜 m.**forward**( 📥 xb, 🎯 yb )
-      - 🛑 @audit : forward(self, idx, targets=None)
-      - forward signature expects `idx` not `xb` EXPLAIN THIS!
-      - ==[ ANSWER ]==
+      - **-- 🛜 👁️‍🗨️ 🛜 --**
+        - 🆗 @udit-ok 🆗 : forward signature expects `idx` not `xb` EXPLAIN THIS!
+          - ANSWER: ☑️
+            - forward(self, **idx**, targets=None) ...
+            - **xb** 📥 is compatible with **idx** because
+            they are both 2D tensor **(B, T)**
     - pytorch allows us to call a model like a function
   - `returns`
     - **[ logits ]** 🧮
@@ -848,21 +927,19 @@ markmap:
         - **loss** 🪬
     - // zero-ing out gradient from previous step
       - 🧩 optimizer.**zero_grad**(set_to_none=True)
+        - 🆗 @udit-ok 🆗 : Why zero out grad
+          - ANSWER: ☑️
+        - 🆗 @udit-ok 🆗 : Why set_to_none=True
+          - ANSWER: ☑️
+            - // Diff is how memory are handled after the gradient is zero-ed out
+            - True
+              - biased to **memory** perf
+              - clear out memory > 1 cycle
+              - **LARGER** MODELS are more **MEMORY CONSTRAINED**
+            - False
+              - biased to **cpu** perf
+              - uses a bit more memory
     - // getting gradient of loss wrt to model parameters
       - 🪬 loss.**backward()**
     - // using gradient to update model parameters
       - 🧩 optimizer.**step()**
-
-## PRE-TRAIN
-
-- -- generate tensor --
-  - -- print tensor --
-    - `print(decode(m.generate(idx, max_new_tokens=100)[0].tolist()))`
-
-  - ```sh
-      SKIcLT;AcELMoTbvZv C?nq-QE33:CJqkOKH-q;:la!oiywkHjgChzbQ?u!3bLIgwevmyFJGUGp
-      wnYWmnxKWWev-tDqXErVKLgJ
-    ```
-
-    - // output is random garbage because
-    we haven't trained the model yet
