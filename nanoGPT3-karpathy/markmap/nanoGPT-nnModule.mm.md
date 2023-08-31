@@ -38,8 +38,27 @@ markmap:
     - -> **Tuple**[Tensor, Tensor]
       - **xb** 📥
         - --[inputs]--
+          - xb.shape : torch.Size([4, 8])
+            - x = x[ **i** ]
+
+            - ```python
+                tensor(
+                  [[53, 59,  6,  1, 58, 56, 47, 40], # x    
+                  ...
+                ])
+              ```
+
       - **yb** 🎯
         - --[targets]--
+          - yb.shape : torch.Size([4, 8])
+            - y = x[ **i+1** ]
+
+            - ```python
+                tensor(
+                  [[59, 6,  1,  58, 56, 47, 50, 59], # x+1 
+                  ...
+                ])
+              ```
 
 ### 🌍 -- MODEL -- 🌍
 
@@ -57,7 +76,7 @@ markmap:
           - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
           - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
   - 🛜 🔐 -- OTHERS -- 🔐 🛜
-    - @audit : Types and Params?
+    - 🧧 @follow-up : Types and Params?
     - | ANN |
       - @weights
       - @bias
@@ -90,7 +109,7 @@ markmap:
     - `for steps in range(10,000) :`
       - ⛓️
         - `xb, yb = get_batch("train")`
-          - // yb (input) = xb + 1 (target)
+          - // xb (input),  yb (target
       - 🧠
         - `logits, loss = m (xb, yb)`
           - 🔜
@@ -110,7 +129,11 @@ markmap:
 - [ PRINT TOKENS ]
   - @👁️‍🗨️
     - idx = torch.zeros((1, 1), dtype=torch.long)
-    - @audit : Why reset idx?
+    - 🆗 @udit-ok 🆗 : Why reset idx?
+      - ANSWER: ☑️
+        - zero-ing idx is essentially an EMPTY prompt
+          - We want "neutral" input because we want the output
+          to SOLELY based on it's LEARNED parameters
   - @🧠.߷
     - `print(decode(m.generate(idx, max_new_tokens=300, debug=True)[0].tolist()))`
       - -- 🔑💡 -- **GENERATE** TOKENS
@@ -333,7 +356,10 @@ markmap:
 
 - 🌐 = ==**[ m.token_embedding_table ]**==
   - m.init()
-  - @audit ... is 🕸️ nn.Embeddings GLOBALLY ACCESSIBLE???
+    - 🆗 @udit-ok 🆗 : ... is 🕸️ nn.Embeddings GLOBALLY ACCESSIBLE???
+      - ANSWER: ☑️
+        - NO, m.token_embedding_table PERSISTS @🧠 methods like forward and generate
+        - BUT it isn't GLOBALLY accessible outside of 🧠
 
 #### [ torch.Optim ]
 
@@ -503,12 +529,12 @@ markmap:
     - **-- update weight --**
     - used to update model's **weight** during training
     - | EXAMPLE | **gpt 🤖**
-      - **[ grad_fn ]** 
+      - **[ grad_fn ]**
         - **NllLossBackward0** @⚔️
           - used in **classification** tasks
           - Negative Log Likelihood loss operation
         - 🛜🔐 -- OTHERS -- 🔐🛜
-          - @audit : Loss Types
+          - 🧧 @follow-up : Loss Types
           - AddBackward0
             - for the addition operation
           - MulBackward0
@@ -596,7 +622,11 @@ markmap:
                 - ( 🪺 batch_size * 🥚 block_size, 🏷️ vocab_size)
                   - This reshaping is done because
                   ⚔️ **F.cross_entropy** expects
-                    - 🧮 logits (📥 input) 🛑 @audit ... input v logit
+                    - 🧮 logits (📥 input)
+                      - 🆗 @udit-ok 🆗 : ... input v logit?
+                        - ANSWER: ☑️
+                          - The BOUND is tensor.shape : (B*T, C)
+                          - batch -> xb input -> m.logits is contextual to our model
                       - **2D** tensor
                     - 🎯 loss (targets)
                       - **1D** tensor
@@ -901,7 +931,12 @@ markmap:
 - 🧩 ==[ optimizer ]==
   - torch.optim.**AdamW**( 🧠 **m**.parameters(), **lr**=`1e-3`)
     - create pytorch optimizer
-    - 🛑 @audit : Explain why Adam@ and 1e-3
+    - 🆗 @udit-ok 🆗 : Explain why AdamW > SGD and 1e-3
+      - ANSWER: ☑️
+        - AdamW > SGD because it has VARIABLE STEP SIZE, this reduces
+        overshoot and DECREASES NOISE during training as a result
+        - '1e-3' is a HEURISTIC that was found to work well through
+        TRIAL and ERROR
 - 🪺 **batch_size** = `32`
 
 #### ♻️ = ==[ loop ]== = ♻️
