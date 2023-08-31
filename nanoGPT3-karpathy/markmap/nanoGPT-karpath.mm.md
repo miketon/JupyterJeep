@@ -111,6 +111,9 @@ dataset and store it in a **torch.Tensor**
 
       - !$&',-.3:;?ABCDEFGHIJKLMNOPQRST
         UVWXYZabcdefghijklmnopqrstuvwxyz
+        - 🧧 @follow-up : For SIMPLICITY we are SKIPPING word/subword
+         TOKEN GENERATION, and just DIRECTLY GATHERING a table of
+         UNIQUE CHARS found in SOURCE text
 
         - ```python
             chars = sorted(

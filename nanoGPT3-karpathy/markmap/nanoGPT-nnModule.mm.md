@@ -8,6 +8,43 @@ markmap:
 
 ## 🔑 -- KEY -- 🔑
 
+### -- TRANSFORMER --
+
+#### [ INSIGHTS ]
+
+- -- @**scale** --
+  - | PERFORMANCE |
+    - | SOFTWARE ARC |
+      - batch_size
+      - block_size
+      - embedding dimension
+      - layers
+    - | HARDWARE GPU |
+      - energy
+      - time
+      - chunks
+- -- @**prediction** --
+  - | MEASURE |
+    - **NLL** is a good way to MEASURE quality of **predictions** in language models
+  - | GENERATE |
+    - process of converting logits to probabilities is core of NEXT TOKEN PREDICTION
+      - // via softmax and sampling from probabilities
+    - 📐 **tri-mask** bounds to current SEQUENCE and prevents SAMPLING from the FUTURE
+  - | ATTENTION |
+    - | SELF |
+      - // samples TOKEN NEIGHBORS in SAME sequence
+      - [ self-attention ]
+        - solves gathering PAST sequence information in a DATA dependent way
+        - allowing TOKENS to learn and interact wrt SEQUENCE
+          - PARALLEL and INDEPENDENT production of KEYS and QUERIES for each TOKEN
+            - @audit : the embedding table?
+          - DOT PRODUCT to generate AFFINITIES and WEIGHTED aggregation in a data dependent manner
+            - @audit : cross-entropy and softmax ??
+    - | CROSS |
+      - // interacts with TOKEN in SEPARATE sequence
+      - [ cross-attention ]
+        - @audit : Identify where this is used in our BIGRAM model
+
 ### 💾 -- ASSETS -- 💾
 
 #### [ TRAINING ]
@@ -62,30 +99,31 @@ markmap:
 
 ### 🌍 -- MODEL -- 🌍
 
-- [ TYPE ]
-  - ✅ | BIGRAM | ✅
-    - @embedding_table 🌐
-      - @audit : Does nn.Module Bigram have weights and bias in addition to an embedding_table?
-      - @audit : BIGRAM can also be implemented as counting and probability?
-      - 🧠 **nn.Module**
-        - [ Params ]
-          - 🌐 self.**token_embedding_table**
-            - 🕸️ **nn.Embeddings**
-        - [ Methods ]
-          - 🚧 `__init__` (self, vocab_size)
-          - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
-          - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
-  - 🛜 🔐 -- OTHERS -- 🔐 🛜
-    - 🧧 @follow-up : Types and Params?
-    - | ANN |
-      - @weights
-      - @bias
-    - | GPT |
-      - @attention
-    - | RNN |
-      - @gate
-    - | ResNet |
-      - @residual connections
+#### [ TYPE ]
+
+- ✅ | BIGRAM | ✅
+  - @embedding_table 🌐
+    - @audit : Does nn.Module Bigram have weights and bias in addition to an embedding_table?
+    - @audit : BIGRAM can also be implemented as counting and probability?
+    - 🧠 **nn.Module**
+      - [ Params ]
+        - 🌐 self.**token_embedding_table**
+          - 🕸️ **nn.Embeddings**
+      - [ Methods ]
+        - 🚧 `__init__` (self, vocab_size)
+        - 🔜 `forward`  (self, idx 👁️‍🗨️, targets=None)
+        - ߷ `generate` (self, idx 👁️‍🗨️, max_new_tokens)
+- 🛜 🔐 -- OTHERS -- 🔐 🛜
+  - 🧧 @follow-up : Types and Params?
+  - | ANN |
+    - @weights
+    - @bias
+  - | GPT |
+    - @attention
+  - | RNN |
+    - @gate
+  - | ResNet |
+    - @residual connections
 
 ### -- @MAIN 🛜 --
 
