@@ -2,29 +2,27 @@
 //! Modified to demonstrate integration of `bevy_save`.
 
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{
-    helpers::square_grid::neighbors::Neighbors,
-    prelude::*,
-};
+use bevy_ecs_tilemap::{helpers::square_grid::neighbors::Neighbors, prelude::*};
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_save::prelude::*;
 
 fn setup(world: &mut World) {
-    if let Err(e) = world.load("gol") {
-        info!("Failed to load: {:?}", e);
+    //     if let Err(e) = world.load("gol") {
+    //         info!("Failed to load: {:?}", e);
 
-        let mut system = IntoSystem::into_system(startup);
-
-        system.initialize(world);
-        system.run((), world);
-        system.apply_buffers(world);
-    }
-
-    let mut system = IntoSystem::into_system(finish_setup);
+    let mut system = IntoSystem::into_system(startup);
 
     system.initialize(world);
     system.run((), world);
     system.apply_buffers(world);
+    // }
+    /*
+       let mut system = IntoSystem::into_system(finish_setup);
+
+       system.initialize(world);
+       system.run((), world);
+       system.apply_buffers(world);
+    */
 }
 
 fn finish_setup(
@@ -33,7 +31,7 @@ fn finish_setup(
     tile_storage_query: Query<Entity, With<TileStorage>>,
 ) {
     commands.spawn(Camera2dBundle::default());
-    
+
     let tilemap_entity = tile_storage_query.single();
     let texture_handle: Handle<Image> = asset_server.load("tiles.png");
 
@@ -67,6 +65,7 @@ fn startup(mut commands: Commands) {
     let tile_size = TilemapTileSize { x: 16.0, y: 16.0 };
     let grid_size = tile_size.into();
     let map_type = TilemapType::Square;
+    println!(" MTON startup map_type {:?}", map_type);
 
     commands.entity(tilemap_entity).insert((TilemapBundle {
         grid_size,
@@ -90,37 +89,40 @@ fn update(
     tile_query: Query<(Entity, &TilePos, &TileVisible)>,
 ) {
     let current_time = time.elapsed_seconds_f64();
-    let (tile_storage, map_size, mut last_update) = tile_storage_query.single_mut();
-    if current_time - last_update.0 > 0.1 {
-        for (entity, position, visibility) in tile_query.iter() {
-            let neighbor_count =
-                Neighbors::get_square_neighboring_positions(position, map_size, true)
-                    .entities(tile_storage)
-                    .iter()
-                    .filter(|neighbor| {
-                        let tile_component =
-                            tile_query.get_component::<TileVisible>(**neighbor).unwrap();
-                        tile_component.0
-                    })
-                    .count();
+    if let Ok((tile_storage, map_size, last_update)) = tile_storage_query.single_mut() {
+        if current_time - last_update.0 > 0.1 {
+            for (entity, position, visibility) in tile_query.iter() {
+                let neighbor_count =
+                    Neighbors::get_square_neighboring_positions(position, map_size, true)
+                        .entities(tile_storage)
+                        .iter()
+                        .filter(|neighbor| {
+                            let tile_component =
+                                tile_query.get_component::<TileVisible>(**neighbor).unwrap();
+                            tile_component.0
+                        })
+                        .count();
 
-            let was_alive = visibility.0;
+                let was_alive = visibility.0;
 
-            let is_alive = match (was_alive, neighbor_count) {
-                (true, x) if x < 2 => false,
-                (true, 2) | (true, 3) => true,
-                (true, x) if x > 3 => false,
-                (false, 3) => true,
-                (otherwise, _) => otherwise,
-            };
+                let is_alive = match (was_alive, neighbor_count) {
+                    (true, x) if x < 2 => false,
+                    (true, 2) | (true, 3) => true,
+                    (true, x) if x > 3 => false,
+                    (false, 3) => true,
+                    (otherwise, _) => otherwise,
+                };
 
-            if is_alive && !was_alive {
-                commands.entity(entity).insert(TileVisible(true));
-            } else if !is_alive && was_alive {
-                commands.entity(entity).insert(TileVisible(false));
+                if is_alive && !was_alive {
+                    commands.entity(entity).insert(TileVisible(true));
+                } else if !is_alive && was_alive {
+                    commands.entity(entity).insert(TileVisible(false));
+                }
             }
+            last_update.0 = current_time;
         }
-        last_update.0 = current_time;
+    } else {
+        println!("No tile storage");
     }
 }
 
