@@ -12,7 +12,8 @@ markmap:
     - analysis/
       - git log --graph --full-history --all --pretty=format:"%h%x09%d%x20%s"
       - `git filter-repo --analyze`
-        - //generates txt files of file sizes and their SHA!!
+        - blob-shas-and-paths.txt
+          - list of **file sizes** and their SHA!!
   - hooks/
   - info/
   - lfs/
@@ -104,6 +105,19 @@ markmap:
 #### R:Commands
 
 - git-filter-repo
+  - `git filter-repo --force --invert-paths --path-match nanoGPT3-karpathy/karpathy-notebook-follow-along.ipynb`
+    - @audit : Detached my repro ??? ... FIND A LESS DUMBASS WAY TO FIX
+      - **DUMBASS FIX** ... by force pushing to REMOTE NOOOO
+        - `git remote -v`
+          - origin  <https://github.com/miketon/JupyterJeep> (fetch)
+          - origin  <https://github.com/miketon/JupyterJeep> (push)
+        - `git remote add origin https://github.com/miketon/JupyterJeep`
+          - set remote origin
+        - `git push origin main -f`
+          - force push from LOCAL
+          - FUKK anyone who is sharing this REPRO NOOOOO
+            - (fortunately just me)
+
 
 ### Branch
 
