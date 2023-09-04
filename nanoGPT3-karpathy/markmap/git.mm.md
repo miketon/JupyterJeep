@@ -8,6 +8,24 @@ markmap:
 
 ## -- **.git** --
 
+- DO NOT EDIT OR DELETE FILES IN THIS DIRECTORY
+  - rare EXCEPTIONS
+    - // Such operations should be a last resort and are usually performed
+    under the guidance of a Git expert or detailed instructions
+    - **Recovering** a deleted branch
+    - Manually editing **hooks**
+    - Cleaning up a repository with **git-filter-repo**
+      - **Purging** from ENTIRE commit history
+        - **sensitive data** NEEDS to be **scrubbed**
+        - **large files** accidentally checked in
+    - Repairing a **corrupted repository**
+      - This could involve operations such as
+        - removing damaged objects
+        - manipulating
+          - HEAD
+          - index
+          - refs
+
 ### -- .g/folders --
 
 - Most **important** part of a **Git repository**
@@ -25,10 +43,17 @@ markmap:
     - contains the **global excludes file** for the **repository**
   - log/
     - contains record of how the **tip of branches** have changed
+      - information is used by commands like **git reflog** to help
+      you **recover** lost commits
   - objects/
     - (compressed and stored by their SHA1 hash)
       - directory **stores all** the **content** for your
       repository, including **files and directories**
+      - Deleting or modifying objects can lead to loss of
+        - commits
+        - branches
+        - tags
+        - file history
   - refs/
     - contains **pointers to commit objects**
       - @audit - Explain what that means
@@ -101,8 +126,19 @@ markmap:
     - `git mm : Fixed repro screw up NOTES lol`
       - // last commit message lol
 - index
-  - `binary ...djksdjl`
-    - @audit ... what is this?
+  - `djksdjl...`
+    - 🆗 @udit-ok 🆗 : Explain this
+    - ANSWER: ☑️
+      - This file is used by Git to keep track of files and directories
+      - It's a binary containing
+        - sorted list of path names, each with permissions
+        - the SHA1 of a blob object
+      - Represents the staging area
+        - Git uses this file to efficiently determine what
+        has changed in your working directory
+        - If you delete or modify this file, you might
+          - lose staged changes
+          - disrupt Git's ability to track changes
 - packed_refs
 
   - ```sh
@@ -112,7 +148,10 @@ markmap:
       d09eb1d4c269b206499710ee5c6f82675f808a09 refs/stash
     ```
 
-    - @audit ... what is this?
+    - 🆗 @udit-ok 🆗 : What is this?
+    - ANSWER: ☑️
+      - file contains references to objects in **packfiles**
+      - **packfiles** are a space-efficient storage format for objects
 
 ## Project
 
