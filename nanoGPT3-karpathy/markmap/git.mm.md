@@ -9,9 +9,20 @@ markmap:
 ## -- **.git** --
 
 - DO NOT EDIT OR DELETE FILES IN THIS DIRECTORY
-  - rare EXCEPTIONS
-    - // Such operations should be a last resort and are usually performed
-    under the guidance of a Git expert or detailed instructions
+  - What are some common signs of repository corruption that might
+  require manual intervention?
+    - Inability to clone, push, or pull
+    - Inability to check out or switch branches
+    - Error messages
+      - "bad object"
+      - "invalid object"
+      - "checksum failure"
+      - "reference broken"
+    - Missing commits or branches
+    - Strange behavior of Git commands
+      - 'git log' might not show the entire commit history
+      - 'git status' might show incorrect information
+  - rare ==[ EXCEPTIONS ]==
     - **Recovering** a deleted branch
     - Manually editing **hooks**
     - Cleaning up a repository with **git-filter-repo**
@@ -25,6 +36,27 @@ markmap:
           - HEAD
           - index
           - refs
+    - -- Suggestions --
+      - Back up your repository
+      - Identify the problem
+        - `git fsck --full` to check the integrity of your Git repository
+        - checks the connectivity and validity of the objects in the database
+      - Resolve dangling blobs, commits, and trees
+        - If git fsck reports "dangling" blobs, commits, or trees
+          - These are objects that aren't referenced anywhere in your repository
+          - They can be cleaned up with the `git gc --prune=now` command
+            - which removes unreachable objects
+            - Dangles are not necessarily a sign of corruption,
+            but removing them reduces the PROBLEM SURFACE AREA
+      - Repair missing or broken objects
+        - If 'git fsck' reports missing or broken
+        objects, you have a more serious problem
+        - You might be able to recover these objects
+        if they exist in another clone of the repository
+          1. Identify the SHA1 hash of the missing objects.
+          2. Copy the missing objects to the corrupted repository
+          3. Remove bad objects
+          4. Repair corrupted packfiles
 
 ### -- .g/folders --
 
@@ -71,7 +103,6 @@ markmap:
       - `git filter-repo --analyze`
         - blob-shas-and-paths.txt
           - list of **file sizes** and their SHA!!
-
 
 ### -- .g/files --
 
@@ -161,17 +192,16 @@ markmap:
 
 - .git/refs/
   - heads/
+    - // This is a file that contains a reference to the last commit (the HEAD) of the branch
     - **main**
       - eb249fcefe84c9d73c45bf4f5f2dc91da7e584c3
       - ref: refs/heads/main
-        - // @audit : understand this F*CK UP LOL
-          - // git symbolic-ref refs/heads/main_2 refs/heads/main\ 2
     - main 2
       - 85fddf26bc6152bfd0b72b93fc6fafcc085dbe00
       - warning: ignoring ref with broken name refs/heads/main 2
-        - // deleted this file to fix
-        - // likely a SCREW up with git-lfs attempt
-          - // @audit : UNDERSTAND WTH happened here lol
+        - 🆗 @udit-ok 🆗 : **deleted** this file to fix
+          - ANSWER: ☑️
+            - Git doesn't handle branch names with spaces well unless they're properly escaped or quoted
   - remotes/
     - origin/
       - **HEAD**
@@ -194,7 +224,19 @@ markmap:
           - force push from LOCAL
           - FUKK anyone who is sharing this REPRO NOOOOO
             - (fortunately just me)
+- format-patch
+  - `git format-patch origin/master`
+    - When repro is CORRUPT : **reseting from REMOTE** and
+    patching changes in **abandoned LOCAL**
 
+      - ```sh
+          mv *.patch /path/to/fresh/repo 
+          cd /path/to/fresh/repo
+          git apply *.patch
+        ```
+
+        - This will create a series of patch files in the current directory
+        - one for each commit that is in your current branch but not in origin/master
 
 ### Branch
 
