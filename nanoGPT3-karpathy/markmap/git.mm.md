@@ -202,12 +202,20 @@ markmap:
         - 🆗 @udit-ok 🆗 : **deleted** this file to fix
           - ANSWER: ☑️
             - Git doesn't handle branch names with spaces well unless they're properly escaped or quoted
+            - // Sloppy git lfs attempt created this throwaway branch LOL
   - remotes/
     - origin/
       - **HEAD**
         - ref: refs/remotes/origin/main
   - tags/
-    - @audit : Explain this lol
+    - 🆗 @udit-ok 🆗 : Explain what are tags
+      - ANSWER: ☑️
+        - a tag is a pointer or reference to a specific commit
+        - typically used to capture a point in history that is used for a marked version release
+          - v1.0, v2.0 ... etc
+        - **Types** of Tags
+          - **Lightweight** tags are just a pointer to a specific commit : bookmark
+          - **Annotated** tags are stored as full objects in the Git database
 
 #### R:Commands
 
