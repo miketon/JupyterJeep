@@ -12,7 +12,7 @@ markmap:
 2. Listen for TCP connections on a socket
 3. Parse a small number of HTTP requests
 4. Create a proper HTTP response
-5. Imporve the throughput of our server with a thread pool
+5. Improve the throughput of our server with a thread pool
 
 ### | Protocols |
 
@@ -28,17 +28,20 @@ markmap:
         - but VAST majority of cases HTTP sends data over TCP
     - We'll work with the raw bytes of TCP and HTTP requests and responses
 
-##### 👁️‍🗨️ ==[ TCP ]== 👁️‍🗨️
+##### 🪡 ==[ TCP ]== 🪡
 
-- lower-level protocol
+- **TRANSPORT** layer
+  - lower-level protocol
   - describes the details
-    - of how information gets from one server to another
+    - of HOW information gets from one server to another
     - does NOT specify WHAT that information IS
 
 ##### 💬 ==[ HTTP ]== 💬
 
-- builds on top of TCP
-  - defines the CONTENTS of the requests and responses
+- **CONTENT** layer
+  - builds on top of TCP
+  - hyper-text
+    - defines the CONTENTS of requests and responses
 
 ## -- SERVER --
 
@@ -59,15 +62,15 @@ markmap:
           - Ip Address
             - `127.0.0.1`
               - represents your computer
-              - this value specifically is the 'loopback address'
+              - 'loopback address' = 127.0.0.1
                 - this particular address is the SAME on every computer
-                - and is a mirror that is conventionally used for testing
+                - by convention is a MIRROR used for TESTING
           - Port Number
             - `7878`
               - 'rust' typed on a telephone
               - unlikely to conflict with any other web server
                 - HTTP isn't normally accepted on this port
-      - `returns` Result<T,E>
+      - returns `Result<T,E>`
         - `T`
           - `socket` server
             - 🎧 ==[ TcpListener ]== 🎧
@@ -201,7 +204,32 @@ markmap:
 
 ## -- CLIENT --
 
-### | url nav |
+### | url | 
+
+#### -- nav bar --
+
+- `http://127.0.0.1:7878/`
+- `http://127.0.0.1:7878/sleep`
+
+##### HTTP Request
+
+- ```sh
+    Method Request-URI HTTP-Version CRLF
+    headers CRLF
+    message-body
+  ```
+
+  - Method Request-URI HTTP-Version CRLF
+
+    - ```sh
+      
+      ```
+
+      - holds information about what the client is requesting
+        - GET
+        - POST
+  - headers CRLF
+  - message-body
 
 ### | action |
 
