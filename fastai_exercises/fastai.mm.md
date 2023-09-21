@@ -6,17 +6,92 @@ markmap:
 
 # ML
 
-## | RESOURCES |
+## -- CONCEPTS --
 
-### 📖 -- text -- 📖
+### | LOSS FUNCTIONS |
+
+- ->> layers <<-
+  - Hidden
+    - Sigmoid
+      - xform
+        - NORMALIZED between 0 and 1
+      - output
+        - SCALAR
+    - Softmax
+      - xform
+        - probability distribution
+          - exponential each value
+            - amplifies RELATIVE difference
+              - INCREASES picking ONE LEAD category
+              - DECREASES probability of TRAILING category
+            - ensures ONLY positive values
+          - sum all value to 1.0
+            - divide by N value
+      - output
+        - ARRAY
+          - @audit : explain
+          - [BINARY]
+          - [...]
+  - Final
+    - MNIST
+      - xform
+        - Categories
+          - DISTANCE
+      - output
+        - Labels
+          - BOOL
+    - Cross Entropy
+      - xform
+        - Categories
+          - ARRAY
+            - Log LikeliHood
+      - outpute
+        - Labels
+          - INDEX
+    - Binary Cross Entropy
+      - xform
+        - Categories
+          - ARRAY
+      - output
+        - Labels
+          - INDEX_ARRAY
+
+### | TRAINING |
+
+- init
+  - gather data
+  - select model architecture
+  - select loss function
+  - optimize gradient descent
+- ->> loop <<-
+  - init
+    - losses = []
+    - epochs = 500
+  - loop
+    - for i in range(epochs) :
+      - set gradients to zero
+      - compute predictions
+        - forward pass
+      - compute loss
+      - update parameters
+      - store loss to plot
+- plot
+  - plt.plot(losses)
+    - plot losses over time
+
+## -- IMPLEMENT --
+
+### | RESOURCES |
+
+#### 📖 -- text -- 📖
 
 - `train.csv`
 
-### 👀 -- images -- 👀
+#### 👀 -- images -- 👀
 
 - `000000.jpg`
 
-### 🛜 -- globals -- 🛜
+#### 🛜 -- globals -- 🛜
 
 - {pandas} 🐼
   - 🎬 ==[ DataFrame ]== 🎬
@@ -29,19 +104,19 @@ markmap:
   - 🧠 ==[ Learner ]== 🧠
     - `vision_learner`
 
-## | LIBRARY |
+### | LIBRARY |
 
-### 🐼 -- pandas -- 🐼
+#### 🐼 -- pandas -- 🐼
 
-#### 🎬 | DataFrame |
+##### 🎬 | DataFrame |
 
 - `df`
   - pd.read_csv(path/"train.csv")
     - 'train.csv'
 
-### 🍟 -- fastai -- 🍟
+#### 🍟 -- fastai -- 🍟
 
-#### 🧱 | DataBlock |
+##### 🧱 | DataBlock |
 
 - src/block.py
   - 🔑 Understanding **DataBlock** is key to 🔑
@@ -63,7 +138,7 @@ markmap:
           - @audit : full name?
             - MSE
 
-##### Dataset
+###### Dataset
 
 - `dsets`
   - = dblock.datasets(`df`)
@@ -71,7 +146,7 @@ markmap:
       - 'train'
       - 'validation'
 
-##### DataLoader
+###### DataLoader
 
 - `dls`
   - = dblock.dataloaders(`df`)
@@ -85,11 +160,11 @@ markmap:
     - nrows
     - ncols
 
-#### 🧠 | Learner |
+##### 🧠 | Learner |
 
 - src/learner.py
 
-##### 👁️‍🗨️ -- vision -- 👁️‍🗨️
+###### 👁️‍🗨️ -- vision -- 👁️‍🗨️
 
 - `vision_learner(dls, resnet18)`
   - model
