@@ -97,10 +97,99 @@ markmap:
   - 🎬 ==[ DataFrame ]== 🎬
     - `df`
 - {fastai} 🍟
-  - 🎲 ==[ DataBlock ]== 🎲
-    - `dblock`
-    - `dsets`
-    - `dls`
+  - | DATA |
+    - 🌎 ==[ DataBlock ]== 🌎
+      - `dblock`
+        - **BLUEPRINT** to **preprocesss data** for training
+          - It doesn't contain the data itself
+          - but it contains instructions on how to
+            1. **split** the data into training and validation sets
+            2. how to **label** the data
+            3. what types of **transforms** to apply
+          - | EXAMPLE |
+
+            - ```python
+                from fastai.vision.all import *
+
+                data_block = DataBlock(
+                    blocks=(ImageBlock, CategoryBlock), 
+                    get_items=get_image_files, 
+                    splitter=RandomSplitter(valid_pct=0.2, seed=42),
+                    get_y=parent_label,
+                    item_tfms=Resize(460),
+                    batch_tfms=aug_transforms(size=224, min_scale=0.75)  
+                )
+              ```
+
+              - `blocks =` 🔗 ==(x, y)== 🔗
+                - **x** | independent |
+                  - ImageBlock
+                - **y** | dependent |
+                  - CategoryBlock
+                - @audit : List available Blocks
+              - `get_items=fn`
+                - **fn** = get_image_files
+                  - define a function to **get data**
+                    - (images in this case)
+              - `splitter = fn(...)`
+                - **fn(...)** = RandomSplitter(valid_pct=0.2, seed=42)
+                  - define a function to **split** training and validation sets
+              - `get_y = fn`
+                - **fn** = parent_label
+                  - get **label** **y** 🔗 for each **x** 🔗
+                    - (in this case the parent DIR is the LABEL)
+              - `item_tfms = fn`
+                - **fn** = Resize(460)
+                  - **item xform**
+                    - upscale each item to **reduce lossiness** when batch xform are applied
+                    - (in this case we are upscaling all images to 460)
+              - `batch_tfms = fn`
+                - **fn** = aug_transforms(size=224, min_scale=0.75)
+                  - **batch xform**
+                    - xform batches to **augment generalization**
+                    - (in this case we are augmenting existing training images by crop, rotate, flipping images in the batch)
+    - 🗺️ ==[ DataLoader ]== 🗺️
+      - `dls`
+        - DataLoader is used to load the data in a way that's
+         efficient and convenient for training models
+          - composed of
+            1. **Dataset**
+            2. **Sampler**
+            3. **Iterable** for the given DataSet
+          - supports
+            1. Automatic Batching
+            2. Multi-Thread Data Loading
+            3. Customizing Loading Order
+        - | EXAMPLE |
+
+          - ```python
+              dls = data_block.dataloaders(path)
+            ```
+
+            - `dataloaders(path)`
+              - **path** is the path to your data
+              - **dataloaders** method will
+                - 1 - follow the instructions in the **DataBlock**
+                  - includes
+                    - (x,y)
+                    - item xform
+                    - batch xform
+                - 2 - **load and preprocess** the data
+                - 3 - **return a DataLoaders** object
+                  - DataLoaders obj returned will contain:
+                    - 1 - **Training** DataLoader
+                    - 2 - **Validation** DataLoader
+
+    - 🛣️ ==[ DataSet ]== 🛣️
+      - `dsets`
+        - DataSet can handle the preprocessing and transformation of data
+        - DataSet should inherit **torch.utils.data.Dataset**
+          - abstract class req 2 methods impl
+            - `__len__`
+              - len(dataset) returns the dataset's size
+            - `__getitem__`
+              - support indexing so that dataset[i] can get the i-th sample
+        - Fastai's **DataBlock API** internally wraps these DETAILS
   - 🧠 ==[ Learner ]== 🧠
     - `vision_learner`
 
@@ -177,6 +266,20 @@ markmap:
                     1        4        5        6
                   ```
 
+            - sum existing columns
+
+              - ```python
+                  df['Sum'] = df['Column1'] + df['Column2'] + df['Column3']
+                ```
+
+                - print(df.head())
+
+                  - ```sh
+                          Column1  Column2  Column3  Sum 
+                      0        1        2        3    6
+                      1        4        5        6   15
+                    ```
+
           - Another `DataFrame`
 
             - ```python
@@ -227,7 +330,7 @@ markmap:
 
 #### 🍟 -- fastai -- 🍟
 
-##### 🎲 | DataBlock |
+##### 🌎 | DataBlock | 🌎
 
 - src/block.py
   - 🔑 Understanding **DataBlock** is key to 🔑
@@ -249,15 +352,7 @@ markmap:
           - @audit : full name?
             - MSE
 
-###### Dataset
-
-- `dsets`
-  - = dblock.datasets(`df`) 🗓️
-    - { splitter }
-      - 'train'
-      - 'validation'
-
-###### DataLoader
+###### 🗺️ DataLoader 🗺️
 
 - `dls`
   - = dblock.dataloaders(`df`) 🗓️
@@ -271,6 +366,14 @@ markmap:
     - nROWS
     - nCOLS
 
+###### 🛣️ Dataset 🛣️
+
+- `dsets`
+  - = dblock.datasets(`df`) 🗓️
+    - { splitter }
+      - 'train'
+      - 'validation'
+
 ##### 🧠 | Learner |
 
 - src/learner.py
@@ -280,15 +383,17 @@ markmap:
 - `vision_learner(dls, resnet18)`
   - model
     - defined by
-      - { var }
-        - `x`
+      - 🔗 `(x, y)` 🔗
+        - **x** 🔗
           - independent
-        - `y`
+            - ImageBlock
+        - **y** 🔗
           - dependent
+            - CategoryBlock
       - ->> loss function <<-
     - returns
       - `nn.Module`
-  - DataLoader
+  - 🗺️ DataLoader 🗺️
     - `dls`
   - optimizer
   - loss function
