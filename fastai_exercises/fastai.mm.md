@@ -222,20 +222,145 @@ markmap:
     - 🔑 Understanding **DataBlock** is key to 🔑
       - moving **BEYOND** fixed applications
       - crafting **NEW** solutions to new PROBLEMS
+    - ==[ TransformBlock ]==
+      - ☑️ @udit-ok : List available Blocks
+      - -- included --
+        - 1 - 🔎 **[ ImageBlock ]** 🔎
+          - -- image files -- to **grid of pixels**
+            - | grid |
+              - **tensor**
+                - -- 3d --
+                  - width
+                  - height
+                  - channels(RGBA)
+            - | pixels |
+              - handles **loading** and **xform** image -> **numeric** formats
+                - -- image --
+                  - | single |
+                    - **load**
+                      - local filesystem
+                      - remote server
+                    - **xform**
+                      - **uniform** basis for comparison
+                        - channels
+                          - normalize to 0 - 255
+                        - resolution
+                          - equivalent to table with row/col
+                  - | batch |
+                    - **generate** augment **batch** -> +generalization
+              - | EXAMPLE |
+
+                - ```python
+                    data_block = DataBlock(
+                        blocks=(ImageBlock, CategoryBlock), 
+                        get_items=get_image_files, 
+                        splitter=RandomSplitter(valid_pct=0.2, seed=42),
+                        get_y=parent_label,
+                        item_tfms=Resize(460),
+                        batch_tfms=aug_transforms(size=224, min_scale=0.75) 
+                    )
+                  ```
+
+                  - (x, y)
+                    - x - **ImageBlock** is used to preprocess the independent variables (the images)
+                    - y ->
+                      - **CategoryBlock** is used to preprocess the dependent variable (labels) for image classification
+                      - -- loss --
+                        - 'get_y = parent_label'
+                  - -- images --
+                    - **images loaded** from 'path_to_your_data'
+                    - 1 - 👾 ==[ **image upscaled** ]== 👾 -> 460x460
+                      - upsized to **reduce lossiness** from batch step (2)
+                    - 2 - 🧿 ==[ **batch generate** ]== 🧿
+                      - **augment samples** to `improve` model `generalization`
+                        - **xform**
+                          - `rotate`
+                          - `crop`
+                          - adjust `hls`
+                          - `blur`
+                        - **uniform** resized back to 224x224
+
+        - 2 - **[ MaskBlock ]**
+          - **segmentation** tasks
+            - handles tasks where the target is a **pixel-level** mask
+        - 3 - **[ BBoxBlock ]**
+          - **object detection** tasks
+            - handles tasks where the target is one or more **bounding boxes** in an image
+        - 4 - **[ PointBlock ]**
+          - **key point** regression
+            - handles tasks where the target is one or more **points** in an image's **coordinate system**
+        - 5 - 💬 **[ TextBlock ]** 💬
+          - handles the **tokenization** and **hashing** of text
+            - **tokenization**
+              - raw process of splitting text into smaller pieces : tokens
+                - words
+                  - 'cats'
+                - sub-words
+                  - 'cat'
+                  - 's'
+                    - plural token
+            - **hash**
+              - create a **vocabulary** of **tokens**
+                - -- keys --
+                  - | index |
+                    - alphanumeric characters
+                  - | generate |
+                    - custom sub_words
+              - | EXAMPLE |
+
+                - ```python
+                    data_block = DataBlock(
+                        blocks=(TextBlock.from_folder(path), CategoryBlock),
+                        get_y = parent_label,
+                        get_items=partial(get_text_files, folders=['train', 'test']), 
+                        splitter=GrandparentSplitter(valid_name='test')
+                    )
+                  ```
+
+                  - (x, y)
+                    - x - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
+                    - y ->
+                      - **CategoryBlock** is used to preprocess the dependent variable (the labels for text classification)
+                      - -- loss --
+                        - 'get_y = parent_label'
+                          - GPT model would use 'get_next_char'
+                  - -- text --
+                    - **text files are loaded** from the directory specified by 'path'
+                    - 🪙 ==[ **tokenized** ]== 🪙
+                      - char | subwords | words
+                        - @audit Explain trade offs between each ...
+                      - 🧇 ==[ **hash** ]== 🧇
+                        - a **vocabulary of tokens** is created by assigning a **UID -> each token**
+                        - text data is **hashed** to a sequence of these **UID**
+                        - this is the **numerical representation** of the text that the model will use
+
+        - 6 - **[ CategoryBlock ]**
+          - categorical (**classification**) targets
+            - handles converting **categories to codes**
+              - @audit - Example of category to code?
+        - 7 - **[ MultiCategoryBlock ]**
+          - **multiple labels** per item (multi-label classification)
+            - handles the **one-hot encoding** needed for such tasks
+              - @audit - What is one-hot encoding?
+        - 8 - **[ RegressionBlock ]**
+          - continuous (**regression**) targets
+            - handles tasks where the target is a **single continuous** value
+      - -- extend --
+        - to generate **custom**
+          - @audit - Example of a custom TransformBlock
   - (x, y)
     - `x`
       - independent
-        - @audit : List available Blocks
-        - 🏁 ==[ ImageBlock ]== 🏁
+        - **[ ImageBlock ]** 🔎
     - `y`
       - dependent
         - ->> loss function <<-
-          - **[ Category ]**
+          - 1 - **[ Category ]**
             - Cross Entropy
-          - **[ MultiCategory ]**
+          - 2 - **[ MultiCategory ]**
             - Binary Cross Entropy
               - BCE
-          - **[ PointBlock ]**
+          - 3 - **[ PointBlock ]**
             - @audit : full name?
               - MSE
 
@@ -295,7 +420,7 @@ markmap:
       - 🔗 `(x, y)` 🔗
         - **x** 🔗
           - independent
-            - ImageBlock
+            - ImageBlock 🔎
         - **y** 🔗
           - dependent
             - CategoryBlock
@@ -354,7 +479,7 @@ markmap:
 
             - `blocks =` 🔗 ==(x, y)== 🔗
               - **x** | independent |
-                - ImageBlock
+                - ImageBlock 🔎
               - **y** | dependent |
                 - CategoryBlock
             - `get_items=fn`
