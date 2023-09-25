@@ -265,7 +265,7 @@ markmap:
                     - x - **ImageBlock** is used to preprocess the independent variables (the images)
                     - y ->
                       - **CategoryBlock** is used to preprocess the dependent variable (labels) for image classification
-                      - -- loss --
+                      - -💧 loss function 💧-
                         - 'get_y = parent_label'
                   - -- images --
                     - **images loaded** from 'path_to_your_data'
@@ -321,7 +321,7 @@ markmap:
                     - x - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
                     - y ->
                       - **CategoryBlock** is used to preprocess the dependent variable (the labels for text classification)
-                      - -- loss --
+                      - -💧 loss function 💧-
                         - 'get_y = parent_label'
                           - GPT model would use 'get_next_char'
                   - -- text --
@@ -354,7 +354,7 @@ markmap:
         - **[ ImageBlock ]** 🔎
     - `y`
       - dependent
-        - ->> loss function <<-
+        - -💧 loss function 💧-
           - 1 - **[ Category ]**
             - Cross Entropy
           - 2 - **[ MultiCategory ]**
@@ -424,13 +424,13 @@ markmap:
         - **y** 🔗
           - dependent
             - CategoryBlock
-      - ->> loss function <<-
+      - -💧 loss function 💧-
     - returns
       - `nn.Module`
   - 🗺️ DataLoader 🗺️
     - `dls`
   - optimizer
-  - loss function
+  - 💧 loss function 💧
 
 ### | RESOURCES |
 
@@ -440,7 +440,14 @@ markmap:
 
 #### 👀 -- images -- 👀
 
-- `000000.jpg`
+- | Folder |
+  - `path`
+    - = `untar_data`(URLs.PASCAL_2007)
+    - 'Path('/Users/mton/.fastai/data/pascal_2007')'
+      - PASCAL dataset can have multiple labels per image
+  - | File |
+    - `000000.jpg`
+    - ...
 
 #### 🛜 -- globals -- 🛜
 
@@ -526,3 +533,195 @@ markmap:
   - `vision_learner`
 
 ### | APPLICATION |
+
+#### -- vars --
+
+##### **const**
+
+- | Dir |
+  - `path`
+    - 'Path('/Users/mton/.fastai/data/pascal_2007')'
+- | DataSet |
+  - `train`
+  - `valid`
+- | DataFrame (Table) |
+  - -- row --
+    - @audit : example of row index access?
+  - -- col --
+    - `fname`
+      - 'fname'
+        - the image file name
+    - `labels`
+      - 'labels'
+        - the list of labels
+
+#### -- functions --
+
+- 💾 ==[ get_image_path(row) ]== 💾
+
+  - ```python
+      def get_image_path(row):
+        # we actually need the path name to open the image 
+        return path/'train'/row['fname']
+    ```
+
+- 🏷️ ==[ get_labels(row) ]== 🏷️
+
+  - ```python
+      def get_labels(row):
+        # we actually need to split the labels on spaces 
+        return row['labels'].split(' ')
+    ```
+
+#### -- **main** --
+
+##### -- import --
+
+- `pd`
+  - 'import **pandas** as **pd**'
+
+##### -- var --
+
+- `df`
+  - pd.`read_csv`(path/'train.csv')
+    - **load** csv into dataframe **table**
+    - df.**head()**
+      - **print** head (5 default)
+
+      - ```sh
+                  fname        labels  is_valid 
+          0  000005.jpg         chair      True
+          1  000007.jpg           car      True
+          2  000009.jpg  horse person      True
+          3  000012.jpg           car     False
+          4  000016.jpg       bicycle      True
+        ```
+
+- `dsets`
+  - dblock.**datasets**(`df`)
+    - split dataframe into 2 sets :
+      - 1 - training
+        - dsets.**train[0]**
+          - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
+      - 2 - validation
+        - dsets.**valid[0]**
+          - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
+- `dblock`
+  - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
+    - print
+      - dblock
+        - <fastai.data.block.DataBlock at 0x16a355820>
+          - @audit : explain this binary object?
+      - dblock.blocks
+        - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
+          - @audit : is this training and validation?
+      - dblock.**summary**(`df`)
+        - 1 - Collecting Items
+
+          - ```sh
+            Setting-up type transforms pipelines
+            Collecting items from            fname          labels  is_valid 
+                                  0     000005.jpg           chair      True
+                                  ...          ...             ...       ...
+                                  5010  009961.jpg             dog     False
+            ```
+
+        - 2 - Setting Up Pipelines
+
+          - ```sh
+              [5011 rows x 3 columns]
+              Found 5011 items
+              2 datasets of sizes 4009,1002
+              Setting up Pipeline: get_image_path 
+              Setting up Pipeline: get_labels
+            ```
+
+            - `[5011 rows x 3 columns]`
+              - columns
+                - 1 - 'fname'
+                - 2 - 'labels'
+                - 3 - 'is_valid'
+                  - is this part of validation set?
+              - rows
+                - 0 ... 5010
+            - `2 datasets` of sizes `4009,1002`
+              - 1 - training set : `4009`
+              - 2 - validate set : `10021`
+            - Setting up Pipeline: `get_image_path`
+            - Setting up Pipeline: `get_labels`
+
+        - 3 - Building One Sample
+          - 💾 Pipeline: `get_image_path`
+            - applying `get_image_path` gives
+              - '/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'
+          - 🏷️ Pipeline: `get_labels`
+            - applying `get_labels` gives
+              - [chair, sofa]
+          - Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa'])
+            - -- log --
+
+              - ```sh
+                  Building one sample
+                    Pipeline: get_image_path
+                      starting from
+                        fname       007443.jpg
+                  labels      chair sofa
+                  is_valid          True
+                  Name: 3752, dtype: object
+                      applying get_image_path gives
+                        /Users/mton/.fastai/data/pascal_2007/train/007443.jpg
+                    Pipeline: get_labels
+                      starting from
+                        fname       007443.jpg
+                  labels      chair sofa
+                  is_valid          True
+                  Name: 3752, dtype: object
+                      applying get_labels gives
+                        [chair, sofa]
+
+                  Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa']) 
+                ```
+
+        - 4 - -- Item --
+          - After Item
+            - specify transformations that should be applied after processing each item
+            - such as **upscaling** to reduce loss from **augmented batch generation**
+          - Before Batch
+            - **xform** rotate, crop, hls, blur ... etc
+          - After Batch
+            - **uniform** resize back to 224x224
+          - ... in **this** case we are ONLY converting **image -> ToTensor**
+
+            - ```sh
+                [5011 rows x 3 columns]
+                Found 5011 items
+                2 datasets of sizes 4009,1002
+                Setting up Pipeline: get_image_path
+                Setting up Pipeline: get_labels
+                Setting up after_item: Pipeline: ToTensor
+                Setting up before_batch: Pipeline: 
+                Setting up after_batch: Pipeline: 
+              ```
+
+        - 5 - Error Message
+
+          - ```sh
+              Could not do one pass in your dataloader, there is something wrong in it. Please see the stack trace below:
+            ```
+
+            - @audit : Explain the issue?
+  - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+
+    - ```python
+        dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
+      ```
+
+      - ```python
+          # lambda is a keyword shortcut for defining an anonymous function inline
+          # however they aren't compatible with serialization (saving and loading)
+          # i.e. if you want to export your Learner after training you can't use lambda 
+          # Lambda are not serializable because:
+          # - they are anonymous and not bound to a name or object in memory
+          # - lambda functions are also stateless and have no environment/context ...
+          #   storing and retrieving the state of a lambda function is not possible
+        ```
