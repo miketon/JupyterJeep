@@ -573,6 +573,27 @@ markmap:
         return row['labels'].split(' ')
     ```
 
+- ✂️ ==[ splitter(dataformat) ]== ✂️
+
+  - ```python
+    def splitter(dataformat):
+        "splits the set into train or valid based on the 'is_valid' column" 
+        train = dataformat.index[~dataformat['is_valid']].tolist()
+        valid = dataformat.index[dataformat['is_valid']].tolist()
+        return train, valid
+    ```
+
+    - `~`
+      - bitwise `NOT` operator
+        - ~True = False
+        - ~False = True
+    - dataformat.index[**~dataformat**['is_valid']].tolist()
+      - collects a list of **training** data
+      - is_valid == **False**
+    - dataformat.index[**dataformat**['is_valid']].tolist()
+      - collects a list of **validation** data
+      - is_valid == **True**
+
 #### -- **main** --
 
 ##### -- import --
@@ -597,6 +618,137 @@ markmap:
           4  000016.jpg       bicycle      True
         ```
 
+- `dblock`
+  - | SINGLE CATEGORY | (default)
+    - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
+      - print
+        - dblock
+          - <fastai.data.block.DataBlock at 0x16a355820>
+            - @audit : explain this binary object?
+        - dblock.blocks
+          - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
+            - @audit : is this training and validation?
+        - dblock.**summary**(`df`)
+          - 1 - Collecting Items
+
+            - ```sh
+              Setting-up type transforms pipelines
+              Collecting items from            fname          labels  is_valid 
+                                    0     000005.jpg           chair      True
+                                    ...          ...             ...       ...
+                                    5010  009961.jpg             dog     False
+              ```
+
+          - 2 - Setting Up Pipelines
+
+            - ```sh
+                [5011 rows x 3 columns]
+                Found 5011 items
+                2 datasets of sizes 4009,1002
+                Setting up Pipeline: get_image_path 
+                Setting up Pipeline: get_labels
+              ```
+
+              - `[5011 rows x 3 columns]`
+                - columns
+                  - 1 - 'fname'
+                  - 2 - 'labels'
+                  - 3 - 'is_valid'
+                    - is this part of validation set?
+                - rows
+                  - 0 ... 5010
+              - `2 datasets` of sizes `4009,1002`
+                - 1 - training set : `4009`
+                - 2 - validate set : `10021`
+              - Setting up Pipeline: `get_image_path`
+              - Setting up Pipeline: `get_labels`
+
+          - 3 - Building One Sample
+            - 💾 Pipeline: `get_image_path`
+              - applying `get_image_path` gives
+                - '/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'
+            - 🏷️ Pipeline: `get_labels`
+              - applying `get_labels` gives
+                - [chair, sofa]
+            - Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa'])
+              - -- log --
+
+                - ```sh
+                    Building one sample
+                      Pipeline: get_image_path
+                        starting from
+                          fname       007443.jpg
+                    labels      chair sofa
+                    is_valid          True
+                    Name: 3752, dtype: object
+                        applying get_image_path gives
+                          /Users/mton/.fastai/data/pascal_2007/train/007443.jpg
+                      Pipeline: get_labels
+                        starting from
+                          fname       007443.jpg
+                    labels      chair sofa
+                    is_valid          True
+                    Name: 3752, dtype: object
+                        applying get_labels gives
+                          [chair, sofa]
+
+                    Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa']) 
+                  ```
+
+          - 4 - -- Item --
+            - After Item
+              - specify transformations that should be applied after processing each item
+              - such as **upscaling** to reduce loss from **augmented batch generation**
+            - Before Batch
+              - **xform** rotate, crop, hls, blur ... etc
+            - After Batch
+              - **uniform** resize back to 224x224
+            - ... in **this** case we are ONLY converting **image -> ToTensor**
+
+              - ```sh
+                  [5011 rows x 3 columns]
+                  Found 5011 items
+                  2 datasets of sizes 4009,1002
+                  Setting up Pipeline: get_image_path
+                  Setting up Pipeline: get_labels
+                  Setting up after_item: Pipeline: ToTensor
+                  Setting up before_batch: Pipeline: 
+                  Setting up after_batch: Pipeline: 
+                ```
+
+          - 5 - Error Message
+
+            - ```sh
+                Could not do one pass in your dataloader, there is something wrong in it. Please see the stack trace below:
+              ```
+
+              - @audit : Explain the issue?
+    - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+
+      - ```python
+          dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
+        ```
+
+      - ANSWER:
+        - During **iterative** training of the **Learner**, it's essential to be able
+        to save (write) and load (read) the status of 'fname' and 'labels',
+        a process known as **serialization**
+          - However, for serialization to work effectively, the functions passed to **get_x** and **get_y** must have specific, indexable **names**
+          - **Lambda** functions are **anonymous** and **do NOT** have a specific and **indexable name**, which makes them unsuitable for serialization
+          - Therefore to ensure **serialization**, we MUST use properly **named functions** instead of lambda functions
+          - This will allow us to save and load **Learner** states without issues
+
+  - | MULTI CATEGORY | (with explicit splitter)
+
+    - ```python
+        dblock = DataBlock(
+          blocks=(ImageBlock, MultiCategoryBlock),
+          splitter = splitter, # split based on 'is_valid' column
+          get_x=get_image_path,
+          get_y=get_labels
+        )
+      ```
+
 - `dsets`
   - dblock.**datasets**(`df`)
     - split dataframe into 2 sets :
@@ -606,122 +758,64 @@ markmap:
       - 2 - validation
         - dsets.**valid[0]**
           - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
-- `dblock`
-  - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
-    - print
-      - dblock
-        - <fastai.data.block.DataBlock at 0x16a355820>
-          - @audit : explain this binary object?
-      - dblock.blocks
-        - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
-          - @audit : is this training and validation?
-      - dblock.**summary**(`df`)
-        - 1 - Collecting Items
+    - `.vocab`
+      - **vocab** is generated **pre-split** with the ENTIRE dataset
+        - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
+        - this allows the model to **index** the **same vocabulary** during BOTH **training** and **validation**
+      - print(...)
 
-          - ```sh
-            Setting-up type transforms pipelines
-            Collecting items from            fname          labels  is_valid 
-                                  0     000005.jpg           chair      True
-                                  ...          ...             ...       ...
-                                  5010  009961.jpg             dog     False
-            ```
+        - ```sh
+            # -- [len] --
+            20
+            # -- [vocab] --
+            ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
+             'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
+             'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] 
+          ```
 
-        - 2 - Setting Up Pipelines
+          - train
+            - len(dsets.train.vocab)
+            - dsets.train.vocab
+          - vocab
+            - len(desets.valid.vocab)
+            - dsets.valid.vocab
 
-          - ```sh
-              [5011 rows x 3 columns]
-              Found 5011 items
-              2 datasets of sizes 4009,1002
-              Setting up Pipeline: get_image_path 
-              Setting up Pipeline: get_labels
-            ```
-
-            - `[5011 rows x 3 columns]`
-              - columns
-                - 1 - 'fname'
-                - 2 - 'labels'
-                - 3 - 'is_valid'
-                  - is this part of validation set?
-              - rows
-                - 0 ... 5010
-            - `2 datasets` of sizes `4009,1002`
-              - 1 - training set : `4009`
-              - 2 - validate set : `10021`
-            - Setting up Pipeline: `get_image_path`
-            - Setting up Pipeline: `get_labels`
-
-        - 3 - Building One Sample
-          - 💾 Pipeline: `get_image_path`
-            - applying `get_image_path` gives
-              - '/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'
-          - 🏷️ Pipeline: `get_labels`
-            - applying `get_labels` gives
-              - [chair, sofa]
-          - Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa'])
-            - -- log --
-
-              - ```sh
-                  Building one sample
-                    Pipeline: get_image_path
-                      starting from
-                        fname       007443.jpg
-                  labels      chair sofa
-                  is_valid          True
-                  Name: 3752, dtype: object
-                      applying get_image_path gives
-                        /Users/mton/.fastai/data/pascal_2007/train/007443.jpg
-                    Pipeline: get_labels
-                      starting from
-                        fname       007443.jpg
-                  labels      chair sofa
-                  is_valid          True
-                  Name: 3752, dtype: object
-                      applying get_labels gives
-                        [chair, sofa]
-
-                  Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa']) 
-                ```
-
-        - 4 - -- Item --
-          - After Item
-            - specify transformations that should be applied after processing each item
-            - such as **upscaling** to reduce loss from **augmented batch generation**
-          - Before Batch
-            - **xform** rotate, crop, hls, blur ... etc
-          - After Batch
-            - **uniform** resize back to 224x224
-          - ... in **this** case we are ONLY converting **image -> ToTensor**
-
-            - ```sh
-                [5011 rows x 3 columns]
-                Found 5011 items
-                2 datasets of sizes 4009,1002
-                Setting up Pipeline: get_image_path
-                Setting up Pipeline: get_labels
-                Setting up after_item: Pipeline: ToTensor
-                Setting up before_batch: Pipeline: 
-                Setting up after_batch: Pipeline: 
-              ```
-
-        - 5 - Error Message
-
-          - ```sh
-              Could not do one pass in your dataloader, there is something wrong in it. Please see the stack trace below:
-            ```
-
-            - @audit : Explain the issue?
-  - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+  - `idxs`
 
     - ```python
-        dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
+        # idxs = indexes where the value is 1.0
+        idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
       ```
 
-      - ```python
-          # lambda is a keyword shortcut for defining an anonymous function inline
-          # however they aren't compatible with serialization (saving and loading)
-          # i.e. if you want to export your Learner after training you can't use lambda 
-          # Lambda are not serializable because:
-          # - they are anonymous and not bound to a name or object in memory
-          # - lambda functions are also stateless and have no environment/context ...
-          #   storing and retrieving the state of a lambda function is not possible
+  - `idx_to_labels`
+
+    - ```python
+        idx_to_labels = dsets.train.vocab[idxs]
+      ```
+
+##### --  fn{ ... } --
+
+- `dblock =`
+
+  - ```python
+      DataBlock{
+        blocks = (ImageBlock, MultiCategoryBlock),
+        splitter = splitter, # split based on 'is_valid' column
+        get_x = get_image_path,
+        get_y = get_labels
+      }
+    ```
+
+- `dsets =`
+
+  - ```python
+      dblock.datasets(df)
+    ```
+
+    - dsets.train[0]
+
+      - ```sh
+          (PILImage mode=RGB size=500x333,
+          TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 
+                                0., 0., 0., 0., 0.]))
         ```
