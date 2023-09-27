@@ -532,6 +532,120 @@ markmap:
 - 🧠 | Learner | 🧠
   - `vision_learner`
 
+#### 📐 -- unit tests -- 📐
+
+##### {common}
+
+- | Import |
+  - import `os`
+    - functions for **interacting** with the operating system
+  - from IPython.display
+    - import
+      - `display`
+        - displays objects in Jupyter notebook
+      - `Markdown`
+        - used to display FORMATTED text
+  - from PIL
+    - (Python Imaging Library)
+    - import `Image`
+      - used for **opening**, **xforming** and **saving** image file formats
+- | File Path |
+  - `source_data_path` = '/Users/mton/.fastai/data/pascal_2007/train'
+    - path to where our image data is located (local)
+- | Tables |
+  - **DataFrame**
+    - train_idx, valid_idx = splitter(`df`)
+      - list of indices for training and validation sets
+      - used **generate** train/validation set **from pre-split df** (dataframe)
+    - `train_df` = `df`.iloc[train_idx]
+    - `valid_df` = `df`.iloc[train_idx]
+
+##### {display}
+
+- | LABEL |
+
+  - ```python
+      idxs = torch.where(dsets[img_id][1]==1.0)[0]
+      idx_to_labels = dsets.vocab[idxs]
+    ```
+
+    - `idxs` is list of indices **where** dsets[img_id]`[1]`==1.0
+      - dsets [img_id] **[...]**
+        - [0]
+          - image -- object --
+            - PILImage mode=RGB size=334x500
+        - **[1]**
+          - -- label -- index
+            - TensorMultiCategory([...])
+    - `idx_to_labels`
+      - dsets.`vocab`[idxs]
+
+- | IMAGE |
+  - 📄 ==[ show_image ]== 📄
+    - (fname, label)
+
+      - ```python
+          def show_image(fname, label='none'):
+            img = Image.open(os.path.join(source_data_path, fname)).resize(256,256) 
+            display(img)
+            display(Markdown(f'{fname} -- [{label}]'))
+        ```
+
+        - **img**
+          - -- load --
+            - Image.**open**(path_to_image)
+              - path_to_image
+                - **os**.path.join( ... , ... )
+                  - **source_data_path**
+                  - fname
+          - -- xform --
+            - .resize(256, 256)
+          - -- show --
+            - **display**(img)
+            - display(**Markdown**(f'{} -- {}'))
+              - fname
+              - label
+
+  - 📰 ==[ show_image_from_set ]== 📰
+    - (df, dsets, img_id)
+
+      - ```python
+          def show_image_from_set(df, dsets, img_id=0):
+            assert(img_id < len(dsets)), f'id {img_id} must be less than {len(dsets)}' 
+            # multi-label, get index of all labels active for this image id
+            idxs = torch.where(dsets[img_id][1]=1.0)[0]
+            # vocab takes id int values to return human readable text labels
+            idx_to_labels = dsets.vocab[idxs]
+            show_image(df.iloc[img_id]['fname'], idx_to_labels)
+        ```
+
+        - **show_image**
+          - ( img_path, label_string)
+            - -- img_path --
+              - **df**.iloc [id] [name_col]
+                - **id** = img_id
+                - **name_col** = 'fname'
+                  - | EXAMPLE |
+                    - train.csv
+                      - [0]
+                        - **'fname'**
+                      - [1]
+                        - 'labels'
+                      - [2]
+                        - 'is_valid'
+            - -- label_string --
+
+  - | EXAMPLE |
+
+    - ```python
+        # Training set
+        show_image_from(train_df, dsets.train, 12)
+      ```
+
+      - ```sh
+          000048.jpg -- [['bird', 'person']] --
+        ```
+
 ### | APPLICATION |
 
 #### -- vars --
@@ -755,9 +869,19 @@ markmap:
       - 1 - training
         - dsets.**train[0]**
           - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
+          - (PILImage mode=RGB size=500x375,
+            TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
+                      0., 0., 0., 0., 0.]))
+          - --[idx_to_labels]--
+            ['car'] dsets.train[0] PILImage mode=RGB size=500x375
       - 2 - validation
         - dsets.**valid[0]**
           - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
+          - (PILImage mode=RGB size=500x375,
+            TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1.,
+                      0., 0., 0., 1., 0.]))
+          - --[idx_to_labels]--
+            ['car', 'person', 'train'] dsets.valid[0] PILImage mode=RGB size=500x375
     - `.vocab`
       - **vocab** is generated **pre-split** with the ENTIRE dataset
         - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
@@ -787,11 +911,15 @@ markmap:
         idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
       ```
 
+      - 'TensorMultiCategory([6])'
+
   - `idx_to_labels`
 
     - ```python
         idx_to_labels = dsets.train.vocab[idxs]
       ```
+
+      - '(#1) ['car']'
 
 ##### --  fn{ ... } --
 
