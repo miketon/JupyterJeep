@@ -261,9 +261,9 @@ markmap:
                     )
                   ```
 
-                  - (x, y)
-                    - x - **ImageBlock** is used to preprocess the independent variables (the images)
-                    - y ->
+                  - (x, y) 🔗
+                    - x 🎲 - **ImageBlock** is used to preprocess the independent variables (the images)
+                    - y 🎛️ ->
                       - **CategoryBlock** is used to preprocess the dependent variable (labels) for image classification
                       - -💧 loss function 💧-
                         - 'get_y = parent_label'
@@ -317,9 +317,9 @@ markmap:
                     )
                   ```
 
-                  - (x, y)
-                    - x - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
-                    - y ->
+                  - (x, y) 🔗
+                    - x 🎲 - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
+                    - y 🎛️ ->
                       - **CategoryBlock** is used to preprocess the dependent variable (the labels for text classification)
                       - -💧 loss function 💧-
                         - 'get_y = parent_label'
@@ -348,11 +348,11 @@ markmap:
       - -- extend --
         - to generate **custom**
           - @audit - Example of a custom TransformBlock
-  - (x, y)
-    - `x`
+  - (x, y) 🔗
+    - `x` 🎲
       - independent
         - **[ ImageBlock ]** 🔎
-    - `y`
+    - `y` 🎛️
       - dependent
         - -💧 loss function 💧-
           - 1 - **[ Category ]**
@@ -399,7 +399,7 @@ markmap:
       - **dataloaders** method will
         - 1 - follow the instructions in the **DataBlock**
           - includes
-            - (x,y)
+            - (x,y) 🔗
             - item xform
             - batch xform
         - 2 - **load and preprocess** the data
@@ -418,10 +418,10 @@ markmap:
   - model
     - defined by
       - 🔗 `(x, y)` 🔗
-        - **x** 🔗
+        - **x** 🎲
           - independent
             - ImageBlock 🔎
-        - **y** 🔗
+        - **y** 🎛️
           - dependent
             - CategoryBlock
       - -💧 loss function 💧-
@@ -466,9 +466,14 @@ markmap:
       - **BLUEPRINT** to **preprocesss data** for training
         - It doesn't contain the data itself
         - but it contains instructions on how to
-          1. **split** the data into training and validation sets
-          2. how to **label** the data
-          3. what types of **transforms** to apply
+          - 💡 🥠 💡
+            - 1 - **extract** items from the **input** data
+            - 2 - **split** the data into training and validation sets
+            - 3 - apply needed **transforms**
+              - correlate **label**
+              - **augment** to improve **generalization**
+              - **uniform resize** for batching
+            - 4 - generate **batches** for the model to **consume**
         - | EXAMPLE |
 
           - ```python
@@ -485,9 +490,9 @@ markmap:
             ```
 
             - `blocks =` 🔗 ==(x, y)== 🔗
-              - **x** | independent |
+              - **x** 🎲 | independent |
                 - ImageBlock 🔎
-              - **y** | dependent |
+              - **y** 🎛️ | dependent |
                 - CategoryBlock
             - `get_items=fn`
               - **fn** = get_image_files
@@ -500,16 +505,18 @@ markmap:
               - **fn** = parent_label
                 - get **label** **y** 🔗 for each **x** 🔗
                   - (in this case the parent DIR is the LABEL)
-            - `item_tfms = fn`
-              - **fn** = Resize(460)
+            - 🫒 | CPU |
+              - `item_tfms = fn`
                 - **item xform**
-                  - upscale each item to **reduce lossiness** when batch xform are applied
-                  - (in this case we are upscaling all images to 460)
-            - `batch_tfms = fn`
-              - **fn** = aug_transforms(size=224, min_scale=0.75)
+                  - **fn** = Resize(460)
+                    - upscale each item to **reduce lossiness** when batch xform are applied
+                    - (in this case we are upscaling all images to 460)
+            - 🫐 | GPU |
+              - `batch_tfms = fn`
                 - **batch xform**
-                  - xform batches to **augment generalization**
-                  - (in this case we are augmenting existing training images by crop, rotate, flipping images in the batch)
+                  - **fn** = aug_transforms(size=224, min_scale=0.75)
+                    - xform batches to **augment generalization**
+                    - (in this case we are augmenting existing training images by crop, rotate, flipping images in the batch)
   - 🛣️ | DataSet | 🛣️
     - `dsets`
       - = dblock.datasets(`df`) 🗓️
@@ -551,6 +558,7 @@ markmap:
       - used for **opening**, **xforming** and **saving** image file formats
 - | File Path |
   - `source_data_path` = '/Users/mton/.fastai/data/pascal_2007/train'
+    - @audit ... this has /train hardcoded, verify that we are also handling valid ok
     - path to where our image data is located (local)
 - | Tables |
   - **DataFrame**
@@ -713,7 +721,9 @@ markmap:
 ##### -- import --
 
 - `pd`
-  - 'import **pandas** as **pd**'
+  - import **pandas** as **pd**
+- `RandomResizedCrop`
+  - from fastai.vision.augment import RandomResizedCrop
 
 ##### -- var --
 
@@ -773,7 +783,7 @@ markmap:
                   - 0 ... 5010
               - `2 datasets` of sizes `4009,1002`
                 - 1 - training set : `4009`
-                - 2 - validate set : `10021`
+                - 2 - validate set : `1002`
               - Setting up Pipeline: `get_image_path`
               - Setting up Pipeline: `get_labels`
 
@@ -852,14 +862,15 @@ markmap:
           - Therefore to ensure **serialization**, we MUST use properly **named functions** instead of lambda functions
           - This will allow us to save and load **Learner** states without issues
 
-  - | MULTI CATEGORY | (with explicit splitter)
+  - | MULTI CATEGORY | (with split/augment)
 
     - ```python
         dblock = DataBlock(
           blocks=(ImageBlock, MultiCategoryBlock),
           splitter = splitter, # split based on 'is_valid' column
           get_x=get_image_path,
-          get_y=get_labels
+          get_y=get_labels,
+          item_tfms = RandomResizedCrop(128, min_scale=0.35)
         )
       ```
 
@@ -921,7 +932,7 @@ markmap:
 
       - '(#1) ['car']'
 
-##### --  fn{ ... } --
+##### -- 🖨️ { ... } 🖨️ --
 
 - `dblock =`
 
@@ -930,20 +941,28 @@ markmap:
         blocks = (ImageBlock, MultiCategoryBlock),
         splitter = splitter, # split based on 'is_valid' column
         get_x = get_image_path,
-        get_y = get_labels
+        get_y = get_labels,
+        item_tfms = RandomResizedCrop(128, min_scale=0.35)
       }
     ```
 
-- `dsets =`
+- `dls =`
 
   - ```python
-      dblock.datasets(df)
+      dls = dblock.dataloaders(df)
     ```
 
-    - dsets.train[0]
+    - -> create a DataLoaders obj
+      - 1 - from `df` DataFrame
+        - path to directory
+        - index list of items
+        - ...
+      - 2 - according to **blueprint** defined in `dblock`
+    - -> **returns** DataLoaders to `dls`
+      - **DataLoaders** 2 objs
+        - **training** DataLoader
+        - **validation** DataLoader
+      - each obj are responsible for **fetching batches** of data for their respective **phase**
 
-      - ```sh
-          (PILImage mode=RGB size=500x333,
-          TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 
-                                0., 0., 0., 0., 0.]))
-        ```
+  - | SHOW |
+    - dls.**show_batch**(nrows=1, ncols=3)
