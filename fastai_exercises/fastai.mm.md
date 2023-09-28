@@ -215,139 +215,141 @@ markmap:
 
 #### 🍟 -- fastai -- 🍟
 
-##### 🌎 ==[ DataBlock ]== 🌎
+##### | BLOCK |
 
+###### 🌎 ==[ DataBlock ]== 🌎
+
+- src/block.py
+  - 🔑 Understanding **DataBlock** is key to 🔑
+    - moving **BEYOND** fixed applications
+    - crafting **NEW** solutions to new PROBLEMS
+    - ☑️ @udit-ok : List available Blocks
+      - ==[ TransformBlock ]==
+        - -- included --
+          - 1 - 🔎 **[ ImageBlock ]** 🔎
+            - -- image files -- to **grid of pixels**
+              - | grid |
+                - **tensor**
+                  - -- 3d --
+                    - width
+                    - height
+                    - channels(RGBA)
+              - | pixels |
+                - handles **loading** and **xform** image -> **numeric** formats
+                  - -- image --
+                    - | single |
+                      - **load**
+                        - local filesystem
+                        - remote server
+                      - **xform**
+                        - **uniform** basis for comparison
+                          - channels
+                            - normalize to 0 - 255
+                          - resolution
+                            - equivalent to table with row/col
+                    - | batch |
+                      - **generate** augment **batch** -> +generalization
+                - | EXAMPLE |
+
+                  - ```python
+                      data_block = DataBlock(
+                          blocks=(ImageBlock, CategoryBlock), 
+                          get_items=get_image_files, 
+                          splitter=RandomSplitter(valid_pct=0.2, seed=42),
+                          get_y=parent_label,
+                          item_tfms=Resize(460),
+                          batch_tfms=aug_transforms(size=224, min_scale=0.75) 
+                      )
+                    ```
+
+                    - (x, y) 🔗
+                      - x 🎲 - **ImageBlock** is used to preprocess the independent variables (the images)
+                      - y 🎛️ ->
+                        - **CategoryBlock** is used to preprocess the dependent variable (labels) for image classification
+                        - -💧 loss function 💧-
+                          - 'get_y = parent_label'
+                    - -- images --
+                      - **images loaded** from 'path_to_your_data'
+                      - 1 - 👾 ==[ **image upscaled** ]== 👾 -> 460x460
+                        - upsized to **reduce lossiness** from batch step (2)
+                      - 2 - 🧿 ==[ **batch generate** ]== 🧿
+                        - **augment samples** to `improve` model `generalization`
+                          - **xform**
+                            - `rotate`
+                            - `crop`
+                            - adjust `hls`
+                            - `blur`
+                          - **uniform** resized back to 224x224
+
+          - 2 - **[ MaskBlock ]**
+            - **segmentation** tasks
+              - handles tasks where the target is a **pixel-level** mask
+          - 3 - **[ BBoxBlock ]**
+            - **object detection** tasks
+              - handles tasks where the target is one or more **bounding boxes** in an image
+          - 4 - **[ PointBlock ]**
+            - **key point** regression
+              - handles tasks where the target is one or more **points** in an image's **coordinate system**
+          - 5 - 💬 **[ TextBlock ]** 💬
+            - handles the **tokenization** and **hashing** of text
+              - **tokenization**
+                - raw process of splitting text into smaller pieces : tokens
+                  - words
+                    - 'cats'
+                  - sub-words
+                    - 'cat'
+                    - 's'
+                      - plural token
+              - **hash**
+                - create a **vocabulary** of **tokens**
+                  - -- keys --
+                    - | index |
+                      - alphanumeric characters
+                    - | generate |
+                      - custom sub_words
+                - | EXAMPLE |
+
+                  - ```python
+                      data_block = DataBlock(
+                          blocks=(TextBlock.from_folder(path), CategoryBlock),
+                          get_y = parent_label,
+                          get_items=partial(get_text_files, folders=['train', 'test']), 
+                          splitter=GrandparentSplitter(valid_name='test')
+                      )
+                    ```
+
+                    - (x, y) 🔗
+                      - x 🎲 - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
+                      - y 🎛️ ->
+                        - **CategoryBlock** is used to preprocess the dependent variable (the labels for text classification)
+                        - -💧 loss function 💧-
+                          - 'get_y = parent_label'
+                            - GPT model would use 'get_next_char'
+                    - -- text --
+                      - **text files are loaded** from the directory specified by 'path'
+                      - 🪙 ==[ **tokenized** ]== 🪙
+                        - char | subwords | words
+                          - @audit Explain trade offs between each ...
+                        - 🧇 ==[ **hash** ]== 🧇
+                          - a **vocabulary of tokens** is created by assigning a **UID -> each token**
+                          - text data is **hashed** to a sequence of these **UID**
+                          - this is the **numerical representation** of the text that the model will use
+
+          - 6 - **[ CategoryBlock ]**
+            - categorical (**classification**) targets
+              - handles converting **categories to codes**
+                - @audit - Example of category to code?
+          - 7 - **[ MultiCategoryBlock ]**
+            - **multiple labels** per item (multi-label classification)
+              - handles the **one-hot encoding** needed for such tasks
+                - @audit - What is one-hot encoding?
+          - 8 - **[ RegressionBlock ]**
+            - continuous (**regression**) targets
+              - handles tasks where the target is a **single continuous** value
+        - -- extend --
+          - to generate **custom**
+            - @audit - Example of a custom TransformBlock
 - `dblock`
-  - src/block.py
-    - 🔑 Understanding **DataBlock** is key to 🔑
-      - moving **BEYOND** fixed applications
-      - crafting **NEW** solutions to new PROBLEMS
-    - ==[ TransformBlock ]==
-      - ☑️ @udit-ok : List available Blocks
-      - -- included --
-        - 1 - 🔎 **[ ImageBlock ]** 🔎
-          - -- image files -- to **grid of pixels**
-            - | grid |
-              - **tensor**
-                - -- 3d --
-                  - width
-                  - height
-                  - channels(RGBA)
-            - | pixels |
-              - handles **loading** and **xform** image -> **numeric** formats
-                - -- image --
-                  - | single |
-                    - **load**
-                      - local filesystem
-                      - remote server
-                    - **xform**
-                      - **uniform** basis for comparison
-                        - channels
-                          - normalize to 0 - 255
-                        - resolution
-                          - equivalent to table with row/col
-                  - | batch |
-                    - **generate** augment **batch** -> +generalization
-              - | EXAMPLE |
-
-                - ```python
-                    data_block = DataBlock(
-                        blocks=(ImageBlock, CategoryBlock), 
-                        get_items=get_image_files, 
-                        splitter=RandomSplitter(valid_pct=0.2, seed=42),
-                        get_y=parent_label,
-                        item_tfms=Resize(460),
-                        batch_tfms=aug_transforms(size=224, min_scale=0.75) 
-                    )
-                  ```
-
-                  - (x, y) 🔗
-                    - x 🎲 - **ImageBlock** is used to preprocess the independent variables (the images)
-                    - y 🎛️ ->
-                      - **CategoryBlock** is used to preprocess the dependent variable (labels) for image classification
-                      - -💧 loss function 💧-
-                        - 'get_y = parent_label'
-                  - -- images --
-                    - **images loaded** from 'path_to_your_data'
-                    - 1 - 👾 ==[ **image upscaled** ]== 👾 -> 460x460
-                      - upsized to **reduce lossiness** from batch step (2)
-                    - 2 - 🧿 ==[ **batch generate** ]== 🧿
-                      - **augment samples** to `improve` model `generalization`
-                        - **xform**
-                          - `rotate`
-                          - `crop`
-                          - adjust `hls`
-                          - `blur`
-                        - **uniform** resized back to 224x224
-
-        - 2 - **[ MaskBlock ]**
-          - **segmentation** tasks
-            - handles tasks where the target is a **pixel-level** mask
-        - 3 - **[ BBoxBlock ]**
-          - **object detection** tasks
-            - handles tasks where the target is one or more **bounding boxes** in an image
-        - 4 - **[ PointBlock ]**
-          - **key point** regression
-            - handles tasks where the target is one or more **points** in an image's **coordinate system**
-        - 5 - 💬 **[ TextBlock ]** 💬
-          - handles the **tokenization** and **hashing** of text
-            - **tokenization**
-              - raw process of splitting text into smaller pieces : tokens
-                - words
-                  - 'cats'
-                - sub-words
-                  - 'cat'
-                  - 's'
-                    - plural token
-            - **hash**
-              - create a **vocabulary** of **tokens**
-                - -- keys --
-                  - | index |
-                    - alphanumeric characters
-                  - | generate |
-                    - custom sub_words
-              - | EXAMPLE |
-
-                - ```python
-                    data_block = DataBlock(
-                        blocks=(TextBlock.from_folder(path), CategoryBlock),
-                        get_y = parent_label,
-                        get_items=partial(get_text_files, folders=['train', 'test']), 
-                        splitter=GrandparentSplitter(valid_name='test')
-                    )
-                  ```
-
-                  - (x, y) 🔗
-                    - x 🎲 - **TextBlock.from_folder(path)** is used to preprocess the independent variables (the text data)
-                    - y 🎛️ ->
-                      - **CategoryBlock** is used to preprocess the dependent variable (the labels for text classification)
-                      - -💧 loss function 💧-
-                        - 'get_y = parent_label'
-                          - GPT model would use 'get_next_char'
-                  - -- text --
-                    - **text files are loaded** from the directory specified by 'path'
-                    - 🪙 ==[ **tokenized** ]== 🪙
-                      - char | subwords | words
-                        - @audit Explain trade offs between each ...
-                      - 🧇 ==[ **hash** ]== 🧇
-                        - a **vocabulary of tokens** is created by assigning a **UID -> each token**
-                        - text data is **hashed** to a sequence of these **UID**
-                        - this is the **numerical representation** of the text that the model will use
-
-        - 6 - **[ CategoryBlock ]**
-          - categorical (**classification**) targets
-            - handles converting **categories to codes**
-              - @audit - Example of category to code?
-        - 7 - **[ MultiCategoryBlock ]**
-          - **multiple labels** per item (multi-label classification)
-            - handles the **one-hot encoding** needed for such tasks
-              - @audit - What is one-hot encoding?
-        - 8 - **[ RegressionBlock ]**
-          - continuous (**regression**) targets
-            - handles tasks where the target is a **single continuous** value
-      - -- extend --
-        - to generate **custom**
-          - @audit - Example of a custom TransformBlock
   - (x, y) 🔗
     - `x` 🎲
       - independent
@@ -363,6 +365,126 @@ markmap:
           - 3 - **[ PointBlock ]**
             - @audit : full name?
               - MSE
+    - | EXAMPLE |
+      - (default) | SINGLE CATEGORY |
+        - `dblock =`
+          - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
+            - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+
+              - ```python
+                  dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
+                ```
+
+              - ANSWER:
+                - During **iterative** training of the **Learner**, it's essential to be able
+                to save (write) and load (read) the status of 'fname' and 'labels',
+                a process known as **serialization**
+                  - However, for serialization to work effectively, the functions passed to **get_x** and **get_y** must have specific, indexable **names**
+                  - **Lambda** functions are **anonymous** and **do NOT** have a specific and **indexable name**, which makes them unsuitable for serialization
+                  - Therefore to ensure **serialization**, we MUST use properly **named functions** instead of lambda functions
+                  - This will allow us to save and load **Learner** states without issues
+            - **returns**
+              - dblock
+                - <fastai.data.block.DataBlock at 0x16a355820>
+                  - @audit : explain this binary object?
+              - dblock.blocks
+                - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
+                  - @audit : is this training and validation?
+            - dblock.**summary**(`df`)
+              - 1 - Collecting Items
+
+                - ```sh
+                  Setting-up type transforms pipelines
+                  Collecting items from            fname          labels  is_valid 
+                                        0     000005.jpg           chair      True
+                                        ...          ...             ...       ...
+                                        5010  009961.jpg             dog     False
+                  ```
+
+              - 2 - Setting Up Pipelines
+
+                - ```sh
+                    [5011 rows x 3 columns]
+                    Found 5011 items
+                    2 datasets of sizes 4009,1002
+                    Setting up Pipeline: get_image_path 
+                    Setting up Pipeline: get_labels
+                  ```
+
+                  - `[5011 rows x 3 columns]`
+                    - columns
+                      - 1 - 'fname'
+                      - 2 - 'labels'
+                      - 3 - 'is_valid'
+                        - is this part of validation set?
+                    - rows
+                      - 0 ... 5010
+                  - `2 datasets` of sizes `4009,1002`
+                    - 1 - training set : `4009`
+                    - 2 - validate set : `1002`
+                  - Setting up Pipeline: `get_image_path`
+                  - Setting up Pipeline: `get_labels`
+
+              - 3 - Building One Sample
+                - 💾 Pipeline: `get_image_path`
+                  - applying `get_image_path` gives
+                    - '/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'
+                - 🏷️ Pipeline: `get_labels`
+                  - applying `get_labels` gives
+                    - [chair, sofa]
+                - Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa'])
+                  - -- log --
+
+                    - ```sh
+                        Building one sample
+                          Pipeline: get_image_path
+                            starting from
+                              fname       007443.jpg
+                        labels      chair sofa
+                        is_valid          True
+                        Name: 3752, dtype: object
+                            applying get_image_path gives
+                              /Users/mton/.fastai/data/pascal_2007/train/007443.jpg
+                          Pipeline: get_labels
+                            starting from
+                              fname       007443.jpg
+                        labels      chair sofa
+                        is_valid          True
+                        Name: 3752, dtype: object
+                            applying get_labels gives
+                              [chair, sofa]
+
+                        Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa']) 
+                      ```
+
+              - 4 - -- Item --
+                - After Item
+                  - specify transformations that should be applied after processing each item
+                  - such as **upscaling** to reduce loss from **augmented batch generation**
+                - Before Batch
+                  - **xform** rotate, crop, hls, blur ... etc
+                - After Batch
+                  - **uniform** resize back to 224x224
+                - ... in **this** case we are ONLY converting **image -> ToTensor**
+
+                  - ```sh
+                      [5011 rows x 3 columns]
+                      Found 5011 items
+                      2 datasets of sizes 4009,1002
+                      Setting up Pipeline: get_image_path
+                      Setting up Pipeline: get_labels
+                      Setting up after_item: Pipeline: ToTensor
+                      Setting up before_batch: Pipeline: 
+                      Setting up after_batch: Pipeline: 
+                    ```
+
+              - 5 - Error Message
+
+                - ```sh
+                    Could not do one pass in your dataloader, there is something wrong in it. Please see the stack trace below:
+                  ```
+
+                  - @audit : Explain the issue?
 
 ###### 🛣️ ==[ Dataset ]== 🛣️
 
@@ -517,12 +639,12 @@ markmap:
                   - **fn** = aug_transforms(size=224, min_scale=0.75)
                     - xform batches to **augment generalization**
                     - (in this case we are augmenting existing training images by crop, rotate, flipping images in the batch)
-  - 🛣️ | DataSet | 🛣️
-    - `dsets`
-      - = dblock.datasets(`df`) 🗓️
-        - { splitter }
-          - 1 - 'train'
-          - 2 - 'validation'
+    - 🛣️ | DataSet | 🛣️
+      - `dsets`
+        - = dblock.datasets(`df`) 🗓️
+          - { splitter }
+            - 1 - 'train'
+            - 2 - 'validation'
   - 🗺️ | DataLoader | 🗺️
     - `dls`
       - = dblock.dataloaders(`df`) 🗓️
@@ -743,210 +865,83 @@ markmap:
         ```
 
 - `dblock`
-  - | SINGLE CATEGORY | (default)
-    - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
-      - print
-        - dblock
-          - <fastai.data.block.DataBlock at 0x16a355820>
-            - @audit : explain this binary object?
-        - dblock.blocks
-          - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
-            - @audit : is this training and validation?
-        - dblock.**summary**(`df`)
-          - 1 - Collecting Items
+  - `dsets`
+    - dblock.**datasets**(`df`)
+      - split dataframe into 2 sets :
+        - 1 - training
+          - dsets.**train[0]**
+            - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
+            - (PILImage mode=RGB size=500x375,
+              TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
+                        0., 0., 0., 0., 0.]))
+            - --[idx_to_labels]--
+              ['car'] dsets.train[0] PILImage mode=RGB size=500x375
+        - 2 - validation
+          - dsets.**valid[0]**
+            - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
+            - (PILImage mode=RGB size=500x375,
+              TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1.,
+                        0., 0., 0., 1., 0.]))
+            - --[idx_to_labels]--
+              ['car', 'person', 'train'] dsets.valid[0] PILImage mode=RGB size=500x375
+      - `.vocab`
+        - **vocab** is generated **pre-split** with the ENTIRE dataset
+          - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
+          - this allows the model to **index** the **same vocabulary** during BOTH **training** and **validation**
+        - print(...)
 
-            - ```sh
-              Setting-up type transforms pipelines
-              Collecting items from            fname          labels  is_valid 
-                                    0     000005.jpg           chair      True
-                                    ...          ...             ...       ...
-                                    5010  009961.jpg             dog     False
-              ```
+          - ```sh
+              # -- [len] --
+              20
+              # -- [vocab] --
+              ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
+              'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
+              'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] 
+            ```
 
-          - 2 - Setting Up Pipelines
+            - train
+              - len(dsets.train.vocab)
+              - dsets.train.vocab
+            - vocab
+              - len(desets.valid.vocab)
+              - dsets.valid.vocab
 
-            - ```sh
-                [5011 rows x 3 columns]
-                Found 5011 items
-                2 datasets of sizes 4009,1002
-                Setting up Pipeline: get_image_path 
-                Setting up Pipeline: get_labels
-              ```
-
-              - `[5011 rows x 3 columns]`
-                - columns
-                  - 1 - 'fname'
-                  - 2 - 'labels'
-                  - 3 - 'is_valid'
-                    - is this part of validation set?
-                - rows
-                  - 0 ... 5010
-              - `2 datasets` of sizes `4009,1002`
-                - 1 - training set : `4009`
-                - 2 - validate set : `1002`
-              - Setting up Pipeline: `get_image_path`
-              - Setting up Pipeline: `get_labels`
-
-          - 3 - Building One Sample
-            - 💾 Pipeline: `get_image_path`
-              - applying `get_image_path` gives
-                - '/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'
-            - 🏷️ Pipeline: `get_labels`
-              - applying `get_labels` gives
-                - [chair, sofa]
-            - Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa'])
-              - -- log --
-
-                - ```sh
-                    Building one sample
-                      Pipeline: get_image_path
-                        starting from
-                          fname       007443.jpg
-                    labels      chair sofa
-                    is_valid          True
-                    Name: 3752, dtype: object
-                        applying get_image_path gives
-                          /Users/mton/.fastai/data/pascal_2007/train/007443.jpg
-                      Pipeline: get_labels
-                        starting from
-                          fname       007443.jpg
-                    labels      chair sofa
-                    is_valid          True
-                    Name: 3752, dtype: object
-                        applying get_labels gives
-                          [chair, sofa]
-
-                    Final sample: (Path('/Users/mton/.fastai/data/pascal_2007/train/007443.jpg'), ['chair', 'sofa']) 
-                  ```
-
-          - 4 - -- Item --
-            - After Item
-              - specify transformations that should be applied after processing each item
-              - such as **upscaling** to reduce loss from **augmented batch generation**
-            - Before Batch
-              - **xform** rotate, crop, hls, blur ... etc
-            - After Batch
-              - **uniform** resize back to 224x224
-            - ... in **this** case we are ONLY converting **image -> ToTensor**
-
-              - ```sh
-                  [5011 rows x 3 columns]
-                  Found 5011 items
-                  2 datasets of sizes 4009,1002
-                  Setting up Pipeline: get_image_path
-                  Setting up Pipeline: get_labels
-                  Setting up after_item: Pipeline: ToTensor
-                  Setting up before_batch: Pipeline: 
-                  Setting up after_batch: Pipeline: 
-                ```
-
-          - 5 - Error Message
-
-            - ```sh
-                Could not do one pass in your dataloader, there is something wrong in it. Please see the stack trace below:
-              ```
-
-              - @audit : Explain the issue?
-    - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+    - `idxs`
 
       - ```python
-          dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
+          # idxs = indexes where the value is 1.0
+          idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
         ```
 
-      - ANSWER:
-        - During **iterative** training of the **Learner**, it's essential to be able
-        to save (write) and load (read) the status of 'fname' and 'labels',
-        a process known as **serialization**
-          - However, for serialization to work effectively, the functions passed to **get_x** and **get_y** must have specific, indexable **names**
-          - **Lambda** functions are **anonymous** and **do NOT** have a specific and **indexable name**, which makes them unsuitable for serialization
-          - Therefore to ensure **serialization**, we MUST use properly **named functions** instead of lambda functions
-          - This will allow us to save and load **Learner** states without issues
+        - 'TensorMultiCategory([6])'
 
-  - | MULTI CATEGORY | (with split/augment)
+    - `idx_to_labels`
 
-    - ```python
-        dblock = DataBlock(
-          blocks=(ImageBlock, MultiCategoryBlock),
-          splitter = splitter, # split based on 'is_valid' column
-          get_x=get_image_path,
-          get_y=get_labels,
-          item_tfms = RandomResizedCrop(128, min_scale=0.35)
-        )
-      ```
+      - ```python
+          idx_to_labels = dsets.train.vocab[idxs]
+        ```
 
-- `dsets`
-  - dblock.**datasets**(`df`)
-    - split dataframe into 2 sets :
-      - 1 - training
-        - dsets.**train[0]**
-          - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
-          - (PILImage mode=RGB size=500x375,
-            TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
-                      0., 0., 0., 0., 0.]))
-          - --[idx_to_labels]--
-            ['car'] dsets.train[0] PILImage mode=RGB size=500x375
-      - 2 - validation
-        - dsets.**valid[0]**
-          - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
-          - (PILImage mode=RGB size=500x375,
-            TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1.,
-                      0., 0., 0., 1., 0.]))
-          - --[idx_to_labels]--
-            ['car', 'person', 'train'] dsets.valid[0] PILImage mode=RGB size=500x375
-    - `.vocab`
-      - **vocab** is generated **pre-split** with the ENTIRE dataset
-        - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
-        - this allows the model to **index** the **same vocabulary** during BOTH **training** and **validation**
-      - print(...)
-
-        - ```sh
-            # -- [len] --
-            20
-            # -- [vocab] --
-            ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
-             'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
-             'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] 
-          ```
-
-          - train
-            - len(dsets.train.vocab)
-            - dsets.train.vocab
-          - vocab
-            - len(desets.valid.vocab)
-            - dsets.valid.vocab
-
-  - `idxs`
-
-    - ```python
-        # idxs = indexes where the value is 1.0
-        idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
-      ```
-
-      - 'TensorMultiCategory([6])'
-
-  - `idx_to_labels`
-
-    - ```python
-        idx_to_labels = dsets.train.vocab[idxs]
-      ```
-
-      - '(#1) ['car']'
+        - '(#1) ['car']'
 
 ##### -- 🖨️ { ... } 🖨️ --
 
-- `dblock =`
+###### | DATA |
 
-  - ```python
-      DataBlock{
-        blocks = (ImageBlock, MultiCategoryBlock),
-        splitter = splitter, # split based on 'is_valid' column
-        get_x = get_image_path,
-        get_y = get_labels,
-        item_tfms = RandomResizedCrop(128, min_scale=0.35)
-      }
-    ```
+- 🌎 `dblock =`
+  - | MULTI CATEGORY |
+    - (with split/augment)
 
-- `dls =`
+    - ```python
+        DataBlock{
+          blocks = (ImageBlock, MultiCategoryBlock),
+          splitter = splitter, # split based on 'is_valid' column
+          get_x = get_image_path,
+          get_y = get_labels,
+          item_tfms = RandomResizedCrop(128, min_scale=0.35)
+        }
+      ```
+
+- 🗺️ `dls =`
 
   - ```python
       dls = dblock.dataloaders(df)
@@ -966,3 +961,27 @@ markmap:
 
   - | SHOW |
     - dls.**show_batch**(nrows=1, ncols=3)
+
+###### 🧠 | LEARNER |
+
+- [ **encapsulates** ]->
+  - 1 - Model
+  - 2 - Dataloader
+  - 3 - Loss Function
+
+- -- import --
+  - from fastai
+    - .vision
+      - .all
+        - @audit-issue : ❌ : fastai.vision.learner FAILS, why do we have use fastai.vision.all instead?
+        - `vision_learner`
+        - `cnn_learner`
+          - used in fastai book : DEPRECATE for vision_learner ^ instead
+      - .models
+        - `resnet18`
+
+- `learn`
+
+  - ```python
+      learn = vision_learner(dls, resnet18)
+    ```
