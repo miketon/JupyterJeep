@@ -840,106 +840,119 @@ markmap:
 
 #### -- **main** --
 
-##### -- import --
+##### | INIT |
 
-- `pd`
-  - import **pandas** as **pd**
-- `RandomResizedCrop`
-  - from fastai.vision.augment import RandomResizedCrop
+###### -- var --
 
-##### -- var --
+- | DATA |
+  - -- import --
+    - `pd`
+      - import **pandas** as **pd**
+  - 🎬 `df`
+    - pd.`read_csv`(path/'train.csv')
+      - **load** csv into dataframe **table**
+      - df.**head()**
+        - **print** head (5 default)
 
-- `df`
-  - pd.`read_csv`(path/'train.csv')
-    - **load** csv into dataframe **table**
-    - df.**head()**
-      - **print** head (5 default)
+        - ```sh
+                    fname        labels  is_valid 
+            0  000005.jpg         chair      True
+            1  000007.jpg           car      True
+            2  000009.jpg  horse person      True
+            3  000012.jpg           car     False
+            4  000016.jpg       bicycle      True
+          ```
 
-      - ```sh
-                  fname        labels  is_valid 
-          0  000005.jpg         chair      True
-          1  000007.jpg           car      True
-          2  000009.jpg  horse person      True
-          3  000012.jpg           car     False
-          4  000016.jpg       bicycle      True
-        ```
-
-- `dblock`
-  - `dsets`
-    - dblock.**datasets**(`df`)
-      - split dataframe into 2 sets :
-        - 1 - training
-          - dsets.**train[0]**
-            - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
-            - (PILImage mode=RGB size=500x375,
-              TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
-                        0., 0., 0., 0., 0.]))
-            - --[idx_to_labels]--
-              ['car'] dsets.train[0] PILImage mode=RGB size=500x375
-        - 2 - validation
-          - dsets.**valid[0]**
-            - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
-            - (PILImage mode=RGB size=500x375,
-              TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1.,
-                        0., 0., 0., 1., 0.]))
-            - --[idx_to_labels]--
-              ['car', 'person', 'train'] dsets.valid[0] PILImage mode=RGB size=500x375
-      - `.vocab`
-        - **vocab** is generated **pre-split** with the ENTIRE dataset
-          - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
-          - this allows the model to **index** the **same vocabulary** during BOTH **training** and **validation**
-        - print(...)
-
-          - ```sh
-              # -- [len] --
-              20
-              # -- [vocab] --
-              ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
-              'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
-              'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] 
-            ```
-
-            - train
-              - len(dsets.train.vocab)
-              - dsets.train.vocab
-            - vocab
-              - len(desets.valid.vocab)
-              - dsets.valid.vocab
-
-    - `idxs`
+  - 🌎 `dblock`
+    - | MULTI CATEGORY |
+      - (with split/augment)
+        - -- import --
+          - `RandomResizedCrop`
+            - from fastai.vision.augment import RandomResizedCrop
 
       - ```python
-          # idxs = indexes where the value is 1.0
-          idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
+          DataBlock{
+            blocks = (ImageBlock, MultiCategoryBlock),
+            splitter = splitter, # split based on 'is_valid' column
+            get_x = get_image_path,
+            get_y = get_labels,
+            item_tfms = RandomResizedCrop(128, min_scale=0.35)
+          }
         ```
 
-        - 'TensorMultiCategory([6])'
+    - `dsets`
+      - dblock.**datasets**(`df`)
+        - split dataframe into 2 sets :
+          - 1 - training
+            - dsets.**train[0]**
+              - '(Path('/Users/mton/.fastai/data/pascal_2007/train/007045.jpg'), ['person', 'cow'])'
+              - (PILImage mode=RGB size=500x375,
+                TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
+                          0., 0., 0., 0., 0.]))
+              - --[idx_to_labels]--
+                ['car'] dsets.train[0] PILImage mode=RGB size=500x375
+          - 2 - validation
+            - dsets.**valid[0]**
+              - '(Path('/Users/mton/.fastai/data/pascal_2007/train/008759.jpg'), ['bicycle'])'
+              - (PILImage mode=RGB size=500x375,
+                TensorMultiCategory([0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 1.,
+                          0., 0., 0., 1., 0.]))
+              - --[idx_to_labels]--
+                ['car', 'person', 'train'] dsets.valid[0] PILImage mode=RGB size=500x375
+        - `.vocab`
+          - **vocab** is generated **pre-split** with the ENTIRE dataset
+            - by **convention** the vocab for both **.train** and **.valid** SHOULD be the SAME
+            - this allows the model to **index** the **same vocabulary** during BOTH **training** and **validation**
+          - print(...)
 
-    - `idx_to_labels`
+            - ```sh
+                # -- [len] --
+                20
+                # -- [vocab] --
+                ['aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
+                'chair', 'cow', 'diningtable', 'dog', 'horse', 'motorbike', 'person',
+                'pottedplant', 'sheep', 'sofa', 'train', 'tvmonitor'] 
+              ```
 
-      - ```python
-          idx_to_labels = dsets.train.vocab[idxs]
-        ```
+              - train
+                - len(dsets.train.vocab)
+                - dsets.train.vocab
+              - vocab
+                - len(desets.valid.vocab)
+                - dsets.valid.vocab
 
-        - '(#1) ['car']'
+      - `idxs`
+
+        - ```python
+            # idxs = indexes where the value is 1.0
+            idxs = torch.where(dsets.train[0][1]==1.0)[0] # type: ignore
+          ```
+
+          - 'TensorMultiCategory([6])'
+
+      - `idx_to_labels`
+
+        - ```python
+            idx_to_labels = dsets.train.vocab[idxs]
+          ```
+
+          - '(#1) ['car']'
 
 ##### -- 🖨️ { ... } 🖨️ --
 
-###### | DATA |
+- **Learner** Requires
+  - 1 - 🧠 Model
+    - using fastai's **resnet18**, a class inheriting from nn.Module
+  - 2 - Optimizer
+    - fastai uses **SGD** by Default
+  - 3 - 🗺️ DataLoaders object
+    - @audit : verify that fastai has train/validation set separation as a 1st class FEATURE
+    - training set
+    - validation set
+  - 4 - 💧 Loss Function
+    - ???
 
-- 🌎 `dblock =`
-  - | MULTI CATEGORY |
-    - (with split/augment)
-
-    - ```python
-        DataBlock{
-          blocks = (ImageBlock, MultiCategoryBlock),
-          splitter = splitter, # split based on 'is_valid' column
-          get_x = get_image_path,
-          get_y = get_labels,
-          item_tfms = RandomResizedCrop(128, min_scale=0.35)
-        }
-      ```
+###### | DATALOADERS |
 
 - 🗺️ `dls =`
 
@@ -947,12 +960,39 @@ markmap:
       dls = dblock.dataloaders(df)
     ```
 
-    - -> create a DataLoaders obj
+    - -> create a **DataLoaders** obj
       - 1 - from `df` DataFrame
         - path to directory
         - index list of items
         - ...
       - 2 - according to **blueprint** defined in `dblock`
+      - 3 - **batch_size**
+        - the **default** is **64**
+        - else **tunable** 
+          - like say -> **128** :
+            - `dls = dblock.dataloaders(df, bs=128)`
+          - batch_size **tuning advantages** of :
+            - -- smaller (-) --
+              - 1 - Memory efficient
+                - smaller **footprint enables**
+                  - **higher resolution** input
+                  - overall **larger models**
+                  - that would otherwise **overflow gpu**
+              - 2 - Speed
+                - higher frequency update == **faster convergence**
+                - smaller batch == **faster parameter update**
+              - 3 - Noise
+                - more **noise improves generalization**!!!
+                - adds friction to overfitting tendencies
+              - 4 - SGD (Stochastic Gradient Descent)
+                - faster convergence
+                - escape local minima
+            - -- larger (+) --
+              - 1 - Computational Efficiency
+                - easier to parallelize matrix ops
+              - 2 - Stable Gradients
+                - more accurate estimate of gradient
+              - 3 - Easier to Fit in Memory
     - -> **returns** DataLoaders to `dls`
       - **DataLoaders** 2 objs
         - **training** DataLoader
@@ -962,26 +1002,71 @@ markmap:
   - | SHOW |
     - dls.**show_batch**(nrows=1, ncols=3)
 
-###### 🧠 | LEARNER |
+###### 🧠 | MODEL |
 
 - [ **encapsulates** ]->
   - 1 - Model
   - 2 - Dataloader
   - 3 - Loss Function
 
-- -- import --
-  - from fastai
-    - .vision
-      - .all
-        - @audit-issue : ❌ : fastai.vision.learner FAILS, why do we have use fastai.vision.all instead?
-        - `vision_learner`
-        - `cnn_learner`
-          - used in fastai book : DEPRECATE for vision_learner ^ instead
-      - .models
-        - `resnet18`
-
 - `learn`
+  - -- import --
+    - from fastai
+      - .vision
+        - .all
+          - @audit-issue : ❌ : fastai.vision.learner FAILS, why do we have use fastai.vision.all instead?
+          - `vision_learner`
+          - `cnn_learner`
+            - used in fastai book : DEPRECATE for vision_learner ^ instead
+        - .models
+          - `resnet18`
 
   - ```python
       learn = vision_learner(dls, resnet18)
     ```
+
+    - | DEBUG |
+      - // manually get a mini-batch
+        - **x,y** = dls.train.**one_batch()**
+          - x.**shape**
+            - torch.Size([64, 3, 128, 128])
+              - [ 64] : batch
+              - | **Image Block** |
+                - [  3] : channels (r,g,b)
+                - [128] : height
+                - [128] : width
+          - y.**shape**
+            - torch.Size([64, 20])
+              - [64] : batch
+              - | **MultiCategoryBlock** |
+                - [20] : categories
+      - // pass **x** into the model
+        - **activations** = learn.model(**x**)
+          - activations.**shape**
+            - torch.Size([64, 20])
+              - [64] : batch
+              - | **MultiCategoryBlock** |
+                - [20] : categories
+          - activations**[0]** (model activation)
+
+            - ```sh
+                TensorBase(
+                [ 
+                  0.6264, -2.6771,  1.8361,  0.9085, -3.1789, -1.4625,  4.8753,
+                  -1.0118,  3.0367,  1.2142,  1.3568,  1.0312,  2.5194,  0.3387,
+                  1.1586,  3.4288,  5.6084,  0.8816,  0.7349, -3.0787
+                ],
+                grad_fn=<AliasBackward0>)
+              ```
+
+              - // [0] first single item of batch 64
+                - **TensorBase**( ... )
+                  - [0..19],
+                    - // array of [20] floating point values
+                  - `grad_fn`
+                    - indicates tensor has a gradient function associated
+                      - it's tracking computational history
+                        - for automatic differentiation
+                        - which is used for backpropagation in the training of neural networks
+                    - `=<AliasBackward0>)`
+  
