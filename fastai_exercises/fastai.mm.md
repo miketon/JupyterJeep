@@ -968,7 +968,7 @@ markmap:
       - 2 - according to **blueprint** defined in `dblock`
       - 3 - **batch_size**
         - the **default** is **64**
-        - else **tunable** 
+        - else **tunable**
           - like say -> **128** :
             - `dls = dblock.dataloaders(df, bs=128)`
           - batch_size **tuning advantages** of :
@@ -1005,6 +1005,7 @@ markmap:
 ###### 🧠 | MODEL |
 
 - [ **encapsulates** ]->
+
   - 1 - Model
   - 2 - Dataloader
   - 3 - Loss Function
@@ -1041,7 +1042,7 @@ markmap:
               - | **MultiCategoryBlock** |
                 - [20] : categories
       - // pass **x** into the model
-        - **activations** = learn.model(**x**)
+        - `activations` = learn.model(**x**)
           - activations.**shape**
             - torch.Size([64, 20])
               - [64] : batch
@@ -1062,11 +1063,89 @@ markmap:
               - // [0] first single item of batch 64
                 - **TensorBase**( ... )
                   - [0..19],
-                    - // array of [20] floating point values
+                    - array of [20] floating point values
+                    - representing the **raw score** for each **category**
+                      - before any softmax activation
+                    - index with MAX value is the predicted class
+                      - in this case it looks like it's **5.6084** at id **16**
+                      - dls.vocab`[16]` = `sheep`
+
+                        - ```sh
+                            dls.vocab = [
+                              'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
+                              'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
+                              'dog', 'horse', 'motorbike', 'person', 'pottedplant',
+                              'sheep', 'sofa', 'train', 'tvmonitor'
+                            ]
+                          ```
+
                   - `grad_fn`
                     - indicates tensor has a gradient function associated
                       - it's tracking computational history
                         - for automatic differentiation
                         - which is used for backpropagation in the training of neural networks
+                      - When `.backward()` is called
+                        - on a tensor that has **requires_grad=True**
+                          - PyTorch will compute the gradients
+                          - and store them in the .grad attribute of the tensors involved in its creation
                     - `=<AliasBackward0>)`
-  
+- `loss_func`
+  - -- import --
+    - from fastai
+      - .vision
+        - .learner
+          - import `nn`
+            - @audit : chatGPT suggests instead ->
+              - 'from torch import nn'
+              - given that **nn** is part of the 'Pytorch' library as opposed to 'fastai'
+            - 'nn' == **neural network**
+              - it contains many **utility functions** and **classes** for :
+                - 1 - **building** neural networks
+                - 2 - **training** neural networks
+    - -- LEARNING (from scratch) --
+      - ==[binary_cross_entropy(inputs, targets)]==
+        - One-hot Encode Targets
+          - Using Pytorch's MAGIC element-wise operations
+
+        - ```python
+            def binary_cross_entropy(inputs, targets):
+              inputs = inputs.sigmoid()
+              return -torch.where(targets==1, 1-inputs, inputs).log().mean()
+          ```
+
+      - ==[accuracy(input, target, axis=1)]==
+        - Compute accuracy with 'target' when 'prediction' is bs * n_classes
+      - ==[accuracy_multi(input, target, thresh=0.5, sigmoid=True)]==
+        - Compute accuracy when 'input' and 'target' are the same size
+
+  - `loss_func = nn.BCEWithLogitsLoss()`
+    - Binary Cross Entropy (BCE) with Logits Loss
+      - 1 - **Sigmoid** layer
+        - WIDE value range **normalized** to NARROW **0-1.0 range**
+      - 2 - the **BCELoss** into one class
+        - adjusts return **value** where :
+          - MIN :: closer
+          - MAX :: further
+      - makes it more numerically **stable**
+        - when the model's **logits** (outputs), are :
+          - 1 - very **large** numbers
+          - 2 - very **small** numbers
+        - less prone to numerical **underflow** or **overflow** errors
+    - a loss function used for **binary classification** problems
+      - | DEBUG |
+        - @todo (compare to hand written function here)
+  - `loss = loss_func(activations, y)`
+    - calling **loss_func** :
+      - -- input --
+        - **activations**
+          - | OUTPUT | from **model**
+        - **y**
+          - | ACTUAL | **labels**
+      - -- output --
+        - **loss**
+          - **measure** of **diff*** between model **output** and actual **label**
+    - `loss`
+      - `TensorMultiCategory(1.0603, grad_fn=<AliasBackward0>)`
+        - `1.0603`
+        - `grad_fn=`
+          - `<AliasBackward0>`
