@@ -225,7 +225,7 @@ markmap:
     - crafting **NEW** solutions to new PROBLEMS
     - ☑️ @udit-ok : List available Blocks
       - ==[ TransformBlock ]==
-        - -- included --
+        - -- included -- 📶
           - 1 - 🔎 **[ ImageBlock ]** 🔎
             - -- image files -- to **grid of pixels**
               - | grid |
@@ -356,7 +356,7 @@ markmap:
         - **[ ImageBlock ]** 🔎
     - `y` 🎛️
       - dependent
-        - -💧 loss function 💧-
+        - -💧 loss function 💧- 📶
           - 1 - **[ Category ]**
             - Cross Entropy
           - 2 - **[ MultiCategory ]**
@@ -369,7 +369,7 @@ markmap:
       - (default) | SINGLE CATEGORY |
         - `dblock =`
           - DataBlock(`get_x`=get_image_path 💾 , `get_y`=get_labels 🏷️ )
-            - @audit : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
+            - ☑️ @udit-ok : Explain why we MUST inline get_x and get_y functions as opposed to using lambdas?
 
               - ```python
                   dblock = DataBlock(get_x=lambda r:r['fname'], get_y=lambda r:r['labels'])
@@ -390,7 +390,7 @@ markmap:
               - dblock.blocks
                 - (fastai.data.block.TransformBlock, fastai.data.block.TransformBlock)
                   - @audit : is this training and validation?
-            - dblock.**summary**(`df`)
+            - dblock.**summary**(`df`) 📶
               - 1 - Collecting Items
 
                 - ```sh
@@ -412,7 +412,7 @@ markmap:
                   ```
 
                   - `[5011 rows x 3 columns]`
-                    - columns
+                    - columns 📶
                       - 1 - 'fname'
                       - 2 - 'labels'
                       - 3 - 'is_valid'
@@ -503,11 +503,11 @@ markmap:
 - `dls`
   - DataLoader is used to load the data in a way that's
     efficient and convenient for training models
-    - composed of
+    - composed of 📶
       - 1 - **Dataset**
       - 2 - **Sampler**
       - 3 - **Iterable** for the given DataSet
-    - supports
+    - supports 📶
       - 1 - Automatic Batching
       - 2 - Multi-Thread Data Loading
       - 3 - Customizing Loading Order
@@ -518,7 +518,7 @@ markmap:
 
     - `dataloaders(path)`
       - **path** is the path to your data
-      - **dataloaders** method will
+      - **dataloaders** method will 📶
         - 1 - follow the instructions in the **DataBlock**
           - includes
             - (x,y) 🔗
@@ -588,7 +588,7 @@ markmap:
       - **BLUEPRINT** to **preprocesss data** for training
         - It doesn't contain the data itself
         - but it contains instructions on how to
-          - 💡 🥠 💡
+          - 💡 🥠 💡 📶
             - 1 - **extract** items from the **input** data
             - 2 - **split** the data into training and validation sets
             - 3 - apply needed **transforms**
@@ -940,7 +940,7 @@ markmap:
 
 ##### -- 🖨️ { ... } 🖨️ --
 
-- **Learner** Requires
+- **Learner** Requires 📶
   - 1 - 🧠 Model
     - using fastai's **resnet18**, a class inheriting from nn.Module
   - 2 - Optimizer
@@ -960,7 +960,7 @@ markmap:
       dls = dblock.dataloaders(df)
     ```
 
-    - -> create a **DataLoaders** obj
+    - -> create a **DataLoaders** obj 📶
       - 1 - from `df` DataFrame
         - path to directory
         - index list of items
@@ -972,7 +972,7 @@ markmap:
           - like say -> **128** :
             - `dls = dblock.dataloaders(df, bs=128)`
           - batch_size **tuning advantages** of :
-            - -- smaller (-) --
+            - -- smaller (-) -- 📶
               - 1 - Memory efficient
                 - smaller **footprint enables**
                   - **higher resolution** input
@@ -987,7 +987,7 @@ markmap:
               - 4 - SGD (Stochastic Gradient Descent)
                 - faster convergence
                 - escape local minima
-            - -- larger (+) --
+            - -- larger (+) -- 📶
               - 1 - Computational Efficiency
                 - easier to parallelize matrix ops
               - 2 - Stable Gradients
@@ -1004,7 +1004,7 @@ markmap:
 
 ###### 🧠 | MODEL |
 
-- [ **encapsulates** ]->
+- [ **encapsulates** ]-> 📶
 
   - 1 - Model
   - 2 - Dataloader
@@ -1113,6 +1113,113 @@ markmap:
               return -torch.where(targets==1, 1-inputs, inputs).log().mean()
           ```
 
+          - ( ... )
+            - -- args --
+              - inputs
+                - raw logits from model
+                - Shape (N, )
+                  - torch.Tensor
+              - targets
+                - true/actual labels
+                - Shape (N, )
+                  - where each element is 0 or 1
+                  - torch.Tensor
+            - -- returns --
+              - loss
+                - the computed binary cross entropy loss
+                - torch.Tensor
+          - { ... }
+            - inputs = inputs.sigmoid()
+            - -torch
+              - .where(targets==1, 1-inputs, inputs)
+                - // how wrong was my guess???
+                  - if target is 1, compute -log(probability)
+                  - if target is 0, compute -log(1 - probability)
+                  - | EXAMPLE |
+                    - targets = 'cat' == 1.0 (true)
+                      - input = 1.0
+                        - // model is CERTAIN and CORRECT
+                        - loss = -log(1.0)::0.0
+                          - // MINIMAL weight update needed : loss = 0.0
+                      - input = 0.0
+                        - // model is CERTAIN and WRONG
+                        - loss = -log(0.0)::1.0
+                          - // MAXIMAL weight update needed : loss = 1.0
+                      - input = 0.5
+                        - // model is UNCERTAIN
+                          - loss = -log(0.5)::0.69
+                            - // MEDIUM weight update needed??
+                    - targets = 'cat' == 0.0 (false)
+                      - input = 1.0
+                        - // model is CERTAIN and WRONG
+                        - loss = -log(1.0 - 1.0)::1.0
+                          - // MAXIMAL weight update needed : loss = 1.0
+                      - input = 0.0
+                        - // model is CERTAIN and CORRECT
+                        - loss = -log(1.0 - 0.0)::1.0
+                          - // MINIMAL weight update needed : loss = 0.0
+                      - input = 0.5
+                        - // model is UNCERTAIN
+                        - loss = -log(1.0 - 0.5)::0.69
+                          - // MEDIUM weight update needed??
+                    - ☑️ @udit-ok : when input = 0.5 ... at risk of NEVER converging???
+                      - | ANSWER |
+                        - When a model assigns a prediction probability of 0.5
+                          - it's essentially saying it's **UNSURE** about the prediction
+                            - This isn't an ideal prediction but ...
+                            - CONFIDENTLY predicting the WRONG class is WORSE by far
+                          - if the model consistently assigns a probability of around 0.5 to the correct class
+                            - (indicating it's unsure about many of its predictions)
+                            - it's a sign that the model is **struggling** to **learn patterns** from the data
+                            - This could be due to many reasons such as 📶
+                              - 1 - not enough training data
+                              - 2 - the model is too simple to capture the complexity of the data
+                              - 3 - the features used do not contain enough information to make accurate predictions
+                            - To **improve performance** may be necessary to revisit : 📶
+                              - 1 - the model's architecture
+                              - 2 - the data
+                              - 3 - the training process to
+                        - Whether the model will **converge**
+                          - (i.e., learn to make correct predictions)
+                          - depends on many factors beyond this single prediction : 📶
+                            - 1 - how the model performs on the other data points
+                            - 2 - the complexity of the model
+                            - 3 - the learning rate
+                            - 4 - the number of iterations
+                            - 5 -  and many other factors
+                - .log()
+                  - ☑️ @udit-ok : what are the REASONS to use -log function to translate probabilities?
+                    - ANSWER : 📶
+                      - 1 - Express Uncertainty
+                        - **log(p)** function **INCREASES** as the probability **p** **DECREASES**
+                        - **LOWER probability** events are associated with **LARGER output**
+                          - results in capturing **higher SURPRISE**
+                          - **punishes CERTAINTY** when WRONG
+                      - 2 - Numerical Stability
+                        - **numerical underflow** is when extremely small numbers are INCORRECTLY rounded to ZERO
+                        - **log xforms** small values outside of **rounding threshold**
+                      - 3 - Transforms Product into Sums
+                        - in **logaritmic space**, multiplication becomes **addition**
+                        - reduces **underflow** since multiplying small numbers yield increasingly smaller numbers
+                      - 4 - Loss Function in Machine Learning
+                        - **cross entropy loss** is used by classification tasks
+                        - heavily PENALIZES certain and wrong predictions
+                          - negative log of logit (prediction tensor)
+                            - 🌈
+                              - -torch.tensor(.99).log()
+                                - tensor(0.0101)
+                              - -torch.tensor(.75).log()
+                                - tensor(0.2877)
+                              - -torch.tensor(.50).log()
+                                - tensor(0.6931)
+                              - -torch.tensor(.10).log()
+                                - tensor(2.3026)
+                              - -torch.tensor(.01).log()
+                                - tensor(4.6052)
+                              - -torch.tensor(.0001).log()
+                                - tensor(9.2103)
+                  - .mean()
+
       - ==[accuracy(input, target, axis=1)]==
         - Compute accuracy with 'target' when 'prediction' is bs * n_classes
       - ==[accuracy_multi(input, target, thresh=0.5, sigmoid=True)]==
@@ -1130,6 +1237,9 @@ markmap:
         - when the model's **logits** (outputs), are :
           - 1 - very **large** numbers
           - 2 - very **small** numbers
+          - **logits** are RAW guesses before they have been xformed to probabilities
+            - probabilities capture a measure of **how far off** the guesses are
+            - **directionally** and **magnitude** wise
         - less prone to numerical **underflow** or **overflow** errors
     - a loss function used for **binary classification** problems
       - | DEBUG |
