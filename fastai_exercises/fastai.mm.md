@@ -1010,85 +1010,6 @@ markmap:
   - 2 - Dataloader
   - 3 - Loss Function
 
-- `learn`
-  - -- import --
-    - from fastai
-      - .vision
-        - .all
-          - @audit-issue : ❌ : fastai.vision.learner FAILS, why do we have use fastai.vision.all instead?
-          - `vision_learner`
-          - `cnn_learner`
-            - used in fastai book : DEPRECATE for vision_learner ^ instead
-        - .models
-          - `resnet18`
-
-  - ```python
-      learn = vision_learner(dls, resnet18)
-    ```
-
-    - | DEBUG |
-      - // manually get a mini-batch
-        - **x,y** = dls.train.**one_batch()**
-          - x.**shape**
-            - torch.Size([64, 3, 128, 128])
-              - [ 64] : batch
-              - | **Image Block** |
-                - [  3] : channels (r,g,b)
-                - [128] : height
-                - [128] : width
-          - y.**shape**
-            - torch.Size([64, 20])
-              - [64] : batch
-              - | **MultiCategoryBlock** |
-                - [20] : categories
-      - // pass **x** into the model
-        - `activations` = learn.model(**x**)
-          - activations.**shape**
-            - torch.Size([64, 20])
-              - [64] : batch
-              - | **MultiCategoryBlock** |
-                - [20] : categories
-          - activations**[0]** (model activation)
-
-            - ```sh
-                TensorBase(
-                [ 
-                  0.6264, -2.6771,  1.8361,  0.9085, -3.1789, -1.4625,  4.8753,
-                  -1.0118,  3.0367,  1.2142,  1.3568,  1.0312,  2.5194,  0.3387,
-                  1.1586,  3.4288,  5.6084,  0.8816,  0.7349, -3.0787
-                ],
-                grad_fn=<AliasBackward0>)
-              ```
-
-              - // [0] first single item of batch 64
-                - **TensorBase**( ... )
-                  - [0..19],
-                    - array of [20] floating point values
-                    - representing the **raw score** for each **category**
-                      - before any softmax activation
-                    - index with MAX value is the predicted class
-                      - in this case it looks like it's **5.6084** at id **16**
-                      - dls.vocab`[16]` = `sheep`
-
-                        - ```sh
-                            dls.vocab = [
-                              'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
-                              'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
-                              'dog', 'horse', 'motorbike', 'person', 'pottedplant',
-                              'sheep', 'sofa', 'train', 'tvmonitor'
-                            ]
-                          ```
-
-                  - `grad_fn`
-                    - indicates tensor has a gradient function associated
-                      - it's tracking computational history
-                        - for automatic differentiation
-                        - which is used for backpropagation in the training of neural networks
-                      - When `.backward()` is called
-                        - on a tensor that has **requires_grad=True**
-                          - PyTorch will compute the gradients
-                          - and store them in the .grad attribute of the tensors involved in its creation
-                    - `=<AliasBackward0>)`
 - `loss_func`
   - -- import --
     - from fastai
@@ -1102,160 +1023,274 @@ markmap:
               - it contains many **utility functions** and **classes** for :
                 - 1 - **building** neural networks
                 - 2 - **training** neural networks
-    - -- LEARNING (from scratch) --
-      - ==[binary_cross_entropy(inputs, targets)]==
-        - One-hot Encode Targets
-          - Using Pytorch's MAGIC element-wise operations
+  - -- LOSS FUNCTIOIN (from python) --
+    - ==[binary_cross_entropy(inputs, targets)]==
+      - One-hot Encode Targets
+        - Using Pytorch's MAGIC element-wise operations
 
-        - ```python
-            def binary_cross_entropy(inputs, targets):
-              inputs = inputs.sigmoid()
-              return -torch.where(targets==1, 1-inputs, inputs).log().mean()
-          ```
+      - ```python
+          def binary_cross_entropy(inputs, targets):
+            inputs = inputs.sigmoid()
+            return -torch.where(targets==1, 1-inputs, inputs).log().mean()
+        ```
 
-          - ( ... )
-            - -- args --
-              - inputs
-                - raw logits from model
-                - Shape (N, )
-                  - torch.Tensor
-              - targets
-                - true/actual labels
-                - Shape (N, )
-                  - where each element is 0 or 1
-                  - torch.Tensor
-            - -- returns --
-              - loss
-                - the computed binary cross entropy loss
+        - ( ... )
+          - -- args --
+            - inputs
+              - raw logits from model
+              - Shape (N, )
                 - torch.Tensor
-          - { ... }
-            - inputs = inputs.sigmoid()
-            - -torch
-              - .where(targets==1, 1-inputs, inputs)
-                - // how wrong was my guess???
-                  - if target is 1, compute -log(probability)
-                  - if target is 0, compute -log(1 - probability)
-                  - | EXAMPLE |
-                    - targets = 'cat' == 1.0 (true)
-                      - input = 1.0
-                        - // model is CERTAIN and CORRECT
-                        - loss = -log(1.0)::0.0
-                          - // MINIMAL weight update needed : loss = 0.0
-                      - input = 0.0
-                        - // model is CERTAIN and WRONG
-                        - loss = -log(0.0)::1.0
-                          - // MAXIMAL weight update needed : loss = 1.0
-                      - input = 0.5
-                        - // model is UNCERTAIN
-                          - loss = -log(0.5)::0.69
-                            - // MEDIUM weight update needed??
-                    - targets = 'cat' == 0.0 (false)
-                      - input = 1.0
-                        - // model is CERTAIN and WRONG
-                        - loss = -log(1.0 - 1.0)::1.0
-                          - // MAXIMAL weight update needed : loss = 1.0
-                      - input = 0.0
-                        - // model is CERTAIN and CORRECT
-                        - loss = -log(1.0 - 0.0)::1.0
-                          - // MINIMAL weight update needed : loss = 0.0
-                      - input = 0.5
-                        - // model is UNCERTAIN
-                        - loss = -log(1.0 - 0.5)::0.69
+            - targets
+              - true/actual labels
+                - where each element is 0 or 1
+              - Shape (N, )
+                - torch.Tensor
+          - -- returns --
+            - loss
+              - the computed binary cross entropy loss
+                - **bool crossed** against actual **label**
+                - ~~per element~~
+                  - ☑️ @udit-ok :
+                    - ... but `mean()` averages the elements in the batch
+                    - so **per batch** is actually **returned** instead!
+              - torch.Tensor
+        - { ... }
+          - `inputs = inputs.sigmoid()`
+            - sigmoid is an **activation** function
+            **nomalizing** all values to be between **0 and 1**
+              - sigmoid(x) = `1 / (1 + e^-x)`
+                - sigmoid(x) approaches 1.0
+                  - When x is **LARGE** e^-x approaches **0**
+                - sigmoid(x) approaches 0.0
+                  - When x is **SMALL** e^-x approaches **inf**
+          - -torch
+            - `.where(targets==1, 1-inputs, inputs)`
+              - // how wrong was my guess???
+                - if target is 1, compute -log(probability)
+                - if target is 0, compute -log(1 - probability)
+                - | EXAMPLE |
+                  - targets = 'cat' == 1.0 (true)
+                    - input = 1.0
+                      - // model is CERTAIN and CORRECT
+                      - loss = -log(1.0)::0.0
+                        - // MINIMAL weight update needed : loss = 0.0
+                    - input = 0.0
+                      - // model is CERTAIN and WRONG
+                      - loss = -log(0.0)::1.0
+                        - // MAXIMAL weight update needed : loss = 1.0
+                    - input = 0.5
+                      - // model is UNCERTAIN
+                        - loss = -log(0.5)::0.69
                           - // MEDIUM weight update needed??
-                    - ☑️ @udit-ok : when input = 0.5 ... at risk of NEVER converging???
-                      - | ANSWER |
-                        - When a model assigns a prediction probability of 0.5
-                          - it's essentially saying it's **UNSURE** about the prediction
-                            - This isn't an ideal prediction but ...
-                            - CONFIDENTLY predicting the WRONG class is WORSE by far
-                          - if the model consistently assigns a probability of around 0.5 to the correct class
-                            - (indicating it's unsure about many of its predictions)
-                            - it's a sign that the model is **struggling** to **learn patterns** from the data
-                            - This could be due to many reasons such as 📶
-                              - 1 - not enough training data
-                              - 2 - the model is too simple to capture the complexity of the data
-                              - 3 - the features used do not contain enough information to make accurate predictions
-                            - To **improve performance** may be necessary to revisit : 📶
-                              - 1 - the model's architecture
-                              - 2 - the data
-                              - 3 - the training process to
-                        - Whether the model will **converge**
-                          - (i.e., learn to make correct predictions)
-                          - depends on many factors beyond this single prediction : 📶
-                            - 1 - how the model performs on the other data points
-                            - 2 - the complexity of the model
-                            - 3 - the learning rate
-                            - 4 - the number of iterations
-                            - 5 -  and many other factors
-                - .log()
-                  - ☑️ @udit-ok : what are the REASONS to use -log function to translate probabilities?
-                    - ANSWER : 📶
-                      - 1 - Express Uncertainty
-                        - **log(p)** function **INCREASES** as the probability **p** **DECREASES**
-                        - **LOWER probability** events are associated with **LARGER output**
-                          - results in capturing **higher SURPRISE**
-                          - **punishes CERTAINTY** when WRONG
-                      - 2 - Numerical Stability
-                        - **numerical underflow** is when extremely small numbers are INCORRECTLY rounded to ZERO
-                        - **log xforms** small values outside of **rounding threshold**
-                      - 3 - Transforms Product into Sums
-                        - in **logaritmic space**, multiplication becomes **addition**
-                        - reduces **underflow** since multiplying small numbers yield increasingly smaller numbers
-                      - 4 - Loss Function in Machine Learning
-                        - **cross entropy loss** is used by classification tasks
-                        - heavily PENALIZES certain and wrong predictions
-                          - negative log of logit (prediction tensor)
-                            - 🌈
-                              - -torch.tensor(.99).log()
-                                - tensor(0.0101)
-                              - -torch.tensor(.75).log()
-                                - tensor(0.2877)
-                              - -torch.tensor(.50).log()
-                                - tensor(0.6931)
-                              - -torch.tensor(.10).log()
-                                - tensor(2.3026)
-                              - -torch.tensor(.01).log()
-                                - tensor(4.6052)
-                              - -torch.tensor(.0001).log()
-                                - tensor(9.2103)
-                  - .mean()
+                  - targets = 'cat' == 0.0 (false)
+                    - input = 1.0
+                      - // model is CERTAIN and WRONG
+                      - loss = -log(1.0 - 1.0)::1.0
+                        - // MAXIMAL weight update needed : loss = 1.0
+                    - input = 0.0
+                      - // model is CERTAIN and CORRECT
+                      - loss = -log(1.0 - 0.0)::1.0
+                        - // MINIMAL weight update needed : loss = 0.0
+                    - input = 0.5
+                      - // model is UNCERTAIN
+                      - loss = -log(1.0 - 0.5)::0.69
+                        - // MEDIUM weight update needed??
+                  - ☑️ @udit-ok : when input = 0.5 ... at risk of NEVER converging???
+                    - | ANSWER |
+                      - When a model assigns a prediction probability of 0.5
+                        - it's essentially saying it's **UNSURE** about the prediction
+                          - This isn't an ideal prediction but ...
+                          - CONFIDENTLY predicting the WRONG class is WORSE by far
+                        - if the model consistently assigns a probability of around 0.5 to the correct class
+                          - (indicating it's unsure about many of its predictions)
+                          - it's a sign that the model is **struggling** to **learn patterns** from the data
+                          - This could be due to many reasons such as 📶
+                            - 1 - not enough training data
+                            - 2 - the model is too simple to capture the complexity of the data
+                            - 3 - the features used do not contain enough information to make accurate predictions
+                          - To **improve performance** may be necessary to revisit : 📶
+                            - 1 - the model's architecture
+                            - 2 - the data
+                            - 3 - the training process to
+                      - Whether the model will **converge**
+                        - (i.e., learn to make correct predictions)
+                        - depends on many factors beyond this single prediction : 📶
+                          - 1 - how the model performs on the other data points
+                          - 2 - the complexity of the model
+                          - 3 - the learning rate
+                          - 4 - the number of iterations
+                          - 5 -  and many other factors
+              - `.log()`
+                - ☑️ @udit-ok : what are the REASONS to use -log function to translate probabilities?
+                  - ANSWER : 📶
+                    - 1 - Express Uncertainty
+                      - **log(p)** function **INCREASES** as the probability **p** **DECREASES**
+                      - **LOWER probability** events are associated with **LARGER output**
+                        - results in capturing **higher SURPRISE**
+                        - **punishes CERTAINTY** when WRONG
+                    - 2 - Numerical Stability
+                      - **numerical underflow** is when extremely small numbers are INCORRECTLY rounded to ZERO
+                      - **log xforms** small values outside of **rounding threshold**
+                    - 3 - Transforms Product into Sums
+                      - in **logaritmic space**, multiplication becomes **addition**
+                      - reduces **underflow** since multiplying small numbers yield increasingly smaller numbers
+                    - 4 - Loss Function in Machine Learning
+                      - **cross entropy loss** is used by classification tasks
+                      - heavily PENALIZES certain and wrong predictions
+                        - negative log of logit (prediction tensor)
+                          - 🌈
+                            - -torch.tensor(.99).log()
+                              - tensor(0.0101)
+                            - -torch.tensor(.75).log()
+                              - tensor(0.2877)
+                            - -torch.tensor(.50).log()
+                              - tensor(0.6931)
+                            - -torch.tensor(.10).log()
+                              - tensor(2.3026)
+                            - -torch.tensor(.01).log()
+                              - tensor(4.6052)
+                            - -torch.tensor(.0001).log()
+                              - tensor(9.2103)
+                - `.mean()`
+                  - calculates the **average loss** per data point in the batch
+                  - by **minimizing** this average **loss**, the model aims to make better prediction
 
-      - ==[accuracy(input, target, axis=1)]==
-        - Compute accuracy with 'target' when 'prediction' is bs * n_classes
-      - ==[accuracy_multi(input, target, thresh=0.5, sigmoid=True)]==
-        - Compute accuracy when 'input' and 'target' are the same size
+    - ==[accuracy(input, target, axis=1)]==
+      - Compute accuracy with 'target' when 'prediction' is bs * n_classes
+    - ==[accuracy_multi(input, target, thresh=0.5, sigmoid=True)]==
+      - Compute accuracy when 'input' and 'target' are the same size
 
-  - `loss_func = nn.BCEWithLogitsLoss()`
-    - Binary Cross Entropy (BCE) with Logits Loss
-      - 1 - **Sigmoid** layer
-        - WIDE value range **normalized** to NARROW **0-1.0 range**
-      - 2 - the **BCELoss** into one class
-        - adjusts return **value** where :
-          - MIN :: closer
-          - MAX :: further
-      - makes it more numerically **stable**
-        - when the model's **logits** (outputs), are :
-          - 1 - very **large** numbers
-          - 2 - very **small** numbers
-          - **logits** are RAW guesses before they have been xformed to probabilities
-            - probabilities capture a measure of **how far off** the guesses are
-            - **directionally** and **magnitude** wise
-        - less prone to numerical **underflow** or **overflow** errors
-    - a loss function used for **binary classification** problems
+  - -- LOSS FUNCTIOIN (from fastai) --
+    - `loss_func = nn.BCEWithLogitsLoss()`
+      - Binary Cross Entropy (BCE) with Logits Loss
+        - 1 - **Sigmoid** layer
+          - WIDE value range **normalized** to NARROW **0-1.0 range**
+        - 2 - the **BCELoss** into one class
+          - adjusts return **value** where :
+            - MIN :: closer
+            - MAX :: further
+        - makes it more numerically **stable**
+          - when the model's **logits** (outputs), are :
+            - 1 - very **large** numbers
+            - 2 - very **small** numbers
+            - **logits** are RAW guesses before they have been xformed to probabilities
+              - probabilities capture a measure of **how far off** the guesses are
+              - **directionally** and **magnitude** wise
+          - less prone to numerical **underflow** or **overflow** errors
+      - a loss function used for **binary classification** problems
+        - | DEBUG |
+          - ☑️ @udit-ok : compare **library** to **hand written** function here
+          - nn.**BCEWithLogitsLoss()**
+            - TensorMultiCategory(`1.0692`, grad_fn=`<AliasBackward0>`)
+
+              - ```python
+                  loss_func = nn.BCEWithLogitsLoss()
+                  loss = loss_func(activs, y)
+                  print(loss)
+                ```
+
+          - ==binary_cross_entropy()==
+            - TensorMultiCategory(`1.0728`, grad_fn=`<AliasBackward0>`)
+
+              - ```python
+                  loss - binary_cross_entropy(activs, y)
+                  print(loss)
+                ```
+
+    - `loss = loss_func(activations, y)`
+      - calling **loss_func** :
+        - -- input --
+          - **activations**
+            - | OUTPUT | from **model**
+          - **y**
+            - | ACTUAL | **labels**
+        - -- output --
+          - **loss**
+            - **measure** of **diff*** between model **output** and actual **label**
+      - `loss`
+        - `TensorMultiCategory(1.0603, grad_fn=<AliasBackward0>)`
+          - `1.0603`
+          - `grad_fn=`
+            - `<AliasBackward0>`
+- `learn`
+  - -- import --
+    - from fastai
+      - .vision
+        - .all
+          - @audit-issue : ❌ : fastai.vision.learner FAILS, why do we have use fastai.vision.all instead?
+          - `vision_learner`
+          - `cnn_learner`
+            - used in fastai book : DEPRECATE for vision_learner ^ instead
+        - .models
+          - `resnet18`
+  - -- LOAD MODEL --
+
+    - ```python
+        learn = vision_learner(dls, resnet18)
+      ```
+
       - | DEBUG |
-        - @todo (compare to hand written function here)
-  - `loss = loss_func(activations, y)`
-    - calling **loss_func** :
-      - -- input --
-        - **activations**
-          - | OUTPUT | from **model**
-        - **y**
-          - | ACTUAL | **labels**
-      - -- output --
-        - **loss**
-          - **measure** of **diff*** between model **output** and actual **label**
-    - `loss`
-      - `TensorMultiCategory(1.0603, grad_fn=<AliasBackward0>)`
-        - `1.0603`
-        - `grad_fn=`
-          - `<AliasBackward0>`
+        - // manually get a mini-batch
+          - **x,y** = dls.train.**one_batch()**
+            - x.**shape**
+              - torch.Size([64, 3, 128, 128])
+                - [ 64] : batch
+                - | **Image Block** |
+                  - [  3] : channels (r,g,b)
+                  - [128] : height
+                  - [128] : width
+            - y.**shape**
+              - torch.Size([64, 20])
+                - [64] : batch
+                - | **MultiCategoryBlock** |
+                  - [20] : categories
+        - // pass **x** into the model
+          - `activations` = learn.model(**x**)
+            - activations.**shape**
+              - torch.Size([64, 20])
+                - [64] : batch
+                - | **MultiCategoryBlock** |
+                  - [20] : categories
+            - activations**[0]** (model activation)
+
+              - ```sh
+                  TensorBase(
+                  [ 
+                    0.6264, -2.6771,  1.8361,  0.9085, -3.1789, -1.4625,  4.8753,
+                    -1.0118,  3.0367,  1.2142,  1.3568,  1.0312,  2.5194,  0.3387,
+                    1.1586,  3.4288,  5.6084,  0.8816,  0.7349, -3.0787
+                  ],
+                  grad_fn=<AliasBackward0>)
+                ```
+
+                - // [0] first single item of batch 64
+                  - **TensorBase**( ... )
+                    - [0..19],
+                      - array of [20] floating point values
+                      - representing the **raw score** for each **category**
+                        - before any softmax activation
+                      - index with MAX value is the predicted class
+                        - in this case it looks like it's **5.6084** at id **16**
+                        - dls.vocab`[16]` = `sheep`
+
+                          - ```sh
+                              dls.vocab = [
+                                'aeroplane', 'bicycle', 'bird', 'boat', 'bottle',
+                                'bus', 'car', 'cat', 'chair', 'cow', 'diningtable',
+                                'dog', 'horse', 'motorbike', 'person', 'pottedplant',
+                                'sheep', 'sofa', 'train', 'tvmonitor'
+                              ]
+                            ```
+
+                    - `grad_fn`
+                      - indicates tensor has a gradient function associated
+                        - it's tracking computational history
+                          - for automatic differentiation
+                          - which is used for backpropagation in the training of neural networks
+                        - When `.backward()` is called
+                          - on a tensor that has **requires_grad=True**
+                            - PyTorch will compute the gradients
+                            - and store them in the .grad attribute of the tensors involved in its creation
+                      - `=<AliasBackward0>)`
+  - -- FINE TUNE --
+  - -- IMPROVE ACCURACY --
