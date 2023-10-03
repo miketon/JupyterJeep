@@ -1293,4 +1293,75 @@ markmap:
                             - and store them in the .grad attribute of the tensors involved in its creation
                       - `=<AliasBackward0>)`
   - -- FINE TUNE --
+
+    - ```python
+        learn.fine_tune(3, base_lr=3e-3, freeze_epocs=4)
+      ```
+
+      - **.fine_tune()** a pre-trained model on a specific task
+        - fine_tuning pretrained model **benefits** include
+          - 1 - **Transfer of Learning**
+            - **build features** on existing **base layers** and **vocabulary**
+              - **images** : edges, shapes, colors and textures
+              - **text** : grammar, syntax, semantics (breathe)
+          - 2 - **Efficiency**
+            - if **no discernable difference** in base if we retrain from scratch, why do it???
+            - just **fine_tune** the **existing work** instead!!!
+        - fine_tuning pretrained model **pitfalls** include 📶
+          - 1 - **Domain Mismatch**
+            - if base layers **lack overlap** with the **model task**
+              - the model's **task is unique** enough to FULLY TRAIN a NEW MODEL
+          - 2 - **Overfitting**
+            - if **dataset is small**, fine-tuning a large pre-trained model can lead to overfitting
+              - performs well on **training** data
+              - but FAILS to GENERALIZE to **production** data
+          - 3 - **Catastropic Forgetting**
+            - if model is fine-tuned **too aggressively** (high learning rate)
+              - catastrophic forgetting is when a model **unlearn** the useful features of the **pretraining** model
+                - the base layers are mutated!!!
+          - 4 - **Ethical and Bias Considerations**
+      - ( ... )
+        - **epoch** is **one complete pass** through the entire training dataset
+          - '3'
+        - **base_lr=3e-3**
+          - **base learning rate** used for fine-tuning
+          - learning rate controls the step size during gradient descent
+            - smaller rate
+              - learns slower and requires more epoch
+              - potentially more precise results
+            - larger rate
+              - learns quickly in less epoch
+              - might overshoot optimal solution
+        - **freeze_epochs=4**
+          - number of **epochs** for which to train the model while the **body is frozen**
+            - (all layers except the head)
+            - When the body is frozen, the weights in those layers are not updated
+            - This allows the new layers (the head) to learn some reasonable weights from the outset, before the entire model is fine-tuned
+      - { ... }
+        - fine_tune function is a two-step process
+          - 1 - trains only the randomly initialized head of the model for freeze_epochs epochs,
+          while keeping the pre-trained body of the model frozen
+            - This allows the head to learn some weights from the data
+            without disturbing the pre-trained weights of the body too much
+          - 2 - unfreezes the entire model and continues training for the specified number of epochs,
+          fine-tuning the pre-trained weights to the specific task
+        - optimized model matters!
+          - ~ 2 hrs minutes with 'cnn_learner'
+          - ~ 15 minutes with 'vision_learner'
+            - | DEBUG |
+              - 🌈
+
+                - ```sh
+                      epoch train_loss  valid_loss  accuracy_multi time
+                          0   0.988523    0.740796        0.191514 01:42
+                          1   0.867840    0.582976        0.220199 01:37
+                          2   0.638105    0.221264        0.783725 01:32
+                          3   0.387956    0.145719        0.926653 01:33
+
+                      epoch train_loss  valid_loss  accuracy_multi time
+                          0   0.157600    0.127718        0.936673 01:53
+                          1   0.139937    0.121964        0.938307 01:56
+                          2   0.122359    0.119046        0.942271 02:11
+                  ```
+
   - -- IMPROVE ACCURACY --
