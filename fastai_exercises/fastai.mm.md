@@ -1302,6 +1302,48 @@ markmap:
         learn = vision_learner(dls, resnet18)
       ```
 
+      - `vision_learner`
+        - `dls`
+          - **batches** of **csv** to **finetune**!
+            - finetuning is task of continuing training on :
+              - on a NEWER usually SMALLER dataset
+              - this is more SPECIFIC to our TASK
+        - `resnet18`
+          - the **base model** to finetune from
+          - Residual Network (`ResNet`)
+            - a family of **2015** neural network architectures
+              - from the paper "Deep Residual Learning for Image Recognition"
+            - 🔑 **key** innovation of **ResNet**
+              - introduction of **residual blocks**
+              - with **skip connections** (or shortcuts)
+                - allow the network to skip one or more layers in the forward pass
+                - effectively allowing the network to learn identity functions
+                - tackles the problem of **vanishing gradients**
+                  - vanishing gradients make it hard for the network to
+                  learn and adjust the **parameters** of the **earlier layers**
+                - makes it possible to train much deeper networks
+            - resnet18 is the smallest model in the ResNet family
+              - consists of 18 layers
+                - 01 x input
+                - 16 x convolution
+                  - ReLU or max pooling are NOT counted
+                - 01 x output
+              - | EXAMPLE |
+                - **residual block** looks like this
+
+                - ```sh
+                            +-----------------+
+                            |                 v
+                    [Input] --> [Conv] --> [ReLU] --> [Conv] --> [+] --> [ReLU] --> [Output] 
+                  ```
+
+                  - Here's a simplified layer breakdown of resnet18 📶 :
+                    - 1x Convolutional layer
+                    - 2x (2x (Convolutional layer + ReLU) + shortcut) = 8 layers
+                    - 2x (2x (Convolutional layer + ReLU) + shortcut) = 8 layers
+                    - Average Pooling layer
+                    - Fully connected layer
+
       - | DEBUG |
         - // manually get a mini-batch
           - **x,y** = dls.train.**one_batch()**
