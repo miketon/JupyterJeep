@@ -62,6 +62,46 @@ markmap:
   - gather data
   - select model architecture
   - select loss function
+    - ==**@ PROBABILISTIC @**==
+      - 📶 - scalar (sigmoid)
+        - 1 - **Binary Classification**
+          - predict which of 2 classes an instance belongs to
+            - e-mail vs spam
+        - 2 - **Multi-Class Classification**
+          - output a **single probability** of distribution over a collection of classes
+            - digit recognition 0-9
+        - 3 - **Multi-Label Classification**
+          - output **multiple separate probability** for each class
+            - since each instance can belong to more than one class
+            - example : model that recognizes multiple objects in an image
+        - 4 - **Sequence to Sequences Models**
+          - output a probability distribution over the vocabulary for each word in the output sequence
+            - machine translation or text summarization
+        - 5 - **Reinforcement Learning (Policy Gradient Methods)**
+          - output of the model represents the probability of taking each action
+            - In reinforcement learning, specifically policy gradient methods, the
+            model (also known as the agent) learns a policy, which is a probability
+            distribution over actions given the current state
+    - ==**@ NON-PROBABLISTIC @**==
+      - 📶 - gradient (softmax)??
+        - 1 - **Regression Tasks**
+          - predict **continous output**
+            - house price based size, location, age ... etc
+        - 2 - **Embedding Models**
+          - learn **meaningful representation** (embedding) of input data
+            - word2vec output vec for each word, is not probabilities
+        - 3 - ==**AutoEncoders**==
+          - **unsupervised** learning where output is **reconstruction of input** data
+            - compress data into lower-dimensional representation
+            - then reconstruct original data from this representation
+        - 4 - **Generative Models**
+          - Generative Adversarial Network (GAN) **output data resembles input data**
+            - generate NEW images that resemble images from the training set
+            - output of GAN is an **image** not a probability
+        - 5 - **Reinforcement Learning**
+          - **agent learns** to take actions in an environment to maximize some notion of cumulative **reward**
+            - the output is a **specific action** or value **estimate** not probability
+              - (except in the case of policy gradient methods where the model outputs a probability distribution over actions)
   - optimize gradient descent
 - ->> loop <<-
   - init
@@ -1159,6 +1199,39 @@ markmap:
       - Compute accuracy with 'target' when 'prediction' is bs * n_classes
     - ==[accuracy_multi(input, target, thresh=0.5, sigmoid=True)]==
       - Compute accuracy when 'input' and 'target' are the same size
+
+      - ```python
+          def accuracy_multi(input, target, threshold=0.5, sigmoid=True):
+            if sigmoid:
+              input = input.sigmoid()
+            return ((input>threshold)==target.bool()).float().mean()
+        ```
+
+        - ( ... )
+          - -- args --
+            - input
+              - model's raw prediction
+            - target
+              - actual/TRUE target value
+            - threshold
+              - (default == 0.5)
+              - if input is greater than threshold, then 1 else 0
+            - sigmoid
+              - (default == TRUE)
+                - situations where FALSE would be preferable 📶
+                  - 1 - **Pre-processed** model predictions
+                    - predictions not RAW and already NORMALIZED
+                  - 2 - **Multi-class classification**
+                    - situations where the classes are **mutually exclusive** softmax is commonly used over sigmoid
+                    - because **softmax** sums to 1 and matches exactly ONE class out of series of class use case
+                  - 3 - **Regression Tasks**
+                    - **regression tasks**, where the model is predicting a **continuous value**
+                    - sigmoid limits the range between 0 and 1 and are NOT a good match
+                  - 4 - **Non-Probablistic Output**
+                    - some types of unsupervised learning or reinforcement learning, the outputs might **not be probabilities**
+              - if TRUE, apply sigmoid function to raw prediction
+          - -- returns --
+        - { ... }
 
   - -- LOSS FUNCTIOIN (from fastai) --
     - `loss_func = nn.BCEWithLogitsLoss()`
