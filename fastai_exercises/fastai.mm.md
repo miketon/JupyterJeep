@@ -6,6 +6,103 @@ markmap:
 
 # ML
 
+## -- RESNETS --
+
+- a family of **2015** neural network architectures
+  - from the paper "Deep Residual Learning for Image Recognition"
+  - 🔑 **key** innovation of **ResNet**
+    - introduction of **residual blocks**
+    - with **skip connections** (or shortcuts) 📶
+      - 1 - allow the network to **skip** one or more **layers in the forward pass**
+      - 2 - effectively allowing the network to **learn identity functions**
+        - ☑️ @udit-ok : Explain what identity functions are
+          - | ANSWER |
+            - f(x) = x
+              - **pass-through op**
+                - so that current layer can be **skipped**
+                - gives the **network** the option to carry **information forward** directly
+                  - as a result the gradient are preserved (so that it doesn't vanish)
+                  - | EXAMPLE |
+                    - 1 - empty PhotoShop Layer
+                    - 2 - vertex shade based on vtx height
+                      - **shader graph** where blade of **grass** darker at the root
+      - 3 - tackles the problem of **vanishing gradients**
+        - **vanishing gradients** make it hard for the network to
+        learn and adjust the **parameters** of the **earlier layers**
+      - 4 -makes it possible to train much deeper networks
+
+### | RESIDUAL BLOCKS |
+
+#### CONVOLUTIONS
+
+- **image processing** - where
+  - **kernel** (filter) is applied to **analyize** an image
+    - **capturing features** such as
+      - 1 - edges
+      - 2 - textures
+      - 3 - ...etc
+
+- ==**@ Feature Maps @**==
+  - **output of the layers** in a neural network
+    - **filtered** versions of the **input** data
+      - where each map represents the **regions** in the input
+      - that **activated** certain **features learned** by the **network**
+  - -- parameters --
+    - **Stride**
+      - defines distance that a **kernel** slides over an **area** of the image
+        - 1 - and performs a **calculation at each position**
+        - 2 - **generates** a new **feature map** as **output**
+    - **1x1 Convolution**
+
+##### ==**@ LOD @**==
+
+- | CNN |
+  - **Stride**
+    - **# of pixels**
+    - the **kernel** of a convolution
+    - **moves**
+      - at each **step**
+        - if **stride==1**
+          - convolution filter xforms 1 pixel at a time, **analyzing every input pixel**
+        - if **stride==2**
+          - the `size` of the **output feature map** will be `half` the input
+            - because convolution filter **jumps** 2 pixels at a time
+            - this is effectively the equivalent of `1 LOD`
+          - **efficiently** speed up **time** and reduce memory **size**
+            - **trade-off** is loss in finer **detail** of the output image
+- vs MIPMAPS
+  - | GFX |
+    - **Mipmaps**
+      - **sequence** of textures
+        - each are progressively **lower resolution**
+        - representations of the **same image**
+      - GPU `selects` an `LOD` given `distance` and rotation `angle`
+        - to reduce computational load
+        - and visual artifact
+  - -- **similarities** --
+    - both stride and mipmaps are **techniques** to
+    **reduce computational** complexity
+    - both trade-off some **level of detail** to gain **efficiency**
+  - -- **differences** --
+    - **stride** is used for cnn image processing as **data analysis**
+      - adjusts feature output by **skipping pixels during convolution**
+      - stride parameter affects **model training performance** and accuracy
+    - **mipmaps** are used for 3D **image rendering**
+      - **pregenerates LOD** maps at multiple resolutions of the **same texture**
+        - stride of 2 == 1 LOD
+        - ☑️ @udit-ok : chatGPT suggests that mipmaps don't downscale by applying convolution
+          - this is FALSE in that may be accurate by CONVENTION
+            - downscale options are only limited by engineering attention
+      - mipmap affects **runtime performance and visual quality**
+
+#### SKIP CONNECTIONS
+
+- enables **DEEPER** Networks by
+  - handles the **vanishing gradients** problem
+    - because it allows the network to skip one or more layers in the forward pass
+    - effectively allowing the network to learn the identity function?
+  - **slides** persist the **earlier layers**
+
 ## -- CONCEPTS --
 
 ### | LOSS FUNCTIONS |
@@ -1311,17 +1408,6 @@ markmap:
         - `resnet18`
           - the **base model** to finetune from
           - Residual Network (`ResNet`)
-            - a family of **2015** neural network architectures
-              - from the paper "Deep Residual Learning for Image Recognition"
-            - 🔑 **key** innovation of **ResNet**
-              - introduction of **residual blocks**
-              - with **skip connections** (or shortcuts)
-                - allow the network to skip one or more layers in the forward pass
-                - effectively allowing the network to learn identity functions
-                - tackles the problem of **vanishing gradients**
-                  - vanishing gradients make it hard for the network to
-                  learn and adjust the **parameters** of the **earlier layers**
-                - makes it possible to train much deeper networks
             - resnet18 is the smallest model in the ResNet family
               - consists of 18 layers
                 - 01 x input
