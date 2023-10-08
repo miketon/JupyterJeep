@@ -17,9 +17,9 @@ markmap:
       - 2 - effectively allowing the network to **learn identity functions**
         - ☑️ @udit-ok : Explain what identity functions are
           - | ANSWER |
-            - f(x) = x
+            - `f(x) = x`
               - **pass-through op**
-                - so that current layer can be **skipped**
+                - **output==input**, so the current layer can be **skipped**
                 - gives the **network** the option to carry **information forward** directly
                   - as a result the gradient are preserved (so that it doesn't vanish)
                   - | EXAMPLE |
@@ -30,6 +30,7 @@ markmap:
         - **vanishing gradients** make it hard for the network to
         learn and adjust the **parameters** of the **earlier layers**
       - 4 -makes it possible to train much deeper networks
+        - adding extra layers won't harm network perf, because they can be pass-through
 
 ### | RESIDUAL BLOCKS |
 
@@ -97,11 +98,36 @@ markmap:
 
 #### SKIP CONNECTIONS
 
-- enables **DEEPER** Networks by
+- enables **DEEPER** Networks
   - handles the **vanishing gradients** problem
     - because it allows the network to skip one or more layers in the forward pass
     - effectively allowing the network to learn the identity function?
   - **slides** persist the **earlier layers**
+- -- Trade-Offs -- 📶
+  - | Benefits |
+    - 1 - Mitigates **Vanishing Gradient** Problem
+    - 2 - Enable **Identity Learning**
+    - 3 - **Reduces** Overfitting
+  - | DrawBacks |
+    - 1 - Design Complexity
+      - **Tabular** Data
+        - GBM (Gradient Boosting Machines) have been shown to perform better
+        - And are SIMPLER
+          - It's UNCLEAR the value of a more complex model with skip connection brings
+      - **Small Networks**
+        - risk of vanishing gradient are reduced
+          - as a result the value of skip connection are also reduced
+    - 2 - **Not Universally Effective** across Network Types
+      - **autoencoders**
+        - Types
+          - 1 - generative
+          - 2 - dimensionality reduction
+          - 3 - anomaly detection
+        - skip connections could allow these model to bypass the **bottleneck layer**
+          - defeating the purpose of these architecture
+      - **temporal dynamic networks** such as **RNN**
+        - effectiveness is **unclear**
+    - 3 - Risk of OverFitting
 
 ## -- CONCEPTS --
 
