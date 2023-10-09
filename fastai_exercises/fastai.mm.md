@@ -6,7 +6,78 @@ markmap:
 
 # ML
 
-## -- RESNETS --
+- ->> ==**@ 🔑 key steps @**== <<- 📶
+  - 1 - -- data gathering -- ~ **80%** of total **EFFORT**
+    - data **processing** includes
+      - **cleaning** the data
+      - handling **missing** values
+      - **feature** engineering
+        - **scaling** and/or **normalizing** features
+  - 2 - -- model selection --
+    - types
+      - **neural network**
+        - (others .. lol)
+          - linear regression
+          - logistic regression
+          - support vector machines
+          - decision trees
+          - random forests
+          - gradient boosting machines (GBM)
+  - 3 - -- **training** --
+    - **pre** training --
+      - **hyper parameter tuning**
+        - **performance** of the model can be highly **sensitive to initial hyperparameters** before training begins
+          - hyperparameter techniques
+            - grid search
+            - random search
+            - Bayesian optimization
+            - ... others? @audit
+    - **post** training --
+      - **evaluation**
+        - Once a model has been trained,
+        **evauluate** it's performance
+        using appropriate **metrics**
+          - metrics - **based** on **problem** being solved
+            - **classification**
+              - accuracy
+              - precision
+              - recall
+              - F1 score
+                - @audit
+              - ROC AUC
+                - @audit
+            - **regression**
+              - mean squared error
+              - mean absolute error
+              - R2 score
+                - @audit
+      - **avoid overfitting**
+        - where model **memorizes** training data and
+        **peforms poorly** on production data **as a result**
+          - techniques @audit
+            - regularization
+            - dropout
+            - early stopping
+            - ensemble methods
+      - **interpretability**
+        - logging and debugging
+          - so **humans understand** why the model is making it's predictions
+        - crucial in industries such as
+          - healthcare
+          - finance
+  - 4 - -- deployment --
+    - handle **production data**
+
+## -- CONCEPTS --
+
+### | GRADIENT |
+
+- ->> 🔑 key challenges <<- 📶
+  - -- bounds --
+    - **vanishing gradient**
+    - **exploding gradient**
+
+#### -- RESNETS --
 
 - a family of **2015** neural network architectures
   - from the paper "Deep Residual Learning for Image Recognition"
@@ -32,9 +103,9 @@ markmap:
       - 4 -makes it possible to train much deeper networks
         - adding extra layers won't harm network perf, because they can be pass-through
 
-### | RESIDUAL BLOCKS |
+##### | RESIDUAL BLOCKS |
 
-#### CONVOLUTIONS
+###### CONVOLUTIONS
 
 - **image processing** - where
   - **kernel** (filter) is applied to **analyize** an image
@@ -55,54 +126,62 @@ markmap:
         - 2 - **generates** a new **feature map** as **output**
     - **1x1 Convolution**
 
-##### ==**@ LOD @**==
+- ==**@ LOD @**==
+  - | CNN |
+    - **Stride**
+      - **# of pixels**
+      - the **kernel** of a convolution
+      - **moves**
+        - at each **step**
+          - if **stride==1**
+            - convolution filter xforms 1 pixel at a time, **analyzing every input pixel**
+          - if **stride==2**
+            - the `size` of the **output feature map** will be `half` the input
+              - because convolution filter **jumps** 2 pixels at a time
+              - this is effectively the equivalent of `1 LOD`
+            - **efficiently** speed up **time** and reduce memory **size**
+              - **trade-off** is loss in finer **detail** of the output image
+  - vs MIPMAPS
+    - | GFX |
+      - **Mipmaps**
+        - **sequence** of textures
+          - each are progressively **lower resolution**
+          - representations of the **same image**
+        - GPU `selects` an `LOD` given `distance` and rotation `angle`
+          - to reduce computational load
+          - and visual artifact
+    - -- **similarities** --
+      - both stride and mipmaps are **techniques** to
+      **reduce computational** complexity
+      - both trade-off some **level of detail** to gain **efficiency**
+    - -- **differences** --
+      - **stride** is used for cnn image processing as **data analysis**
+        - adjusts feature output by **skipping pixels during convolution**
+        - stride parameter affects **model training performance** and accuracy
+      - **mipmaps** are used for 3D **image rendering**
+        - **pregenerates LOD** maps at multiple resolutions of the **same texture**
+          - stride of 2 == 1 LOD
+          - ☑️ @udit-ok : chatGPT suggests that mipmaps don't downscale by applying convolution
+            - this is FALSE in that may be accurate by CONVENTION
+              - downscale options are only limited by engineering attention
+        - mipmap affects **runtime performance and visual quality**
 
-- | CNN |
-  - **Stride**
-    - **# of pixels**
-    - the **kernel** of a convolution
-    - **moves**
-      - at each **step**
-        - if **stride==1**
-          - convolution filter xforms 1 pixel at a time, **analyzing every input pixel**
-        - if **stride==2**
-          - the `size` of the **output feature map** will be `half` the input
-            - because convolution filter **jumps** 2 pixels at a time
-            - this is effectively the equivalent of `1 LOD`
-          - **efficiently** speed up **time** and reduce memory **size**
-            - **trade-off** is loss in finer **detail** of the output image
-- vs MIPMAPS
-  - | GFX |
-    - **Mipmaps**
-      - **sequence** of textures
-        - each are progressively **lower resolution**
-        - representations of the **same image**
-      - GPU `selects` an `LOD` given `distance` and rotation `angle`
-        - to reduce computational load
-        - and visual artifact
-  - -- **similarities** --
-    - both stride and mipmaps are **techniques** to
-    **reduce computational** complexity
-    - both trade-off some **level of detail** to gain **efficiency**
-  - -- **differences** --
-    - **stride** is used for cnn image processing as **data analysis**
-      - adjusts feature output by **skipping pixels during convolution**
-      - stride parameter affects **model training performance** and accuracy
-    - **mipmaps** are used for 3D **image rendering**
-      - **pregenerates LOD** maps at multiple resolutions of the **same texture**
-        - stride of 2 == 1 LOD
-        - ☑️ @udit-ok : chatGPT suggests that mipmaps don't downscale by applying convolution
-          - this is FALSE in that may be accurate by CONVENTION
-            - downscale options are only limited by engineering attention
-      - mipmap affects **runtime performance and visual quality**
-
-#### SKIP CONNECTIONS
+###### SKIP CONNECTIONS
 
 - enables **DEEPER** Networks
   - handles the **vanishing gradients** problem
     - because it allows the network to skip one or more layers in the forward pass
     - effectively allowing the network to learn the identity function?
   - **slides** persist the **earlier layers**
+- -- **Gradient Vanishing** --
+  - to prevent gradient vanishing
+    - 1 - Direct Path for Gradient Flow
+      - reduce gradient xform via a direct flow **from output to earlier layers***
+      - during **backpropagation**
+    - 2 - Residual Learning
+      - learning **residual vs complete** function
+        - residual == difference between input and output
+        - **residual is closer to identity** function
 - -- Trade-Offs -- 📶
   - | Benefits |
     - 1 - Mitigates **Vanishing Gradient** Problem
@@ -128,8 +207,6 @@ markmap:
       - **temporal dynamic networks** such as **RNN**
         - effectiveness is **unclear**
     - 3 - Risk of OverFitting
-
-## -- CONCEPTS --
 
 ### | LOSS FUNCTIONS |
 
@@ -226,6 +303,7 @@ markmap:
             - the output is a **specific action** or value **estimate** not probability
               - (except in the case of policy gradient methods where the model outputs a probability distribution over actions)
   - optimize gradient descent
+
 - ->> loop <<-
   - init
     - losses = []
@@ -717,13 +795,15 @@ markmap:
   - optimizer
   - 💧 loss function 💧
 
-### | RESOURCES |
+### | DATA |
 
-#### 📖 -- text -- 📖
+#### ==**@ ASSETS @**==
+
+##### 📖 -- text -- 📖
 
 - `train.csv`
 
-#### 👀 -- images -- 👀
+##### 👀 -- images -- 👀
 
 - | Folder |
   - `path`
@@ -734,16 +814,130 @@ markmap:
     - `000000.jpg`
     - ...
 
-#### 🛜 -- globals -- 🛜
+      - 📐 -- unit tests -- 📐
+        - {common}
+          - | Import |
+            - import `os`
+              - functions for **interacting** with the operating system
+            - from IPython.display
+              - import
+                - `display`
+                  - displays objects in Jupyter notebook
+                - `Markdown`
+                  - used to display FORMATTED text
+            - from PIL
+              - (Python Imaging Library)
+              - import `Image`
+                - used for **opening**, **xforming** and **saving** image file formats
+          - | File Path |
+            - `source_data_path` = '/Users/mton/.fastai/data/pascal_2007/train'
+              - @audit ... this has /train hardcoded, verify that we are also handling valid ok
+              - path to where our image data is located (local)
+          - | Tables |
+            - **DataFrame**
+              - train_idx, valid_idx = splitter(`df`)
+                - list of indices for training and validation sets
+                - used **generate** train/validation set **from pre-split df** (dataframe)
+              - `train_df` = `df`.iloc[train_idx]
+              - `valid_df` = `df`.iloc[train_idx]
 
-##### {pandas} 🐼
+        - {display}
+          - | LABEL |
+
+            - ```python
+                idxs = torch.where(dsets[img_id][1]==1.0)[0]
+                idx_to_labels = dsets.vocab[idxs]
+              ```
+
+              - `idxs` is list of indices **where** dsets[img_id]`[1]`==1.0
+                - dsets [img_id] **[...]**
+                  - [0]
+                    - image -- object --
+                      - PILImage mode=RGB size=334x500
+                  - **[1]**
+                    - -- label -- index
+                      - TensorMultiCategory([...])
+              - `idx_to_labels`
+                - dsets.`vocab`[idxs]
+
+          - | IMAGE |
+            - 📄 ==[ show_image ]== 📄
+              - (fname, label)
+
+                - ```python
+                    def show_image(fname, label='none'):
+                      img = Image.open(os.path.join(source_data_path, fname)).resize(256,256) 
+                      display(img)
+                      display(Markdown(f'{fname} -- [{label}]'))
+                  ```
+
+                  - **img**
+                    - -- load --
+                      - Image.**open**(path_to_image)
+                        - path_to_image
+                          - **os**.path.join( ... , ... )
+                            - **source_data_path**
+                            - fname
+                    - -- xform --
+                      - .resize(256, 256)
+                    - -- show --
+                      - **display**(img)
+                      - display(**Markdown**(f'{} -- {}'))
+                        - fname
+                        - label
+
+            - 📰 ==[ show_image_from_set ]== 📰
+              - (df, dsets, img_id)
+
+                - ```python
+                    def show_image_from_set(df, dsets, img_id=0):
+                      assert(img_id < len(dsets)), f'id {img_id} must be less than {len(dsets)}' 
+                      # multi-label, get index of all labels active for this image id
+                      idxs = torch.where(dsets[img_id][1]=1.0)[0]
+                      # vocab takes id int values to return human readable text labels
+                      idx_to_labels = dsets.vocab[idxs]
+                      show_image(df.iloc[img_id]['fname'], idx_to_labels)
+                  ```
+
+                  - **show_image**
+                    - ( img_path, label_string)
+                      - -- img_path --
+                        - **df**.iloc [id] [name_col]
+                          - **id** = img_id
+                          - **name_col** = 'fname'
+                            - | EXAMPLE |
+                              - train.csv
+                                - [0]
+                                  - **'fname'**
+                                - [1]
+                                  - 'labels'
+                                - [2]
+                                  - 'is_valid'
+                      - -- label_string --
+
+            - | EXAMPLE |
+
+              - ```python
+                  # Training set
+                  show_image_from(train_df, dsets.train, 12)
+                ```
+
+                - ```sh
+                    000048.jpg -- [['bird', 'person']] --
+                  ```
+
+#### ==**@ BATCH @**==
+
+##### 🛜 -- globals -- 🛜
+
+###### {pandas} 🐼
 
 - 🎬 | DataFrame | 🎬
   - 🗓️ `df`
     - pd.read_csv(path/"train.csv")
       - `train.csv`
 
-##### {fastai} 🍟
+###### {fastai} 🍟
 
 - | DATA |
   - 🌎 | DataBlock | 🌎
@@ -824,122 +1018,7 @@ markmap:
 - 🧠 | Learner | 🧠
   - `vision_learner`
 
-#### 📐 -- unit tests -- 📐
-
-##### {common}
-
-- | Import |
-  - import `os`
-    - functions for **interacting** with the operating system
-  - from IPython.display
-    - import
-      - `display`
-        - displays objects in Jupyter notebook
-      - `Markdown`
-        - used to display FORMATTED text
-  - from PIL
-    - (Python Imaging Library)
-    - import `Image`
-      - used for **opening**, **xforming** and **saving** image file formats
-- | File Path |
-  - `source_data_path` = '/Users/mton/.fastai/data/pascal_2007/train'
-    - @audit ... this has /train hardcoded, verify that we are also handling valid ok
-    - path to where our image data is located (local)
-- | Tables |
-  - **DataFrame**
-    - train_idx, valid_idx = splitter(`df`)
-      - list of indices for training and validation sets
-      - used **generate** train/validation set **from pre-split df** (dataframe)
-    - `train_df` = `df`.iloc[train_idx]
-    - `valid_df` = `df`.iloc[train_idx]
-
-##### {display}
-
-- | LABEL |
-
-  - ```python
-      idxs = torch.where(dsets[img_id][1]==1.0)[0]
-      idx_to_labels = dsets.vocab[idxs]
-    ```
-
-    - `idxs` is list of indices **where** dsets[img_id]`[1]`==1.0
-      - dsets [img_id] **[...]**
-        - [0]
-          - image -- object --
-            - PILImage mode=RGB size=334x500
-        - **[1]**
-          - -- label -- index
-            - TensorMultiCategory([...])
-    - `idx_to_labels`
-      - dsets.`vocab`[idxs]
-
-- | IMAGE |
-  - 📄 ==[ show_image ]== 📄
-    - (fname, label)
-
-      - ```python
-          def show_image(fname, label='none'):
-            img = Image.open(os.path.join(source_data_path, fname)).resize(256,256) 
-            display(img)
-            display(Markdown(f'{fname} -- [{label}]'))
-        ```
-
-        - **img**
-          - -- load --
-            - Image.**open**(path_to_image)
-              - path_to_image
-                - **os**.path.join( ... , ... )
-                  - **source_data_path**
-                  - fname
-          - -- xform --
-            - .resize(256, 256)
-          - -- show --
-            - **display**(img)
-            - display(**Markdown**(f'{} -- {}'))
-              - fname
-              - label
-
-  - 📰 ==[ show_image_from_set ]== 📰
-    - (df, dsets, img_id)
-
-      - ```python
-          def show_image_from_set(df, dsets, img_id=0):
-            assert(img_id < len(dsets)), f'id {img_id} must be less than {len(dsets)}' 
-            # multi-label, get index of all labels active for this image id
-            idxs = torch.where(dsets[img_id][1]=1.0)[0]
-            # vocab takes id int values to return human readable text labels
-            idx_to_labels = dsets.vocab[idxs]
-            show_image(df.iloc[img_id]['fname'], idx_to_labels)
-        ```
-
-        - **show_image**
-          - ( img_path, label_string)
-            - -- img_path --
-              - **df**.iloc [id] [name_col]
-                - **id** = img_id
-                - **name_col** = 'fname'
-                  - | EXAMPLE |
-                    - train.csv
-                      - [0]
-                        - **'fname'**
-                      - [1]
-                        - 'labels'
-                      - [2]
-                        - 'is_valid'
-            - -- label_string --
-
-  - | EXAMPLE |
-
-    - ```python
-        # Training set
-        show_image_from(train_df, dsets.train, 12)
-      ```
-
-      - ```sh
-          000048.jpg -- [['bird', 'person']] --
-        ```
-
-### | APPLICATION |
+### | MODEL |
 
 #### -- vars --
 
@@ -1592,3 +1671,5 @@ markmap:
                   ```
 
   - -- IMPROVE ACCURACY --
+
+### | DEPLOYMENT |
