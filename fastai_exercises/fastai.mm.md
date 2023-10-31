@@ -7,35 +7,125 @@ markmap:
 # ML
 
 - ->> ==**@ 🔑 key steps @**== <<- 📶
-  - 1 - -- data gathering -- ~ **80%** of total **EFFORT**
-    - data **processing** includes
+  - 1 - -- data gathering -- ~ ==[ **80%** of total **EFFORT** ]==
+    - 🛠️ { data **processing** } 🛠️
       - **cleaning** the data
-      - handling **missing** values
       - **feature** engineering
         - **scaling** and/or **normalizing** features
+      - handling **missing** values
+        - | STRUCTURED |
+          - a - **deleting** rows
+            - risk of degrading data, if columns are useful
+          - b - **imputation**
+            - substitute missing value with
+              - statistic
+                - constant, mean, median, mode
+              - machine prediction
+          - c - **flagging**
+            - is data augmented
+              - mark if data had to be filled in and imputated
+              - or original
+    - Exploratory Data Analysis ==[ EDA ]==
+      - | NLP |
+        - 🎶 { vocabulary **generation** } 🎶
+          - **Tokenization**
+            - split the text into individual tokens (words)
+
+              - ```python
+                  text = "The cat sat on the mat."
+                  tokens = word_tokenize(text)
+                ```
+
+                - tokens == `["The", "cat", "sat", "on", "the", "mat", "."]`
+          - **Lowercasing**
+            - lower case all characters in a word to consolidate
+              - `"The" == "the"`
+
+              - ```python
+                  tokens = [w.lower() for w in tokens]
+                ```
+
+          - **Removing** Stop Words and Punctuations
+            - **remove** words and punctuations that don't **add meaning**
+              - example : "the", "a", "an"
+
+              - ```python
+                  stop_words = set(stopwords.words('english'))
+                  tokens = [w for w in tokens if not w in stop_words and w not in string.punctuation]
+                ```
+
+          - **Stemming/Lemmatization**
+            - consolidate words to their root forms
+              - `"running" -> "run"`
+
+              - ```python
+                  ps = PorterStemmer()
+                  tokens = [ps.stem(w) for w in tokens]
+                ```
+
+          - **Creating Vocabulary**
+            - each vocab is assigned a UID
+              - because models work with numerical values not text
+
+              - ```python
+                  vocabulary = set(tokens)
+                ```
+
   - 2 - -- model selection --
-    - types
-      - **neural network**
-        - (others .. lol)
-          - linear regression
-          - logistic regression
-          - support vector machines
-          - decision trees
-          - random forests
-          - gradient boosting machines (GBM)
+    - ==[ **mathematical** definition ]==
+      - -- components --
+        - var
+          - **x** - | Independent |
+          - **y** - | Dependent |
+        - **loss** function
+          - vision model that seem completely DIFFERENT
+            - single classification
+            - multi classifiction
+            - center point regression
+          - are actually the SAME model but with different
+            - loss function
+              - CrossEntropy for single label
+              - BinaryCrossEntropy for multi label
+              - MSELoss for regression
+
+    - **domain** definitions
+      - types
+        - characters
+          - NLP
+            - classification
+            - chat
+        - pixels
+          - vision
+        - numbers
+          - **neural network** @audit : this feels half-baked
+            - (others .. lol)
+              - linear regression
+              - logistic regression
+              - support vector machines
+              - decision trees
+              - random forests
+              - gradient boosting machines (GBM)
   - 3 - -- **training** --
-    - **pre** training --
-      - **hyper parameter tuning**
+    - **pre** training ->>
+      - { hyperparameter **tuning** }
         - **performance** of the model can be highly **sensitive to initial hyperparameters** before training begins
-          - hyperparameter techniques
+          - 🎛️ ==[ hyperparameters ]== 🎛️
+            - learning rate
+            - regularization
+              - how much to penalize large model weights
+            - model structure
+              - depth (count)
+                - hidden layer
+                - decision tree
+          - techniques
             - grid search
             - random search
             - Bayesian optimization
             - ... others? @audit
-    - **post** training --
+    - **post** training ->>
       - **evaluation**
         - Once a model has been trained,
-        **evauluate** it's performance
+        **evaluate** it's performance
         using appropriate **metrics**
           - metrics - **based** on **problem** being solved
             - **classification**
@@ -355,14 +445,16 @@ markmap:
 
       - ->
         - **Series** (panda)
+          - Series is a building block of DataFrame
+          - Each **column** of a DataFrame is a Series
         - **lists**
         - 1D **ndarrays**
 
       - ```python
           data = {
-              'Column1': pd.Series([1, 2, 3]),     # Series
-              'Column2': ["one", "two", "three"],  # list
-              'Column3': pd.array([4, 5, 6]),      # 1D ndarray (Pandas Array)
+              'Column1': pd.Series([1, np.NAN, 3]), # Series
+              'Column2': ["one", "two", "three"],   # list
+              'Column3': pd.array([4, 5, 6]),       # 1D ndarray (Pandas Array)
           }
 
           df = pd.DataFrame(data)
@@ -371,10 +463,10 @@ markmap:
         - print(df.head())
 
           - ```sh
-                  Column1 Column2  Column3 
-              0        1     one        4
-              1        2     two        5
-              2        3   three        6
+                 Column1 Column2  Column3
+              0      1.0     one        4
+              1      NaN     two        5
+              2      3.0   three        6
             ```
 
     - 2D `numpy.ndarray`
@@ -542,7 +634,7 @@ markmap:
                     - 's'
                       - plural token
               - **hash**
-                - create a **vocabulary** of **tokens**
+                - gather a **vocabulary** of **tokens**
                   - -- keys --
                     - | index |
                       - alphanumeric characters
@@ -572,7 +664,7 @@ markmap:
                         - char | subwords | words
                           - @audit Explain trade offs between each ...
                         - 🧇 ==[ **hash** ]== 🧇
-                          - a **vocabulary of tokens** is created by assigning a **UID -> each token**
+                          - a **vocabulary of tokens** is gathered by assigning a **UID -> each token**
                           - text data is **hashed** to a sequence of these **UID**
                           - this is the **numerical representation** of the text that the model will use
 
@@ -582,8 +674,10 @@ markmap:
                 - @audit - Example of category to code?
           - 7 - **[ MultiCategoryBlock ]**
             - **multiple labels** per item (multi-label classification)
-              - handles the **one-hot encoding** needed for such tasks
-                - @audit - What is one-hot encoding?
+              - handles the **one-hot encoding** ⛳ needed for such tasks
+                - ☑️ @udit-ok : one-hot encoding == array of 0 with only a single 1 flag
+                - for each image, each label can be one-hot encoded
+                  - and then collectively gathered, resulting in multiple labels
           - 8 - **[ RegressionBlock ]**
             - continuous (**regression**) targets
               - handles tasks where the target is a **single continuous** value
@@ -1267,8 +1361,11 @@ markmap:
                 - 2 - **training** neural networks
   - -- LOSS FUNCTIOIN (from python) --
     - ==[binary_cross_entropy(inputs, targets)]==
-      - One-hot Encode Targets
+      - **One-hot Encode** ⛳ Targets ⛳
         - Using Pytorch's MAGIC element-wise operations
+          - @audit Explain this Magic
+          - guess ... removes the burden of looping through elements
+          - same function works for BOTH single and batch item
 
       - ```python
           def binary_cross_entropy(inputs, targets):
@@ -1289,8 +1386,8 @@ markmap:
                 - torch.Tensor
           - -- returns --
             - loss
-              - the computed binary cross entropy loss
-                - **bool crossed** against actual **label**
+              - the computed Binary Cross Entropy loss
+                - **bool crossed** threshold against each **label** column : one-hot encoding ⛳
                 - ~~per element~~
                   - ☑️ @udit-ok :
                     - ... but `mean()` averages the elements in the batch
