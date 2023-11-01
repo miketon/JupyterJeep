@@ -204,109 +204,113 @@ markmap:
 
 ## -- CLIENT --
 
-### | url | 
+### | url |
 
 #### -- nav bar --
 
 - `http://127.0.0.1:7878/`
 - `http://127.0.0.1:7878/sleep`
 
-##### 💬 HTTP **Request**
+##### 💬 --[ HTTP ]--
 
-- ```sh
-    Method Request-URI HTTP-Version CRLF
-    headers CRLF
-    message-body
-  ```
+- **REQUEST** 🔜
 
-  - `Request: [ ... ]`
-    - Method Request-URI HTTP-Version CRLF
+  - ```sh
+      Method Request-URI HTTP-Version CRLF
+      headers CRLF
+      message-body
+    ```
 
-      - ```sh
-          "GET / HTTP/1.1",
-        ```
+    - `Request: [ ... ]`
+      - Method Request-URI HTTP-Version CRLF
 
-        - | Method |
-          - holds information about what the client is requesting
-          - `GET`
-            - asking for information
-          - 'POST'
-            - @audit ?
-        - | Request-URI |
-          - `/`
-            - Uniform Resource Identifier
-              - @audit : How/why is this different from URL
-        - | HTTP-Version |
-          - `HTTP/1.1`
-            - HTTP version the client uses
-              - @audit : explain each version
-                - HTTP/1.0
-                - HTTP/1.1
-                - HTTP/2.0
-                - HTTP/3.0
-        - | CRLF |
-          - `\r\n`
-            - carriage return and line feed
-            - ends the REQUEST line
-    - headers CRLF
+        - ```sh
+            "GET / HTTP/1.1",
+          ```
 
-      - ```sh
-          "Host: 127.0.0.1:7878",
-        ```
+          - | Method |
+            - holds information about what the client is requesting
+            - `GET`
+              - asking for information
+            - 'POST'
+              - @audit ?
+          - | Request-URI |
+            - `/`
+              - Uniform Resource Identifier
+                - @audit : How/why is this different from URL
+          - | HTTP-Version |
+            - `HTTP/1.1`
+              - HTTP version the client uses
+                - @audit : explain each version
+                  - HTTP/1.0
+                  - HTTP/1.1
+                  - HTTP/2.0
+                  - HTTP/3.0
+          - | CRLF |
+            - `\r\n`
+              - carriage return and line feed
+              - ends the REQUEST line
+      - headers CRLF
 
-        - | headers |
-          - domain name
-            - 127.0.0.1:
-              - localhost ip address
-          - port number
-            - 7878
-              - 'rust' typed out on a phone
-          - | config |
-            - User-Agent
-              - contains info on client making the request
-              - "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:99.0) Gecko/20100101 Firefox/99.0"
-            - Accept
-              - media
-                - specifies the media types the client can process
-                  - and in what priority order, helping the server
-                  provide a response in a suitable format
-                - "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+        - ```sh
+            "Host: 127.0.0.1:7878",
+          ```
 
-              - language
-                - indicates the client's language preferences
-                - "Accept-Language: en-US,en;q=0.5"
-              - encoding
-                - specifies the content-coding values that the client supports for the response
-                - "Accept-Encoding: gzip, deflate, br"
-            - DNT
-              - requests that the user's behavior not be tracked
-              - "DNT: 1"
-                - Do Not Track bool
-            - Connection
-              - "Connection: keep-alive"
-                - controls whether the network connection stays
-                open after the current transaction finishes
-                  - @audit : Explain this
-            - Upgrade-Insecure_Requets
-              - "Upgrade-Insecure-Requests: 1"
-                - tells the server that the client wants to
-                upgrade the current connection to HTTPS
-                  - @audit : Explain this
-            - Sec-Fetch
-              - Dest
-              - Mode
-              - Site
-              - User
-            - Cache-Control
-        - | CLRF |
+          - | headers |
+            - domain name
+              - 127.0.0.1:
+                - localhost ip address
+            - port number
+              - 7878
+                - 'rust' typed out on a phone
+            - | config |
+              - User-Agent
+                - contains info on client making the request
+                - "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:99.0) Gecko/20100101 Firefox/99.0"
+              - Accept
+                - media
+                  - specifies the media types the client can process
+                    - and in what priority order, helping the server
+                    provide a response in a suitable format
+                  - "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
 
-    - message-body
+                - language
+                  - indicates the client's language preferences
+                  - "Accept-Language: en-US,en;q=0.5"
+                - encoding
+                  - specifies the content-coding values that the client supports for the response
+                  - "Accept-Encoding: gzip, deflate, br"
+              - DNT
+                - requests that the user's behavior not be tracked
+                - "DNT: 1"
+                  - Do Not Track bool
+              - Connection
+                - "Connection: keep-alive"
+                  - controls whether the network connection stays
+                  open after the current transaction finishes
+                    - @audit : Explain this
+              - Upgrade-Insecure_Requets
+                - "Upgrade-Insecure-Requests: 1"
+                  - tells the server that the client wants to
+                  upgrade the current connection to HTTPS
+                    - @audit : Explain this
+              - Sec-Fetch
+                - Dest
+                - Mode
+                - Site
+                - User
+              - Cache-Control
+          - | CLRF |
 
-      - ```sh
-          -- GET typically DOES NOT have a body --
-        ```
+      - message-body
 
-        - @audit : POST body example?
+        - ```sh
+            -- GET typically DOES NOT have a body --
+          ```
+
+          - @audit : POST body example?
+
+- **RESPONSE** 🔙
 
 ### | action |
 
