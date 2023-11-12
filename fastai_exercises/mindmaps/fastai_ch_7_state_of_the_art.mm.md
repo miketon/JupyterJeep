@@ -8,42 +8,62 @@ markmap:
 
 - ->> **Model Engineer** <<-
   - | SPEED |
-    - Faster training iterations => **mores** experiments
-      - 1 - **cut** down **data** set
+    - Aim for **faster** training iterations to **enable more** experiments
+      - 1 - **reduce** and curate the **data** set
         - aim for ~ **minutes** per iteration
       - 2 - **simplify** model
-        - ☑️ @udit-ok : example?
-          - | ANSWER |
-            - reduce # layers
-            - reduce # parameters
+        - reduce **number of**
+          - **layers**
+          - **parameters**
   - | DIVERSITY |
     - Maximize **utility** of **smaller** data set
-      - dataset given is rarely the dataset you want
+      - the given dataset is rarely the dataset you want
         - (for your specific task)
     - ImageNet/**Imagenette**
       - **small** subset of ImageNet by fastai
         - categories 10 vs 1000
-          - 3 hours of manual curation
+        - took 3 hours of manual curation
 - ->> **Product Engineer** <<-
   - | PERFORMANCE |
     - **ImageNet**
       - train on large data set for production
 - ->> ==**@ 🔑 key concepts @**== <<- 📶
+  - **outsized** view == better training
   - 1 - -- normalization --
+    - lego blocks -> all are the **same size**, only features remain
+      - essentially removes **scale** from data value
+        - `0 : 1`
+          - 4+5+6
+            - 0 : means
+            - 1 : standard deviation
+        - `-1: 1`
+        - @audit : something something means of 0 and standard deviation of 1
+          - | ANSWER |
+            - means == average
+              - (sum of all items)/(num of items)
+              - 5 = (4+5+6)/3
+            - standard deviation
+
     - **critical** to working with **pretrained** models
       - ==[ statistics for normalization ]==
         - get for pretrained model
         - bundle with model you **distribute**
-    - a preprocessing step to **standardize input** data
-    - improves training effectiveness
-      - @audit-ok : explain?
-  - 2 - -- data augmentation --
+    - a preprocessing step to :
+      - **standardize input** data
+      - improves training effectiveness
+        - because we are ONLY **learning features**
+          - without the noise of arbitrary scale per data item
+          - else features with outsized scale will have outsized impact on learning
+            - without meaningfully converging on useful features
+  - 2 - -- ==data augmentation== --
+    - lego blocks -> increasing our set size by adding our friend's random pieces
     - **Mixup** - Adds **uncertainty**
       - ==[ helps model learn and handle uncertainty ]==
         - **images** blend fractional => track **mix ratio**
           - [0.3, 0.7] vs [0.0, 1.0]
         - **labels** discrete => add noise **probability**
           - values approach, but never reach 0.0 or 1.0
+          - @audit : actually this is NOT true, unless we are mixing up 2 of the same classes we will add to ONE ... explain this better BRO!
   - 3 - -- progressive resizing --
     - **gradually** using **larger images** on each iteration
       - **speeds** up training completion when **resolution low**
@@ -84,4 +104,6 @@ markmap:
                     - ensure that the model trains on a variety of resolution in the data set
                     - gives model a chance to maintain ability to see features at scale
   - 4 - -- test time augmentation --
+    - data augmentation to **validation** set
+      - previously we have only augmented the **training** set
     - @audit : why is this at **inference** time?
