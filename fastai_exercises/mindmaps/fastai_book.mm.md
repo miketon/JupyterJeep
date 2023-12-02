@@ -6,6 +6,35 @@ markmap:
 
 # ML
 
+- ->> ==**@ 🔑 key algorithms @**== <<- 📶
+
+  - 1 -- | ENSEMBLE |
+    - Structured Data
+      - Such as Database Tables at most companies
+    - Decision Trees
+      - Random Forests
+      - Gradient Boosting Machines
+    - default OPTIMIZED
+      - hardware
+      - debug tooling
+      - similar performance to NN on structured data
+        - exceptions :
+          - high cardinality data
+            - zip code exmaple has 1000s of possible levels
+          - columns that benefit from being understood by NN
+            - like plain text vs numerical values
+
+  - 2 -- | NEURAL NETS |
+    - Unstructured Data
+      - Images
+      - Audio
+      - NLP
+    - SGD
+      - Deep Learning
+      - Shallow Learning
+    - default SUPERIOR
+      - model performance
+
 - ->> ==**@ 🔑 key steps @**== <<- 📶
   - 1 - -- data gathering -- ~ ==[ **80%** of total **EFFORT** ]==
     - 🛠️ { data **processing** } 🛠️
