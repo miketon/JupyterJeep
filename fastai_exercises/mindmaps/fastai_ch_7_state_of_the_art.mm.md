@@ -43,6 +43,7 @@ markmap:
               - (sum of all items)/(num of items)
               - 5 = (4+5+6)/3
             - standard deviation
+              - average of how many units over/under the means?
 
     - **critical** to working with **pretrained** models
       - ==[ statistics for normalization ]==
