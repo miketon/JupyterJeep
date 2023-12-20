@@ -49,15 +49,26 @@ tree -L 3
         └── release/       # => production artifact
     ```
 
-  - `Cargo.toml`
-  - ==src/==
-    - `main.rs`
-  - ==target/==
-    - debug/
-      - build/
-      - deps/
-      - examples/
-      - incremental/
+  - `tree -L 3 --du -h`
+
+    - ```sh
+        [3.0M]  .
+        ├── [3.0K]  Cargo.lock
+        ├── [ 188]  Cargo.toml
+        ├── [ 238]  err
+        ├── [   0]  out
+        ├── [1010]  src
+        │   └── [ 914]  main.rs
+        └── [3.0M]  target
+            ├── [ 177]  CACHEDIR.TAG
+            └── [3.0M]  debug
+                ├── [ 128]  build
+                ├── [4.0K]  deps
+                ├── [3.0M]  echor
+                ├── [  70]  echor.d
+                ├── [  64]  examples
+                └── [  96]  incremental
+      ```
 
 ##### `cat`
 
