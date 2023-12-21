@@ -34,34 +34,70 @@ markmap:
         ```
 
 - `mk-outs.sh`
-  - // bash script to generate files for `expected` test string
+  - ==[ io ]== from **echo**
+    - // bash script to generate files for `expected` test string
 
-    - `!/usr/bin/env bash`
-      - // shebang : os env to execute bash commands
-    - `OUTDIR="tests/expected"`
-      - // output directory where we will generate test files
-      - `[[ ! -d "$OUTDIR" ]] && mkdir -p $OUTDIR`
-        - // mkdir if one doesn't already exist
-    - `echo "Hello there" > $OUTDIR/args_1.txt`
-      - ...
-        - // print expected output and save to file
-        - // we will unit test 'echor' binary output against these files!
+      - `!/usr/bin/env bash`
+        - // shebang : os env to execute bash commands
+      - `OUTDIR="tests/expected"`
+        - // output directory where we will generate test files
+        - `[[ ! -d "$OUTDIR" ]] && mkdir -p $OUTDIR`
+          - // mkdir if one doesn't already exist
+      - `echo "Hello there" > $OUTDIR/args_1.txt`
+        - ...
+          - // print expected output and save to file
+          - // we will unit test 'echor' binary output against these files!
 
 ## src/
 
-- `main.rs`
-  - `use clap::{}`
-  - `fn main(){}`
+- ==[ **cargo** run ]==
+  - `main.rs`
+    - ==[ io ]== from **echor**
+      - `use clap::{}`
+      - `fn main(){}`
+        - // instantiate App
+          - `App::new("echor")`
+        - // get matches
+          - // get text
+          - // get new line flag (omit)
+        - // echo arguments from echor
 
 ## [ binary ]
 
 ### target/
 
 - debug/
-  - ==[ echor ]==
+  - ==[ cargo ]== **echor**
+    - `cargo run -- [n] args...`
+      - // generated on build or run
 
 ### tests/
 
 - `cli.rs`
+  - ==[ io test ]== **echor** == **echo** ???
+    - // imports
+      - `use`
+        - `assert_cmd::Commands;`
+          - // run system binaries and assert on their output
+        - `predicates::prelude::*;`
+          - // predicate crate is used for writing test assertions
+        - `std::fs;`
+    - // alias
+    - // helper functions
+    - // echo == echor io ?
+      - // no args
+      - // args
 
 #### expected/
+
+- ==[ io text **files** ]==
+  - `bash mk-outs.sh`
+
+    - ```sh
+      # default
+        args_1.txt
+        args_2.txt
+      # no newline
+        args_1.n.txt
+        args_2.n.txt
+      ```
