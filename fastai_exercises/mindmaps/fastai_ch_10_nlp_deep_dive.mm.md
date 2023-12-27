@@ -10,22 +10,32 @@ markmap:
 
 ### DataLoad
 
+- `path` = untar_data(URLs.IMDB)
+- `files` = get_text_files(path, folders=[ ... ])
+  - `train`
+  - `test`
+  - `unsup`
+- `txt` = files[0].open().read()
+
 ### ==[ Tokenize ]==
 
-- **Unit** Resolution
-  - 1 - Character
-    - `a...z, 0..9 ...etc`
-  - 2 - ==[ Subword ]==
-    - `occasion` => `o` `c` `ca` `sion`
-    - most complex and highest potential
-      - carries over to **ALL** languages
-        - including non-char languages 
-          - audio
-          - ECG
-  - 3 - Word
-    - `white space` separator
+- Process of splitting text into individual tokens
 
-#### ==[ Embedding Matrix ]==
+#### **Unit** Resolution
+
+- 1 - Character
+  - `a...z, 0..9 ...etc`
+- 2 - ==[ Subword ]==
+  - `occasion` => `o` `c` `ca` `sion`
+  - most complex and highest potential
+    - carries over to **ALL** languages
+      - including non-char languages 
+        - audio
+        - ECG
+- 3 - Word
+  - `white space` separator
+
+### ==[ Embedding Matrix ]==
 
 ## RNN
 
