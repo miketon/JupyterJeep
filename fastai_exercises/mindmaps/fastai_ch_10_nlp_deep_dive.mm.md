@@ -67,6 +67,14 @@ markmap:
 
 ### ==[ Embedding Matrix ]==
 
+#### Handle tokens NOT in vocabulary
+
+- 1 - Skip the token
+- 2 - Use a special token
+- 3 - Break it down
+- 4 - Learn the new token
+- 5 - Make a new token
+
 ## RNN
 
 ### Self-supervised
