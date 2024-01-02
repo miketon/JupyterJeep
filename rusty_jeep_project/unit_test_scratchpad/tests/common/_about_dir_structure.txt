@@ -1,2 +1,0 @@
-Files in subdirectories of the tests directory don’t get compiled as separate 
-crates or have sections in the test output
