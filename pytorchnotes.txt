@@ -1,0 +1,278 @@
+https://anaconda.org/fastchan/repo
+# JUST INSTALL EVERYTHING FROM FASTCHAN and SKIP CONDA BULLSHIT LOL and works with Mac silicon!
+# conda install -c fastchan fastai
+
+conda install -c anaconda ipywidgets 
+
+
+
+https://github.com/fastai/fastbook/issues/538
+
+Now that PyTorch supports Apple Silicon devices, it should be possible to run the Jupyter Notebooks on an Apple Silicon device, right?
+
+I tried and ran into the following issues with the very first training exercise - the #CLICK ME cell. I was able to fix all of them and so mentioning the solutions here in case you want to add the fixes to future releases 🙂
+
+There were three issue if I recall correctly:
+
+There's an issues currently on MPS devices where you'll get the following error due to a bug which is in PR state for PyTorch:
+RuntimeError: view size is not compatible with input tensor's size and stride (at least one dimension spans across two contiguous subspaces). Use .reshape(...) instead.
+The fix is to pip install fastcore and then run the following before you execute the # CLICK ME cell:
+
+from diffusers.models.attention import BasicTransformerBlock
+from fastcore.basics import patch
+
+@patch
+def forward(self:BasicTransformerBlock, x, context=None):
+    x = self.attn1(self.norm1(x.contiguous())) + x
+    x = self.attn2(self.norm2(x), context=context) + x
+    x = self.ff(self.norm3(x)) + x
+    renturn x
+Running the training will then throw the following error:
+[W ParallelNative.cpp:229] Warning: Cannot set number of intraop threads after parallel work has started or after set_num_threads call when using native parallel backend (function set_num_threads)
+The above required adding the parameter num_workers=0 to the ImageDataLoader.
+
+Once you get past the above and the fine_tune(1) line executes, you'll get an error like this:
+Exception occured in `ProgressCallback` when calling event `after_batch`:
+	unsupported format string passed to TensorBase.__format__
+There might be a better solution but I solved it by changing line 33 of fastai/callback/progress.py from:
+
+if hasattr(self, 'smooth_loss'): self.pbar.comment = f'{self.smooth_loss:.4f}'
+To:
+
+if hasattr(self, 'smooth_loss'): self.pbar.comment = f'{self.smooth_loss.item():.4f}'
+Basically, I added an item() to the the self.smooth_loss parameter.
+
+That let me complete the chapter and do everything on an Apple Silicon device.
+
+
+https://forums.fast.ai/t/fastai-on-apple-m1/86059/37
+
+#gitlens check
+
+Preparing transaction: done
+Executing transaction: \ 
+done
+installation finished.
+WARNING:
+    You currently have a PYTHONPATH environment variable set. This may cause
+    unexpected behavior when running the Python interpreter in Miniconda3.
+    For best results, please verify that your PYTHONPATH only points to
+    directories of packages that are compatible with the Python interpreter
+    in Miniconda3: /Users/mton/miniconda3
+Do you wish the installer to initialize Miniconda3
+by running conda init? [yes|no]
+[yes] >>> yes
+no change     /Users/mton/miniconda3/condabin/conda
+no change     /Users/mton/miniconda3/bin/conda
+no change     /Users/mton/miniconda3/bin/conda-env
+no change     /Users/mton/miniconda3/bin/activate
+no change     /Users/mton/miniconda3/bin/deactivate
+no change     /Users/mton/miniconda3/etc/profile.d/conda.sh
+no change     /Users/mton/miniconda3/etc/fish/conf.d/conda.fish
+no change     /Users/mton/miniconda3/shell/condabin/Conda.psm1
+modified      /Users/mton/miniconda3/shell/condabin/conda-hook.ps1
+no change     /Users/mton/miniconda3/lib/python3.9/site-packages/xontrib/conda.xsh
+no change     /Users/mton/miniconda3/etc/profile.d/conda.csh
+modified      /Users/mton/.bash_profile
+
+==> For changes to take effect, close and re-open your current shell. <==
+
+If you'd prefer that conda's base environment not be activated on startup, 
+   set the auto_activate_base parameter to false: 
+
+conda config --set auto_activate_base false
+
+Thank you for installing Miniconda3!
+(.venv) mton@ .venv$ conda install pytorch torchvision torchaudio -c pytorch-nightly
+
+
+
+
+(base) mton@ ex3$ conda install pytorch torchvision torchaudio -c pytorch-nightly
+Collecting package metadata (current_repodata.json): done
+Solving environment: done
+
+## Package Plan ##
+
+  environment location: /Users/mton/miniconda3
+
+  added / updated specs:
+    - pytorch
+    - torchaudio
+    - torchvision
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    blas-1.0                   |         openblas          10 KB
+    bzip2-1.0.8                |       h620ffc9_4         109 KB
+    ca-certificates-2022.07.19 |       hca03da5_0         124 KB
+    certifi-2022.9.24          |   py39hca03da5_0         155 KB
+    conda-22.9.0               |   py39hca03da5_0         875 KB
+    ffmpeg-4.2.2               |       h04105a8_0        23.5 MB
+    freetype-2.11.0            |       h1192e45_0         567 KB
+    gettext-0.21.0             |       h826f4ad_0         2.6 MB
+    giflib-5.2.1               |       h1a28f6b_0          69 KB
+    gmp-6.2.1                  |       hc377ac9_3         437 KB
+    gnutls-3.6.15              |       h887c41c_0         960 KB
+    icu-68.1                   |       hc377ac9_0        10.7 MB
+    jpeg-9e                    |       h1a28f6b_0         223 KB
+    lame-3.100                 |       h1a28f6b_0         312 KB
+    lcms2-2.12                 |       hba8e193_0         273 KB
+    lerc-3.0                   |       hc377ac9_0         115 KB
+    libdeflate-1.8             |       h1a28f6b_5          35 KB
+    libgfortran-5.0.0          |11_3_0_hca03da5_28         142 KB
+    libgfortran5-11.3.0        |      h009349e_28         1.0 MB
+    libiconv-1.16              |       h1a28f6b_2         706 KB
+    libidn2-2.3.1              |       h1a28f6b_0          85 KB
+    libopenblas-0.3.21         |       h269037a_0         3.3 MB
+    libopus-1.3                |       h1a28f6b_1         408 KB
+    libpng-1.6.37              |       hb8d0fd4_0         256 KB
+    libtasn1-4.16.0            |       h1a28f6b_0          50 KB
+    libtiff-4.4.0              |       had003b8_0         428 KB
+    libunistring-0.9.10        |       h1a28f6b_0         510 KB
+    libvpx-1.10.0              |       hc377ac9_0         1.2 MB
+    libwebp-1.2.4              |       h68602c7_0          78 KB
+    libwebp-base-1.2.4         |       h1a28f6b_0         259 KB
+    libxml2-2.9.14             |       h8c5e841_0         607 KB
+    llvm-openmp-14.0.6         |       hc6e5704_0         253 KB
+    lz4-c-1.9.3                |       hc377ac9_0         126 KB
+    nettle-3.7.3               |       h84b5d62_1         385 KB
+    numpy-1.23.3               |   py39h42add53_0          11 KB
+    numpy-base-1.23.3          |   py39hadd41eb_0         4.7 MB
+    openh264-1.8.0             |       h98b2900_0         536 KB
+    openssl-1.1.1q             |       h1a28f6b_0         2.2 MB
+    pillow-9.2.0               |   py39h4d1bdd5_1         603 KB
+    pytorch-1.14.0.dev20221021 |          py3.9_0        47.5 MB  pytorch-nightly
+    toolz-0.11.2               |     pyhd3eb1b0_0          49 KB
+    torchaudio-0.14.0.dev20221021|         py39_cpu         5.6 MB  pytorch-nightly
+    torchvision-0.15.0.dev20221021|         py39_cpu         6.5 MB  pytorch-nightly
+    typing_extensions-4.3.0    |   py39hca03da5_0          42 KB
+    x264-1!152.20180806        |       h1a28f6b_0         516 KB
+    zstd-1.5.2                 |       h8574219_0         371 KB
+    ------------------------------------------------------------
+                                           Total:       119.2 MB
+
+The following NEW packages will be INSTALLED:
+
+  blas               pkgs/main/osx-arm64::blas-1.0-openblas
+  bzip2              pkgs/main/osx-arm64::bzip2-1.0.8-h620ffc9_4
+  ffmpeg             pkgs/main/osx-arm64::ffmpeg-4.2.2-h04105a8_0
+  freetype           pkgs/main/osx-arm64::freetype-2.11.0-h1192e45_0
+  gettext            pkgs/main/osx-arm64::gettext-0.21.0-h826f4ad_0
+  giflib             pkgs/main/osx-arm64::giflib-5.2.1-h1a28f6b_0
+  gmp                pkgs/main/osx-arm64::gmp-6.2.1-hc377ac9_3
+  gnutls             pkgs/main/osx-arm64::gnutls-3.6.15-h887c41c_0
+  icu                pkgs/main/osx-arm64::icu-68.1-hc377ac9_0
+  jpeg               pkgs/main/osx-arm64::jpeg-9e-h1a28f6b_0
+  lame               pkgs/main/osx-arm64::lame-3.100-h1a28f6b_0
+  lcms2              pkgs/main/osx-arm64::lcms2-2.12-hba8e193_0
+  lerc               pkgs/main/osx-arm64::lerc-3.0-hc377ac9_0
+  libdeflate         pkgs/main/osx-arm64::libdeflate-1.8-h1a28f6b_5
+  libgfortran        pkgs/main/osx-arm64::libgfortran-5.0.0-11_3_0_hca03da5_28
+  libgfortran5       pkgs/main/osx-arm64::libgfortran5-11.3.0-h009349e_28
+  libiconv           pkgs/main/osx-arm64::libiconv-1.16-h1a28f6b_2
+  libidn2            pkgs/main/osx-arm64::libidn2-2.3.1-h1a28f6b_0
+  libopenblas        pkgs/main/osx-arm64::libopenblas-0.3.21-h269037a_0
+  libopus            pkgs/main/osx-arm64::libopus-1.3-h1a28f6b_1
+  libpng             pkgs/main/osx-arm64::libpng-1.6.37-hb8d0fd4_0
+  libtasn1           pkgs/main/osx-arm64::libtasn1-4.16.0-h1a28f6b_0
+  libtiff            pkgs/main/osx-arm64::libtiff-4.4.0-had003b8_0
+  libunistring       pkgs/main/osx-arm64::libunistring-0.9.10-h1a28f6b_0
+  libvpx             pkgs/main/osx-arm64::libvpx-1.10.0-hc377ac9_0
+  libwebp            pkgs/main/osx-arm64::libwebp-1.2.4-h68602c7_0
+  libwebp-base       pkgs/main/osx-arm64::libwebp-base-1.2.4-h1a28f6b_0
+  libxml2            pkgs/main/osx-arm64::libxml2-2.9.14-h8c5e841_0
+  llvm-openmp        pkgs/main/osx-arm64::llvm-openmp-14.0.6-hc6e5704_0
+  lz4-c              pkgs/main/osx-arm64::lz4-c-1.9.3-hc377ac9_0
+  nettle             pkgs/main/osx-arm64::nettle-3.7.3-h84b5d62_1
+  numpy              pkgs/main/osx-arm64::numpy-1.23.3-py39h42add53_0
+  numpy-base         pkgs/main/osx-arm64::numpy-base-1.23.3-py39hadd41eb_0
+  openh264           pkgs/main/osx-arm64::openh264-1.8.0-h98b2900_0
+  pillow             pkgs/main/osx-arm64::pillow-9.2.0-py39h4d1bdd5_1
+  pytorch            pytorch-nightly/osx-arm64::pytorch-1.14.0.dev20221021-py3.9_0
+  toolz              pkgs/main/noarch::toolz-0.11.2-pyhd3eb1b0_0
+  torchaudio         pytorch-nightly/osx-arm64::torchaudio-0.14.0.dev20221021-py39_cpu
+  torchvision        pytorch-nightly/osx-arm64::torchvision-0.15.0.dev20221021-py39_cpu
+  typing_extensions  pkgs/main/osx-arm64::typing_extensions-4.3.0-py39hca03da5_0
+  x264               pkgs/main/osx-arm64::x264-1!152.20180806-h1a28f6b_0
+  zstd               pkgs/main/osx-arm64::zstd-1.5.2-h8574219_0
+
+The following packages will be UPDATED:
+
+  ca-certificates                      2022.4.26-hca03da5_0 --> 2022.07.19-hca03da5_0
+  certifi                        2022.5.18.1-py39hca03da5_0 --> 2022.9.24-py39hca03da5_0
+  conda                               4.12.0-py39hca03da5_0 --> 22.9.0-py39hca03da5_0
+  openssl                                 1.1.1o-h1a28f6b_0 --> 1.1.1q-h1a28f6b_0
+
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+toolz-0.11.2         | 49 KB     | ##################################################################################################################################### | 100% 
+libgfortran-5.0.0    | 142 KB    | ##################################################################################################################################### | 100% 
+libidn2-2.3.1        | 85 KB     | ##################################################################################################################################### | 100% 
+nettle-3.7.3         | 385 KB    | ##################################################################################################################################### | 100% 
+giflib-5.2.1         | 69 KB     | ##################################################################################################################################### | 100% 
+libtasn1-4.16.0      | 50 KB     | ##################################################################################################################################### | 100% 
+freetype-2.11.0      | 567 KB    | ##################################################################################################################################### | 100% 
+libopenblas-0.3.21   | 3.3 MB    | ##################################################################################################################################### | 100% 
+torchvision-0.15.0.d | 6.5 MB    | ##################################################################################################################################### | 100% 
+icu-68.1             | 10.7 MB   | ##################################################################################################################################### | 100% 
+libdeflate-1.8       | 35 KB     | ##################################################################################################################################### | 100% 
+libunistring-0.9.10  | 510 KB    | ##################################################################################################################################### | 100% 
+libpng-1.6.37        | 256 KB    | ##################################################################################################################################### | 100% 
+libwebp-base-1.2.4   | 259 KB    | ##################################################################################################################################### | 100% 
+x264-1!152.20180806  | 516 KB    | ##################################################################################################################################### | 100% 
+libopus-1.3          | 408 KB    | ##################################################################################################################################### | 100% 
+gmp-6.2.1            | 437 KB    | ##################################################################################################################################### | 100% 
+openssl-1.1.1q       | 2.2 MB    | ##################################################################################################################################### | 100% 
+ffmpeg-4.2.2         | 23.5 MB   | ##################################################################################################################################### | 100% 
+lcms2-2.12           | 273 KB    | ##################################################################################################################################### | 100% 
+llvm-openmp-14.0.6   | 253 KB    | ##################################################################################################################################### | 100% 
+certifi-2022.9.24    | 155 KB    | ##################################################################################################################################### | 100% 
+gnutls-3.6.15        | 960 KB    | ##################################################################################################################################### | 100% 
+lerc-3.0             | 115 KB    | ##################################################################################################################################### | 100% 
+pillow-9.2.0         | 603 KB    | ##################################################################################################################################### | 100% 
+libvpx-1.10.0        | 1.2 MB    | ##################################################################################################################################### | 100% 
+pytorch-1.14.0.dev20 | 47.5 MB   | ##################################################################################################################################### | 100% 
+lame-3.100           | 312 KB    | ##################################################################################################################################### | 100% 
+libiconv-1.16        | 706 KB    | ##################################################################################################################################### | 100% 
+lz4-c-1.9.3          | 126 KB    | ##################################################################################################################################### | 100% 
+blas-1.0             | 10 KB     | ##################################################################################################################################### | 100% 
+libxml2-2.9.14       | 607 KB    | ##################################################################################################################################### | 100% 
+jpeg-9e              | 223 KB    | ##################################################################################################################################### | 100% 
+zstd-1.5.2           | 371 KB    | ##################################################################################################################################### | 100% 
+gettext-0.21.0       | 2.6 MB    | ##################################################################################################################################### | 100% 
+openh264-1.8.0       | 536 KB    | ##################################################################################################################################### | 100% 
+conda-22.9.0         | 875 KB    | ##################################################################################################################################### | 100% 
+bzip2-1.0.8          | 109 KB    | ##################################################################################################################################### | 100% 
+libwebp-1.2.4        | 78 KB     | ##################################################################################################################################### | 100% 
+numpy-1.23.3         | 11 KB     | ##################################################################################################################################### | 100% 
+libgfortran5-11.3.0  | 1.0 MB    | ##################################################################################################################################### | 100% 
+libtiff-4.4.0        | 428 KB    | ##################################################################################################################################### | 100% 
+typing_extensions-4. | 42 KB     | ##################################################################################################################################### | 100% 
+ca-certificates-2022 | 124 KB    | ##################################################################################################################################### | 100% 
+torchaudio-0.14.0.de | 5.6 MB    | ##################################################################################################################################### | 100% 
+numpy-base-1.23.3    | 4.7 MB    | ##################################################################################################################################### | 100% 
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+(base) mton@ ex3$ 
+
+
+
+(base) mton@ ex3$ pip show torch
+Name: torch
+Version: 1.14.0.dev20221021
+Summary: Tensors and Dynamic neural networks in Python with strong GPU acceleration
+Home-page: https://pytorch.org/
+Author: PyTorch Team
+Author-email: packages@pytorch.org
+License: BSD-3
+Location: /Users/mton/miniconda3/lib/python3.9/site-packages
+Requires: typing_extensions, sympy, networkx
+Required-by: torchvision, torchaudio

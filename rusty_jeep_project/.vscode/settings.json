@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./bevy_calculator_mton/Cargo.toml",
+        "./guessing_game/Cargo.toml"
+    ]
+}
